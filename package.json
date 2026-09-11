@@ -1,0 +1,45 @@
+{
+  "name": "@tianacloud/agent-skills",
+  "version": "0.1.0",
+  "description": "Agent Skills for building with Tiana Cloud serverless SQLite",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tianacloud/agent-skills"
+  },
+  "author": {
+    "name": "Tiana Cloud",
+    "url": "https://github.com/tianacloud"
+  },
+  "keywords": [
+    "tiana",
+    "sqlite",
+    "serverless",
+    "database",
+    "agent-skills",
+    "pi-package"
+  ],
+  "files": [
+    "skills/",
+    "plugin.json"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "pi": {
+    "skills": ["./skills"]
+  },
+  "scripts": {
+    "build:workbuddy": "node scripts/build-workbuddy.mjs",
+    "validate:skills": "node scripts/validate-skills.mjs",
+    "validate:references": "node scripts/check-skill-references.mjs",
+    "validate:plugin": "node scripts/validate-plugin.mjs",
+    "validate:versions": "node scripts/validate-versions.mjs",
+    "validate:workbuddy": "node scripts/validate-workbuddy.mjs",
+    "validate:ci": "npm run validate:skills && npm run validate:references && npm run validate:plugin && npm run validate:versions && npm run validate:workbuddy"
+  },
+  "devDependencies": {
+    "fflate": "0.8.3",
+    "skills-ref": "0.1.5"
+  }
+}

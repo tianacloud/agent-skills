@@ -1,0 +1,17 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Core",
+      "description": "Use Tiana Cloud and connect applications to serverless SQLite.",
+      "skills": ["tiana", "tiana-sqlite"]
+    },
+    {
+      "title": "Preview",
+      "description": "Plan for Tiana capabilities whose public interfaces are not yet released.",
+      "skills": ["tiana-branches"]
+    }
+  ]
+}
+

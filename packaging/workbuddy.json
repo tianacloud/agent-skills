@@ -1,0 +1,24 @@
+{
+  "author": "Tiana Cloud",
+  "skills": {
+    "tiana": {
+      "display_name": "Tiana Cloud",
+      "display_name_en": "Tiana Cloud",
+      "description_zh": "使用 Tiana Cloud 创建和管理 serverless SQLite 实例、状态与连接 Token。",
+      "description_en": "Create and manage Tiana Cloud serverless SQLite instances, lifecycle state, and connection tokens."
+    },
+    "tiana-sqlite": {
+      "display_name": "Tiana SQLite 连接",
+      "display_name_en": "Tiana SQLite Connections",
+      "description_zh": "使用当前 Tiana CLI 或 Rust SDK 安全连接 Tiana serverless SQLite。",
+      "description_en": "Connect safely to Tiana serverless SQLite with the current Tiana CLI or Rust SDK."
+    },
+    "tiana-branches": {
+      "display_name": "Tiana 数据库分支预览",
+      "display_name_en": "Tiana Database Branches Preview",
+      "description_zh": "基于尚未发布的设计草案规划 Tiana 数据库分支生命周期与客户端流程。",
+      "description_en": "Plan Tiana database branch lifecycle and client flows from the unreleased design proposal."
+    }
+  }
+}
+
