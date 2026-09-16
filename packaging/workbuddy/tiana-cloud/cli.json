@@ -1,0 +1,22 @@
+{
+  "runtime": { "type": "node", "version": "20" },
+  "init": {
+    "darwin": "npm install -g @tianacloud/cli@0.2.0 --registry=https://registry.npmjs.org/",
+    "linux": "npm install -g @tianacloud/cli@0.2.0 --registry=https://registry.npmjs.org/"
+  },
+  "auth": {
+    "darwin": "tiana auth login --no-open",
+    "linux": "tiana auth login --no-open"
+  },
+  "status": {
+    "darwin": "tiana auth status",
+    "linux": "tiana auth status"
+  },
+  "unAuth": {
+    "darwin": "tiana auth logout",
+    "linux": "tiana auth logout"
+  },
+  "statusMatch": "^Logged in$",
+  "authUrlDomain": "console.service.internal.tiana.com",
+  "authWaitForExit": true
+}

@@ -1,59 +1,43 @@
-# Getting started with Tiana
+# Getting started — CLI 0.2.0 preview
 
-## Product flow
+CLI 0.2.0 is available from npm as `@tianacloud/cli@0.2.0`. The service deployment
+and your account's WorkBuddy Connector entry must be verified separately.
 
-1. Open `https://console.service.internal.tiana.com/` from an environment with
-   access to Tiana's internal network and DNS.
-2. Register or sign in using a method shown by the deployment.
-3. Create an instance from the available App types. SQLite deployments commonly
-   expose the `sqlite` or `sqld` engine family; use the catalog value returned by
-   the current deployment instead of hard-coding one.
-4. Save the initial `default` InstanceToken when the create wizard delivers it.
-   The raw value appears only once.
-5. Form the database hostname from the returned Endpoint ID:
+## First use
 
-   ```text
-   <endpoint_id>.db.service.internal.tiana.com
-   ```
+In WorkBuddy, use the Tiana Cloud Connector installation/connection entry
+provided for your account by the delivery owner. It prepares the managed CLI
+and opens the existing Console browser login. A Skill alone does not install
+or authenticate the Connector.
 
-6. Use the `tiana-sqlite` skill to select the supported connection path.
+After installation, check:
 
-## Resource model
+    tiana --version
+    tiana verify-install --json
+    tiana auth status --json
 
-An instance is the logical database App. Its public product record includes a
-display name, labels, notes, engine, public configuration, Endpoint ID, product
-revision, and a projected runtime status.
+Expect CLI 0.2.0, helper contract 3, matching SQL executor and a readable public
+Gateway CA. If installation fails, restore the complete matching package;
+do not download a different helper, build SDK source during chat, or read
+credential files.
 
-The Endpoint is stable connection identity. Database traffic goes to Gateway
-using the Endpoint hostname and does not pass through MGR.
+For an ordinary terminal, install the complete native platform package or the
+same CLI npm package, then run:
 
-An InstanceToken authorizes database access to one instance. A product session
-authorizes management calls to MGR. Never substitute one for the other.
+    tiana auth login
 
-## Product states
+The browser must reach https://console.service.internal.tiana.com from the
+user's network. The CLI and WorkBuddy's managed Node runtime also need the
+deployment's existing trust configuration. Follow the delivery installation
+instructions for the public CA; it is not a Token.
 
-| State | Meaning |
-| --- | --- |
-| `PENDING` | The product record exists and the platform is preparing or finalizing it. |
-| `ACTIVE` | The instance is available for normal product use. |
-| `UNKNOWN` | MGR cannot currently provide a trustworthy runtime projection. |
-| `FAILED` | Preparation or reconciliation failed; inspect `last_error_code`. |
+## Continue across chats and restarts
 
-`desired_state` is the requested target (`ENABLED`, `DISABLED`, or `DELETED`),
-while `observed_state` describes the lifecycle fact projected from Control.
-Do not claim success from `desired_state` alone.
+The CLI stores login and instance credentials separately from installation.
+Use the same account and full instance ID in a new chat. Inspect existing
+instances rather than assuming a new chat needs a new database. For unfinished
+creation, inspect the current account's requests and resume the intended task.
 
-An idle SQLite instance may sleep and wake on the next connection. This is
-normal serverless behavior rather than a request to recreate the instance.
-
-## Current public configuration
-
-- `idle_timeout_ms`: `1000..86400000`. If omitted, the SQLite App default is
-  30000 ms. Current production guidance normally uses at least 60000 ms.
-- `cache_mb`: retained by MGR for client compatibility but ignored by the
-  current `app_sqlite` runtime. Do not recommend it as an effective tuning knob.
-
-Instance metadata edits use the quoted product revision as `If-Match`.
-Configuration edits additionally carry `expected_config_revision` when a
-configuration change is included.
-
+See [CLI commands and recovery](cloud-cli.md) for exact flags and partial
+success handling, and [Instances and tokens](instances-and-tokens.md) for the
+resource model.

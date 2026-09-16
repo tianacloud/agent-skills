@@ -8,10 +8,12 @@ const root = process.cwd();
 const pkg = JSON.parse(await fs.readFile(path.join(root, "package.json"), "utf8"));
 const plugin = JSON.parse(await fs.readFile(path.join(root, "plugin.json"), "utf8"));
 const workbuddy = JSON.parse(await fs.readFile(path.join(root, "packaging", "workbuddy.json"), "utf8"));
+const connector = JSON.parse(await fs.readFile(path.join(root, "packaging/workbuddy/tiana-cloud/connector-meta.json"), "utf8"));
 const errors = [];
 
 if (pkg.name !== "@tianacloud/agent-skills") errors.push("unexpected npm package name");
 if (pkg.version !== plugin.version) errors.push("package.json and plugin.json versions differ");
+if (pkg.version !== connector.version) errors.push("Connector and package.json versions differ");
 
 const skillNames = (await fs.readdir(path.join(root, "skills"), { withFileTypes: true }))
   .filter((entry) => entry.isDirectory())
@@ -40,4 +42,3 @@ if (errors.length > 0) {
   process.exit(1);
 }
 process.stdout.write(`All package metadata agrees on version ${pkg.version}.\n`);
-

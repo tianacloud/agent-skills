@@ -1,0 +1,14 @@
+{
+  "name": "Tiana Cloud",
+  "name_zh": "Tiana Cloud",
+  "name_en": "Tiana Cloud",
+  "description": "在聊天中创建和管理 Tiana SQLite 实例，查看表结构并读写数据。",
+  "description_zh": "在聊天中创建和管理 Tiana SQLite 实例，查看表结构并读写数据。",
+  "description_en": "Create Tiana SQLite instances, inspect schemas, and read or write data in chat.",
+  "source": "tiana-cloud",
+  "type": "cli",
+  "version": "0.2.0",
+  "minWorkbuddyVersion": "4.24.0",
+  "examples_zh": ["创建一个名为 demo 的 SQLite 实例", "查看 demo 的表结构", "建一个 notes 表，插入两条数据并查询"],
+  "examples_en": ["Create a SQLite instance named demo", "Inspect the schema in demo", "Create a notes table, insert two rows, and query them"]
+}

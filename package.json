@@ -1,6 +1,6 @@
 {
   "name": "@tianacloud/agent-skills",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Agent Skills for building with Tiana Cloud serverless SQLite",
   "license": "MIT",
   "repository": {
@@ -31,12 +31,15 @@
   },
   "scripts": {
     "build:workbuddy": "node scripts/build-workbuddy.mjs",
+    "build:connector": "node scripts/build-workbuddy-connector.mjs",
+    "validate:connector": "node scripts/validate-workbuddy-connector.mjs",
+    "test:connector-auth": "node --test scripts/connector-auth.test.mjs",
     "validate:skills": "node scripts/validate-skills.mjs",
     "validate:references": "node scripts/check-skill-references.mjs",
     "validate:plugin": "node scripts/validate-plugin.mjs",
     "validate:versions": "node scripts/validate-versions.mjs",
     "validate:workbuddy": "node scripts/validate-workbuddy.mjs",
-    "validate:ci": "npm run validate:skills && npm run validate:references && npm run validate:plugin && npm run validate:versions && npm run validate:workbuddy"
+    "validate:ci": "npm run validate:skills && npm run validate:references && npm run validate:plugin && npm run validate:versions && npm run validate:workbuddy && npm run validate:connector"
   },
   "devDependencies": {
     "fflate": "0.8.3",

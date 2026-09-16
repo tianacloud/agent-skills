@@ -4,7 +4,7 @@ description: Plan and review Tiana database branch workflows, branch identity, c
 license: MIT
 metadata:
   author: Tiana Cloud
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # Tiana database branches — preview

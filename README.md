@@ -3,6 +3,9 @@
 Agent Skills that help coding agents build with Tiana Cloud, a serverless data
 App platform whose first supported database engine is SQLite.
 
+Version 0.2.0 in this branch is an unpublished preview. The distribution
+examples below apply after the corresponding artifacts are published.
+
 ## Skills
 
 ### `tiana`
@@ -15,6 +18,10 @@ states, and manage one-time InstanceToken credentials.
 Connect to Tiana SQLite with the current Tiana CLI or Rust transport SDK. Covers
 Endpoint URLs, safe Token delivery, Hrana HTTP/WebSocket profiles, and project
 integration choices.
+
+The 0.2.0 preview adds direct CLI SQL, typed parameters, schema inspection and
+DDL/CRUD. Management and SQL skills use the CLI's local credential storage;
+they do not read or inject Token values.
 
 ### `tiana-branches`
 
@@ -57,7 +64,20 @@ npm run build:workbuddy
 
 The archives are written to `dist/workbuddy/` and are not committed.
 
-The proposed WorkBuddy Connector and MCP Server architecture is documented in
+### WorkBuddy CLI Connector (0.2.0 preview)
+
+```sh
+npm run build:connector
+```
+
+This creates `dist/workbuddy/tiana-cloud-0.2.0.zip` and its SHA-256. The ZIP
+contains CLI installation/auth configuration and the two canonical skills
+`tiana` and `tiana-sqlite`; it does not bundle the native CLI tarball.
+The configured download URL is a release target, not yet a published artifact.
+See [platform handoff](docs/workbuddy-platform-handoff.md) for U-02 and remaining
+installation prerequisites. A generated ZIP is not a verified Connector install.
+
+The agreed CLI + Skill design is in
 [`docs/workbuddy-connector-mcp.md`](docs/workbuddy-connector-mcp.md).
 
 ## Development
@@ -66,7 +86,14 @@ The proposed WorkBuddy Connector and MCP Server architecture is documented in
 npm ci
 npm run validate:ci
 npm run build:workbuddy
+npm run build:connector
 ```
+
+For an isolated process-level auth scheduling test, point
+`TIANA_TEST_CLI_BINARY` at a locally built CLI and run `npm run test:connector-auth`.
+It uses a loopback fixture and a temporary credential directory, waits more
+than 10 seconds before approval, and checks restart status/logout/cancellation.
+It neither opens the browser nor proves WorkBuddy's own scheduling behavior.
 
 The source skills follow the [Agent Skills specification](https://agentskills.io/specification).
 The root `plugin.json` follows [Agent Plugins v1](https://agent-plugins.org/specification).
