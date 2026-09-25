@@ -372,6 +372,7 @@ def failure_evidence(logs: list[dict], request_id: str = "") -> dict:
                          "dependency": str(fields.get("dependency", "")),
                          "server_address": str(fields.get("server_address", "")),
                          "path": str(fields.get("path", "")),
+                         "http_status": status if isinstance(status, int) else None,
                          "detail": str(fields.get("reason", "")) if fields.get("reason") != reason else "",
                          "job_id": str(fields.get("job_id", "")),
                          "operation_id": str(fields.get("operation_id", "")),
@@ -398,8 +399,21 @@ def failure_evidence(logs: list[dict], request_id: str = "") -> dict:
                               })]
     direct = next((event for event in direct_events if request_id and event["request_id"] == request_id),
                   next(iter(direct_events), None))
+    if direct and direct["event"] == "http.client.failed" and direct["trace_id"] and not direct["job_id"]:
+        attempt_jobs = {str(record["fields"]["job_id"]) for record in logs
+                        if record["fields"].get("event") == "task.attempt.finished"
+                        and record["fields"].get("component") == direct["component"]
+                        and record["fields"].get("trace_id") == direct["trace_id"]
+                        and record["fields"].get("job_id")}
+        if len(attempt_jobs) == 1:
+            direct["job_id"] = next(iter(attempt_jobs))
     first = observed[0] if observed else None
     component = (direct or first or {}).get("component", "")
+    if (direct and direct["event"] == "http.client.failed"
+            and direct["reason"] == "downstream_http_error"
+            and direct["path"].startswith("/control/")
+            and isinstance(direct["http_status"], int) and direct["http_status"] >= 500):
+        component = "control"
     if direct is None and first and first["component"] == "gateway" and first["event"] == "connection.closed":
         component = ""
     return {"failure_component": component,
@@ -475,12 +489,14 @@ def recovered_attempt(finding: dict, tasks: list[dict]) -> bool:
     event, state = (("task.attempt.completed", "succeeded")
                     if finding.get("component") == "gaia"
                     else ("task.attempt.finished", "success"))
-    if finding.get("event") != event:
+    outbound_attempt = (finding.get("event") == "http.client.failed"
+                        and bool(finding.get("trace_id")) and bool(finding.get("job_id")))
+    if finding.get("event") != event and not outbound_attempt:
         return False
     return any(task["state"] == state
                and finding.get(task["kind"]) == task["identity"]
                and finding.get("component") == task["component"]
-               and finding.get("cluster", "") == task["cluster"]
+               and (outbound_attempt or finding.get("cluster", "") == task["cluster"])
                for task in tasks)
 
 

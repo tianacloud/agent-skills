@@ -10,6 +10,7 @@
 | Git connection closes with `broken_pipe` or a client reset | This describes transport closure. Check the native Git exit status and the exact remote ref or commit before deciding the Git operation failed; clone/fetch may already have completed. Do not retry a mutation based only on its close event. |
 | HTTP 202 succeeded | This is acceptance. Follow the recorded Job/Operation ID and all available attempts for the actual result. |
 | A task attempt failed, then the linked task completed successfully | Report the failed attempt and the final success together. The request ID report follows linked tasks and displays their terminal states. |
+| MGR logs `http.client.failed` for a Control route with HTTP 5xx | The observed failing boundary is Control; MGR recorded the outbound error. Correlate that log's Trace ID with the task attempt and final task state. The 5xx alone does not establish Control's internal cause. |
 | No result within seven days | Report the retention boundary. Absence alone cannot prove that a trace existed and expired. |
 | Search is saturated or a backend failed | Treat conclusions as partial; the evidence bundle records query window, backend response and truncation. |
 

@@ -720,6 +720,36 @@ class SearchTests(unittest.TestCase):
         self.assertEqual(len(finding["failure_events"]), 1)
         self.assertEqual(finding["root_cause_evidence"]["reason"], "CONTROL_HTTP_ERROR")
 
+    def test_control_503_from_mgr_identifies_failed_downstream_boundary(self):
+        records = [{"time_unix_nano": "1", "stream": {"component": "mgr"}, "fields": {
+            "component": "mgr", "event": "http.client.failed", "outcome": "failed",
+            "error_code": "downstream_http_error", "status": 503,
+            "server_address": "control-b.example.test",
+            "path": "/control/v1/mgr/gateway-auth-command",
+            "cluster": "cluster-b", "trace_id": "trace-a"}}]
+        finding = debug.failure_evidence(records)
+        self.assertEqual(finding["failure_component"], "control")
+        self.assertEqual(finding["root_cause_evidence"]["component"], "mgr")
+        self.assertEqual(finding["root_cause_evidence"]["server_address"],
+                         "control-b.example.test")
+
+    def test_outbound_failure_in_recovered_task_attempt_is_historical(self):
+        records = [
+            {"time_unix_nano": "1", "stream": {"component": "mgr"}, "fields": {
+                "component": "mgr", "event": "http.client.failed", "outcome": "failed",
+                "error_code": "downstream_http_error", "status": 503,
+                "path": "/control/v1/mgr/gateway-auth-command", "trace_id": "attempt-trace",
+                "cluster": "cluster-b"}},
+            {"time_unix_nano": "2", "stream": {"component": "mgr"}, "fields": {
+                "component": "mgr", "event": "task.attempt.finished", "job_id": 1244,
+                "kind": "tenant_token_sync", "outcome": "retry",
+                "reason_code": "CONTROL_HTTP_ERROR", "trace_id": "attempt-trace"}},
+        ]
+        finding = debug.failure_evidence(records)["root_cause_evidence"]
+        completed = [{"kind": "job_id", "identity": "1244", "component": "mgr",
+                      "cluster": "", "state": "success"}]
+        self.assertTrue(debug.recovered_attempt(finding, completed))
+
     def test_rejected_request_uses_recorded_error_code(self):
         records = [{"time_unix_nano": "1", "stream": {"component": "mgr"},
                     "fields": {"event": "request.rejected", "component": "mgr",
