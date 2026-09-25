@@ -733,6 +733,23 @@ class SearchTests(unittest.TestCase):
         self.assertEqual(finding["root_cause_evidence"]["server_address"],
                          "control-b.example.test")
 
+    def test_control_business_result_identifies_target_component(self):
+        records = [
+            {"time_unix_nano": "1", "stream": {"component": "mgr"}, "fields": {
+                "component": "mgr", "event": "task.target.failed", "outcome": "failed",
+                "target_component": "control", "target_operation_id": "operation-42",
+                "reason_code": "INSTANCE_TOMBSTONED", "job_id": 42,
+                "cluster": "cluster-a", "trace_id": "attempt-trace"}},
+            {"time_unix_nano": "2", "stream": {"component": "mgr"}, "fields": {
+                "component": "mgr", "event": "task.attempt.finished", "outcome": "failed",
+                "reason_code": "INSTANCE_TOMBSTONED", "job_id": 42,
+                "cluster": "cluster-a", "trace_id": "attempt-trace"}},
+        ]
+        finding = debug.failure_evidence(records)
+        self.assertEqual(finding["failure_component"], "control")
+        self.assertEqual(finding["root_cause_evidence"]["target_operation_id"], "operation-42")
+        self.assertEqual(finding["root_cause_evidence"]["reason"], "INSTANCE_TOMBSTONED")
+
     def test_outbound_failure_in_recovered_task_attempt_is_historical(self):
         records = [
             {"time_unix_nano": "1", "stream": {"component": "mgr"}, "fields": {

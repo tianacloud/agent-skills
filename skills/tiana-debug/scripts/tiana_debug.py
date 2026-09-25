@@ -370,6 +370,9 @@ def failure_evidence(logs: list[dict], request_id: str = "") -> dict:
                          "direction": str(fields.get("direction", "")),
                          "stage": str(fields.get("stage", "")),
                          "dependency": str(fields.get("dependency", "")),
+                         "target_component": str(fields.get("target_component", "")),
+                         "target_cluster": str(fields.get("target_cluster", "")),
+                         "target_operation_id": str(fields.get("target_operation_id", "")),
                          "server_address": str(fields.get("server_address", "")),
                          "path": str(fields.get("path", "")),
                          "http_status": status if isinstance(status, int) else None,
@@ -413,6 +416,9 @@ def failure_evidence(logs: list[dict], request_id: str = "") -> dict:
             and direct["reason"] == "downstream_http_error"
             and direct["path"].startswith("/control/")
             and isinstance(direct["http_status"], int) and direct["http_status"] >= 500):
+        component = "control"
+    if (direct and direct["event"] == "task.target.failed"
+            and direct["target_component"] == "control"):
         component = "control"
     if direct is None and first and first["component"] == "gateway" and first["event"] == "connection.closed":
         component = ""
@@ -546,6 +552,8 @@ def evidence_files(root: Path, summary: dict, logs: list[dict], traces: dict,
         finding = diagnosis["root_cause_evidence"]
         prefix = "Recovered attempt failure" if recovered_attempt(finding, diagnosis.get("task_terminal_states", [])) else "Direct failure event"
         report.append(f"{prefix}: {finding['event'] or '-'}; reason: {finding['reason']}; trace: {finding['trace_id'] or '-'}")
+        if finding.get("target_component"):
+            report.append(f"Target: {finding['target_component']} cluster={finding.get('target_cluster') or finding.get('cluster') or '-'} operation={finding.get('target_operation_id') or '-'}")
         if finding.get("detail"):
             report.append(f"Observed detail: {finding['detail']}")
         if finding.get("dependency") or finding.get("server_address"):
