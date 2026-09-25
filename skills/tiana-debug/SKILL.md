@@ -15,7 +15,7 @@ Use this skill when investigating a Tiana customer report or checking the observ
 
 1. Identify the environment and use its **published** Gaia diagnostic profile. Run `doctor` to check Loki, Tempo, Prometheus and Gaia access. A profile contains addresses and datasource IDs, never credentials.
    Loki, Tempo and Prometheus are queried at the internal addresses in that profile; no separate token is needed there. For a Gaia environment that requires its existing API credential, set `GAIA_TOKEN` in the process environment. Do not put the token in the profile or evidence bundle.
-2. Obtain the customer's request ID and approximate time when possible. For a connection, use the logical connection's request ID. If there is only a task ID, specify its owning component. Control operation IDs also require their Cluster; MGR job IDs are scoped to the environment and use `--component mgr`.
+2. Obtain the customer's request ID and approximate time when possible. Pass `--since` and `--until` around the reported incident, covering the connection lifetime or asynchronous task through its terminal state. If evidence is missing or the task remains unresolved, widen the window within the 7-day retention period. A default request search starts with the past 24 hours and may scan all 7 days if it finds nothing. For a connection, use the logical connection's request ID. If there is only a task ID, specify its owning component. Control operation IDs also require their Cluster; MGR job IDs are scoped to the environment and use `--component mgr`.
 3. Keep the result's completeness state. Empty search results, expired retention, failed backends and truncated searches have different meanings.
 
 ## Investigation
