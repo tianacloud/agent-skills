@@ -11,6 +11,11 @@
       "title": "Preview",
       "description": "Plan for Tiana capabilities whose public interfaces are not yet released.",
       "skills": ["tiana-branches"]
+    },
+    {
+      "title": "Operations",
+      "description": "Diagnose requests and inspect a configured Tiana environment.",
+      "skills": ["tiana-debug"]
     }
   ]
 }
