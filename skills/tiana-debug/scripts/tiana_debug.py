@@ -468,8 +468,9 @@ def connection_trace_gaps(traces: dict, gaps: list[str], logs: list[dict] = ()) 
         spans = trace_span_rows({trace_id: document})
         names = {(span["component"], span["name"]) for span in spans}
         if ((trace_id in connection_traces or ("tiana-agent", "agent.session.establish_route") in names)
-                and ("tiana-gateway", "gateway.session.establish") not in names):
-            gaps.append(f"Connection Trace {trace_id} has connection evidence but is missing the Gateway establish span")
+                and ("tiana-gateway", "gateway.session.establish") not in names
+                and ("tiana-gateway", "gateway.fetch") not in names):
+            gaps.append(f"Connection Trace {trace_id} has connection evidence but is missing the Gateway ingress span")
 
 
 def add_span_findings(diagnosis: dict, traces: dict) -> None:

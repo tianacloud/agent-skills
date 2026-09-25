@@ -196,6 +196,9 @@ class SearchTests(unittest.TestCase):
         self.assertEqual(gaps, [])
         debug.connection_trace_gaps({"trace-a": {"batches": [agent]}, "trace-b": {"batches": [gateway]}}, gaps)
         self.assertTrue(any("trace-a" in gap for gap in gaps))
+        gaps = []
+        debug.connection_trace_gaps({"trace-fetch": {"batches": [agent, batch("tiana-gateway", "gateway.fetch")]}}, gaps)
+        self.assertEqual(gaps, [])
 
     def test_connection_close_log_detects_missing_establish_spans(self):
         logs = [{"fields": {"component": "gateway", "event": "connection.closed", "trace_id": "trace-a"}}]
