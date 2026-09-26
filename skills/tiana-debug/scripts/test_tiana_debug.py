@@ -814,5 +814,31 @@ class SearchTests(unittest.TestCase):
         self.assertEqual(finding["root_cause_evidence"]["reason"], "AUTHENTICATION_REQUIRED")
 
 
+class InspectionClusterTests(unittest.TestCase):
+    def test_log_event_counts_select_requested_cluster(self):
+        class Backend:
+            def get(self, backend, path, params=None):
+                if path == "/ready":
+                    return "ready"
+                if path == "/api/search":
+                    return {"traces": []}
+                if backend == "loki" and path == "/loki/api/v1/query":
+                    query = params["query"]
+                    if "count_over_time" in query:
+                        # One selected-cluster event and two events in another cluster.
+                        count = 1 if '| cluster="chosen"' in query else 3
+                        return {"status": "success", "data": {"result": [
+                            {"metric": {}, "value": [0, str(count)]}]}}
+                return {"status": "success", "data": {"result": []}}
+        for cluster, expected in (("chosen", 1), ("", 3)):
+            with self.subTest(cluster=cluster), TemporaryDirectory() as folder:
+                args = Namespace(env="test", cluster=cluster, window="1h", output=folder)
+                self.assertEqual(debug.inspect(args, {}, Backend()), 2)
+                metrics = json.loads((Path(folder) / "metrics.json").read_text())
+                for kind in ("storage_failures", "app_abnormal_exits"):
+                    self.assertEqual(metrics["log_event_counts"][kind]["count"], expected)
+                self.assertIn("Status: incomplete", (Path(folder) / "diagnosis.md").read_text())
+
+
 if __name__ == "__main__":
     unittest.main()

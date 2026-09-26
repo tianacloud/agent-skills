@@ -10,7 +10,7 @@ For `scrape_up`, `inspect` compares recent samples with Prometheus's current act
 
 The published SQLite cold-start acceptance gate uses at least 100 samples measured from Gateway's first received client byte to the first byte of a successful first SQL response; p95 must be at most 200 ms. An online latency chart or Gateway's upstream-first-byte metric is not that benchmark. Hot p99, Git establish, recovery time and density are monitored without invented numerical SLOs.
 
-With `inspect --cluster`, metrics cover that cluster and the shared platform services in its environment. Platform MGR, Gateway and Collector series have no cluster label; they describe the shared service, not traffic attributed to the selected cluster. Series from other named clusters are excluded.
+With `inspect --cluster`, metrics cover that cluster and the shared platform services in its environment. Platform MGR, Gateway and Collector series have no cluster label; they describe the shared service, not traffic attributed to the selected cluster. Series from other named clusters are excluded. Storage-failure and App-exit event counts select the requested cluster after parsing log fields; environment-wide inspection includes all clusters.
 
 Request ID and tenant/instance/branch IDs belong in logs and traces, not Prometheus series labels. If a target is absent, report missing telemetry. If a rate has no denominator, report no applicable traffic. A zero value with a live target is distinct from either case.
 

@@ -1015,9 +1015,10 @@ def inspect(args: argparse.Namespace, profile: dict, client: Backend) -> int:
         except QueryError as exc:
             results[name] = {"error": str(exc)}
     log_window = f"[{hours}h]"
+    log_cluster = " | cluster=" + json.dumps(args.cluster) if args.cluster else ""
     for name, query in {
-        "storage_failures": "sum(count_over_time({environment=" + json.dumps(args.env) + "} | k8s_container_name=\"agent\" | decolorize | logfmt | event=\"storage.failed\" " + log_window + "))",
-        "app_abnormal_exits": "sum(count_over_time({environment=" + json.dumps(args.env) + "} | json | event=\"process.exited\" | outcome=\"error\" " + log_window + "))",
+        "storage_failures": "sum(count_over_time({environment=" + json.dumps(args.env) + "} | k8s_container_name=\"agent\" | decolorize | logfmt" + log_cluster + " | event=\"storage.failed\" " + log_window + "))",
+        "app_abnormal_exits": "sum(count_over_time({environment=" + json.dumps(args.env) + "} | json" + log_cluster + " | event=\"process.exited\" | outcome=\"error\" " + log_window + "))",
     }.items():
         try:
             payload = client.get("loki", "/loki/api/v1/query", {"query": query})
