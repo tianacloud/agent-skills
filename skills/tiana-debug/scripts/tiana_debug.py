@@ -981,7 +981,7 @@ def inspect(args: argparse.Namespace, profile: dict, client: Backend) -> int:
             results[name] = {"error": str(exc)}
     log_window = f"[{hours}h]"
     for name, query in {
-        "storage_failures": "sum(count_over_time({environment=" + json.dumps(args.env) + "} | k8s_container_name=\"agent\" |= \"event=storage.failed\" " + log_window + "))",
+        "storage_failures": "sum(count_over_time({environment=" + json.dumps(args.env) + "} | k8s_container_name=\"agent\" | decolorize | logfmt | event=\"storage.failed\" " + log_window + "))",
         "app_abnormal_exits": "sum(count_over_time({environment=" + json.dumps(args.env) + "} | json | event=\"process.exited\" | outcome=\"error\" " + log_window + "))",
     }.items():
         try:
