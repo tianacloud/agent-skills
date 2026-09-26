@@ -23,3 +23,9 @@ The current implementation adds `tiana_gateway_establish_duration_seconds` (admi
 `no_samples` means recent series have no finite numeric sample (for example NaN from an idle histogram); `partial` means only part of the series has usable recent data. Both remain incomplete. Preserve the raw series and query in the evidence bundle. They do not prove a telemetry outage or healthy latency.
 
 `inspect` reports a nonzero `tiana_runtime_agents_failed` value with its node identity, even when other slots remain PARKED. Missing failure-slot data remains incomplete evidence; successful backend queries alone do not establish a healthy pool.
+
+## Loaded work
+
+`loaded_tasks`, `oldest_loaded_task_age` and `loaded_task_snapshot_age` describe process-local observations. MGR counts jobs delivered to tenant actors, including retry waits. Control counts Operation workers retained through result handoff. Support counts loaded collaboration workflows, including waiting for customers or engineers. Mailboxes and unloaded durable work are excluded; overlapping owners during handoff can each report a loaded workflow.
+
+Age starts at the current process loading the work and restarts after process recovery; it is not durable submission age. Snapshot age shows the time since the observed Actor callback update. These values have no automatic stuck-task threshold. Missing series remain incomplete evidence; use task identity and terminal events to diagnose specific work.

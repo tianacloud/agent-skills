@@ -953,6 +953,9 @@ def inspect(args: argparse.Namespace, profile: dict, client: Backend) -> int:
         "node_memory_available_ratio": f"node_memory_MemAvailable_bytes{{{selector}}} / node_memory_MemTotal_bytes{{{selector}}}",
         "collector_export_failed_logs": f"sum by(component,exporter)(rate(otelcol_exporter_send_failed_log_records{{{selector}}}[5m]))",
         "collector_export_failed_spans": f"sum by(component,exporter)(rate(otelcol_exporter_send_failed_spans{{{selector}}}[5m]))",
+        "loaded_tasks": f"sum by(component,cluster)(tiana_task_inflight{{{selector}}})",
+        "oldest_loaded_task_age": f"max by(component,cluster)(tiana_task_oldest_inflight_age_seconds{{{selector}}})",
+        "loaded_task_snapshot_age": f"max by(component,cluster)(tiana_task_snapshot_age_seconds{{{selector}}})",
         "scrape_up": f"up{{{selector}}}",
     }
     for kind in ("COLD", "HOT"):
