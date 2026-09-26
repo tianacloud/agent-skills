@@ -33,6 +33,15 @@ class FakeBackend:
 
 
 class SearchTests(unittest.TestCase):
+    def test_logfmt_http_rejection_identifies_component_without_inventing_cause(self):
+        line = 'event=request.completed component=gaia request_id=req-conflict status=409'
+        fields = debug.attr_fields(line, {})
+        record = {"fields": fields, "stream": {}, "time_unix_nano": "1"}
+        finding = debug.failure_evidence([record], "req-conflict")
+        self.assertEqual(finding["failure_component"], "gaia")
+        self.assertEqual(finding["candidate_failure"]["http_status"], 409)
+        self.assertIsNone(finding["root_cause_evidence"])
+
     def test_accepted_request_without_task_link_reports_gap(self):
         accepted = {"fields": {"component": "mgr", "event": "request.completed",
                    "status": 202, "request_id": "req-history", "trace_id": "trace-history"}}

@@ -346,6 +346,8 @@ def failure_evidence(logs: list[dict], request_id: str = "") -> dict:
     for record in logs:
         fields = record["fields"]
         app_status = fields.get("app_http_status")
+        if isinstance(app_status, str) and app_status.isdecimal():
+            app_status = int(app_status)
         if isinstance(app_status, int) and app_status >= 400:
             observed.append({"time_unix_nano": record["time_unix_nano"],
                              "component": "app", "event": fields.get("event", ""),
@@ -354,6 +356,8 @@ def failure_evidence(logs: list[dict], request_id: str = "") -> dict:
                              "trace_id": fields.get("trace_id", ""),
                              "request_id": fields.get("request_id", "")})
         status = fields.get("status")
+        if isinstance(status, str) and status.isdecimal():
+            status = int(status)
         failed = (str(fields.get("outcome", "")).lower() in {"failed", "error"}
                   or (fields.get("outcome") == "retry" and bool(fields.get("reason_code")))
                   or str(fields.get("event", "")).endswith((".failed", ".error", ".rejected"))
