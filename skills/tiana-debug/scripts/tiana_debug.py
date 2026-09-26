@@ -549,6 +549,8 @@ def evidence_files(root: Path, summary: dict, logs: list[dict], traces: dict,
         report.append("The associated task succeeded after retry; the following attempt error is historical.")
     for operation in gaia_operations or []:
         report.append(f"Gaia Operation {operation.get('operation_id', '-')}: {operation.get('state', 'unknown')} at {operation.get('step', '-')}; error: {operation.get('error_code', '-')}")
+    for control in diagnosis.get("control_requests", []):
+        report.append(f"Gaia control {control.get('request_id', '-')} ({control.get('action', '-')}): {control.get('state', 'unknown')}; result: {control.get('result_code', '')} {control.get('result_message', '')}")
     if diagnosis.get("terminal_state") and not diagnosis.get("task_terminal_states"):
         report.append(f"Operation terminal state: {diagnosis['terminal_state']}")
     for task in diagnosis.get("task_terminal_states", []):
@@ -740,6 +742,7 @@ def investigate(args: argparse.Namespace, profile: dict, client: Backend) -> int
     unique_logs = {(record["time_unix_nano"], json.dumps(record["stream"], sort_keys=True), record["line"]): record for record in logs}
     logs = sorted(unique_logs.values(), key=lambda event: int(event["time_unix_nano"]))
     gaia_operations = []
+    gaia_controls = []
     gaia_events = {}
     gaia_ids = {identity for kind, identity, owner, _ in seen
                 if kind == "operation_id" and owner == "gaia"}
@@ -750,6 +753,23 @@ def investigate(args: argparse.Namespace, profile: dict, client: Backend) -> int
             if not isinstance(result, dict):
                 raise QueryError(f"Gaia Operation {identity} returned no object")
             gaia_operations.append(result)
+            control_ids = {str(record["fields"]["control_request_id"]) for record in logs
+                           if record["fields"].get("component") == "gaia"
+                           and record["fields"].get("operation_id") == identity
+                           and record["fields"].get("control_request_id")
+                           and (args.command != "request" or record["fields"].get("request_id") == args.identity)}
+            if control_ids:
+                try:
+                    controls = client.get("gaia", path + "/controls")
+                    if not isinstance(controls, dict) or not isinstance(controls.get("items"), list):
+                        raise QueryError(f"Gaia Operation {identity} control requests are missing")
+                    matched = [item for item in controls["items"] if item.get("request_id") in control_ids]
+                    gaia_controls.extend(matched)
+                    missing = control_ids - {item["request_id"] for item in matched}
+                    if missing:
+                        gaps.append(f"Gaia Operation {identity} control requests not found: {', '.join(sorted(missing))}")
+                except QueryError as exc:
+                    gaps.append(str(exc))
             gaia_events[identity] = []
             after = 0
             while True:
@@ -828,6 +848,17 @@ def investigate(args: argparse.Namespace, profile: dict, client: Backend) -> int
             diagnosis["root_cause_evidence"] = {
                 "event": "operation.failed", "reason": gaia_operation.get("error_message") or gaia_operation.get("error_code", ""),
                 "trace_id": "", "operation_id": gaia_operation.get("operation_id", ""), "step": failed_step}
+    if gaia_controls:
+        diagnosis["control_requests"] = gaia_controls
+        rejected = [item for item in gaia_controls if item.get("state") == "REJECTED"]
+        if rejected:
+            item = rejected[-1]
+            diagnosis["failure_component"] = "gaia"
+            if not diagnosis.get("root_cause_evidence"):
+                diagnosis["root_cause_evidence"] = {
+                    "event": "operation.control.rejected", "reason": item.get("result_code", ""),
+                    "detail": item.get("result_message", ""), "trace_id": "",
+                    "operation_id": item.get("operation_id", ""), "control_request_id": item.get("request_id", "")}
     summary = {"environment": args.env, "identity": args.identity,
                "status": status, "window": {"start": start.isoformat(), "end": end.isoformat()},
                "trace_ids": sorted(traces), "task_ids": sorted([list(item) for item in seen if item[0] in {"job_id", "operation_id", "collaboration_id", "transaction_id", "expiry_plan_id"}]),

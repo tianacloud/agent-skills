@@ -299,6 +299,32 @@ class SearchTests(unittest.TestCase):
             self.assertIn("No matching Tempo", report)
         self.assertEqual(len(client.queries), 4)
 
+    def test_rejected_control_is_distinct_from_successful_operation(self):
+        args = Namespace(command="request", identity="req-pause", env="test", since=None, until=None)
+        logs = [{"time_unix_nano": "1", "stream": {}, "line": "linked", "fields": {
+            "request_id": "req-pause", "component": "gaia", "operation_id": "op-done",
+            "control_request_id": "pause-1", "event": "task.link"}}]
+        class GaiaBackend(FakeBackend):
+            def get(self, backend, path, params=None):
+                self.queries.append((backend, path, params))
+                if path.endswith("/controls"):
+                    return {"items": [{"request_id": "pause-1", "operation_id": "op-done",
+                        "action": "PAUSE", "state": "REJECTED", "result_code": "STATE_VERSION_CONFLICT",
+                        "result_message": "Operation changed before the control request was applied"}]}
+                if path.endswith("/events"):
+                    return {"items": []}
+                return {"operation_id": "op-done", "state": "SUCCEEDED"}
+        with TemporaryDirectory() as directory, \
+             patch.object(debug, "search_logs", return_value=logs), \
+             patch.object(debug, "search_traces", return_value={}), \
+             patch.object(debug, "output_dir", return_value=Path(directory)):
+            debug.investigate(args, {"retention_hours": 168}, GaiaBackend())
+            summary = json.loads((Path(directory)/"evidence.json").read_text())
+            self.assertEqual(summary["gaia_operations"][0]["state"], "SUCCEEDED")
+            self.assertEqual(summary["diagnosis"]["control_requests"][0]["state"], "REJECTED")
+            self.assertEqual(summary["diagnosis"]["failure_component"], "gaia")
+            self.assertIn("STATE_VERSION_CONFLICT", (Path(directory)/"diagnosis.md").read_text())
+
     def test_redaction_preserves_nested_json_evidence(self):
         record = {"fields": {"business_request_id": "cli-token:fixture:1"},
                   "line": json.dumps({"business_request_id": "cli-token:fixture:1",
