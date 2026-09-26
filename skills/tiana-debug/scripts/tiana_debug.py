@@ -950,6 +950,9 @@ def inspect(args: argparse.Namespace, profile: dict, client: Backend) -> int:
         "collector_enqueue_failed_spans": f"sum by(component,exporter)(rate(otelcol_exporter_enqueue_failed_spans{{{selector}}}[5m]))",
         "collector_queue_usage": f"otelcol_exporter_queue_size{{{selector}}} / otelcol_exporter_queue_capacity{{{selector}}}",
         "collector_accepted_logs": f"sum by(component)(rate(otelcol_receiver_accepted_log_records{{{selector}}}[5m]))",
+        "node_memory_available_ratio": f"node_memory_MemAvailable_bytes{{{selector}}} / node_memory_MemTotal_bytes{{{selector}}}",
+        "collector_export_failed_logs": f"sum by(component,exporter)(rate(otelcol_exporter_send_failed_log_records{{{selector}}}[5m]))",
+        "collector_export_failed_spans": f"sum by(component,exporter)(rate(otelcol_exporter_send_failed_spans{{{selector}}}[5m]))",
         "scrape_up": f"up{{{selector}}}",
     }
     for kind in ("COLD", "HOT"):
@@ -1073,7 +1076,8 @@ def inspect(args: argparse.Namespace, profile: dict, client: Backend) -> int:
         if any(value > 0 for value in latest.get(name, [])):
             findings.append(f"{name} has a recent nonzero rate")
     for name in ("collector_refused_spans", "collector_refused_logs",
-                 "collector_enqueue_failed_logs", "collector_enqueue_failed_spans"):
+                 "collector_enqueue_failed_logs", "collector_enqueue_failed_spans",
+                 "collector_export_failed_logs", "collector_export_failed_spans"):
         if any(value > 0 for value in latest.get(name, [])):
             findings.append(f"{name} has a recent nonzero rate; incident evidence may be incomplete")
     if any(value >= 1 for value in latest.get("collector_queue_usage", [])):

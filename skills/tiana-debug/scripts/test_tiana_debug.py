@@ -815,6 +815,31 @@ class SearchTests(unittest.TestCase):
 
 
 class InspectionClusterTests(unittest.TestCase):
+    def test_export_failures_are_findings_and_memory_is_reported(self):
+        class Backend:
+            def get(self, backend, path, params=None):
+                if path == "/ready":
+                    return "ready"
+                if path == "/api/search":
+                    return {"traces": []}
+                result = []
+                if backend == "prometheus" and path == "/api/v1/query_range":
+                    query = params["query"]
+                    if "otelcol_exporter_send_failed_" in query:
+                        result = [{"metric": {"exporter": "otlp"}, "values": [[float(params["end"]), "2"]]}]
+                    elif "node_memory_MemAvailable_bytes" in query:
+                        result = [{"metric": {"node_id": "node-a"}, "values": [[float(params["end"]), "0.25"]]}]
+                return {"status": "success", "data": {"result": result}}
+        with TemporaryDirectory() as folder:
+            args = Namespace(env="test", cluster="", window="1h", output=folder)
+            self.assertEqual(debug.inspect(args, {}, Backend()), 2)
+            metrics = json.loads((Path(folder) / "metrics.json").read_text())["metrics"]
+            self.assertEqual(metrics["node_memory_available_ratio"]["state"], "data")
+            report = (Path(folder) / "diagnosis.md").read_text()
+            for kind in ("collector_export_failed_logs", "collector_export_failed_spans"):
+                self.assertEqual(metrics[kind]["state"], "data")
+                self.assertIn(kind + " has a recent nonzero rate", report)
+
     def test_log_event_counts_select_requested_cluster(self):
         class Backend:
             def get(self, backend, path, params=None):
