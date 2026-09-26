@@ -1,44 +1,48 @@
 ---
 name: tiana
-description: Create, inspect and update Tiana Cloud SQLite instances through the Tiana CLI, save instance credentials, and recover interrupted creation tasks. Use for Tiana instance management or WorkBuddy Tiana Connector login and recovery. Use tiana-sqlite for table structure and SQL reads or writes.
+description: 使用 Tiana Cloud 创建和发布应用、管理实例与 CLI 登录，并将应用版本源码同步到 Tiana Git。Tiana 应用任务从此技能开始；数据库查询与连接使用 tiana-sqlite，数据库分支设计使用 tiana-branches。
 license: MIT
 metadata:
   author: Tiana Cloud
   version: "0.2.0"
+  source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana
 ---
 
 # Tiana Cloud
 
-This skill targets the **0.2.0 CLI preview**, published as `@tianacloud/cli@0.2.0`.
-Use it with the matching service deployment; Connector availability depends on
-your WorkBuddy account. For initial setup, read [Getting started](references/getting-started.md).
+本技能使用 `@tianadb/cli` Beta 版本。安装 CLI 或通过浏览器登录时，阅读[开始使用](references/getting-started.md)。
 
-## Manage an instance
+管理端地址保存在本技能的 [config.json](config.json)。执行下文及参考资料中的 `tiana` 命令时，在 `tiana` 后、子命令前加 `--config <本技能目录的绝对路径>/config.json`，例如 `tiana --config /path/to/tiana/config.json status`。使用当前加载的技能目录，不查找 Shell 环境变量或其他配置目录。
 
-Read [CLI commands and recovery](references/cloud-cli.md) before invoking
-management commands. Use CLI JSON output, not raw management HTTP requests.
+## 选择工作流程
 
-1. Inspect `tiana auth status --json` for the account's `principal_id` and
-   `tenant_id`. If authorization is needed, guide the user to connect Tiana in
-   WorkBuddy; in a terminal, use `tiana auth login`. Do not request passwords,
-   browser cookies or Token values.
-2. Resolve the requested instance with `instances list/get`. Follow list pages
-   when needed; if names are ambiguous, show matching IDs and ask which one.
-   Use the full returned instance ID for subsequent commands.
-3. For a new instance, run `instances create` once. Completion requires
-   `credential_saved=true`; explain partial success without creating another
-   instance. For table/schema/data work, use the bundled `tiana-sqlite` skill.
-4. For an interrupted creation, inspect `requests list` in a new chat, then
-   `requests get/resume` with the original request ID. Do not substitute a new
-   create command. Resume only the task that matches the user's intended work.
+| 任务 | 指引 |
+| --- | --- |
+| 创建或发布 Tiana 应用 | 按下方应用流程操作。 |
+| 管理实例或恢复 CLI 凭据 | 按下方实例管理流程操作。 |
+| 查询 SQLite、查看表结构或连接应用代码 | 使用 `tiana-sqlite`。 |
+| 规划数据库分支生命周期或未来的分支客户端 | 使用 `tiana-branches`（仅供设计）。 |
 
-## Credentials and results
+按当前任务读取对应技能和参考资料。明确的 SQL 或分支设计任务可以直接从对应技能开始。
 
-- CLI owns credential storage. Report saved status, IDs and expiry, not secrets;
-  do not read its credential files or manually inject a Token into commands.
-- A new instance includes its first saved credential. Issuing an additional or
-  replacement credential needs the user's explicit request or approval.
-- Read [Instances and tokens](references/instances-and-tokens.md) when explaining
-  resource identities, one-time Token delivery or management versus SQL access.
-- Do not infer completed execution from an exit code alone: inspect `status`,
-  `data`, `error.code`, recovery identifiers and `error.next_action`.
+## 创建和发布应用
+
+一并阅读[应用开发与发布](references/csr-apps.md)与 [JavaScript 数据库连接](../tiana-sqlite/references/js-sdk.md)，按其中的接口实现应用。使用固定的 [index.html 模板](references/index.html)、哈希路由和 `tiana.app.json`。已提供且已核实的工具、数据库和表结构直接复用；缺少哪项再查询哪项。应用连接实际使用的 Tiana 数据库；除非用户只要求本地开发，否则发布并交付托管访问地址。
+
+发布托管版本时，按[应用源码与版本发布](references/source-releases.md)确认源码托管授权、关联 Tiana Git，并在发布托管产物前同步该版本对应的源码提交。仅开发本地版本时无需执行源码同步和发布步骤。
+
+## 管理实例
+
+执行管理命令前，阅读 [CLI 命令与恢复](references/cloud-cli.md)。通过 CLI 操作，不直接发送管理 HTTP 请求。
+
+1. 执行 `tiana status` 检查账号与租户用量。需要登录时，按[开始使用](references/getting-started.md)展示浏览器登录链接，等 CLI 确认登录后继续。
+2. 用 `tiana sqlite list/show` 或 `tiana git list/show` 定位实例。名称有歧义时让用户选择，后续使用完整实例 ID。
+3. 新建资源使用 `tiana sqlite create NAME --wait` 或 `tiana git create NAME --wait`。记录返回的实例和操作标识；成功等待资源就绪后才能连接。表结构和数据操作使用 `tiana-sqlite`。
+4. 创建中断且 CLI 保留待完成请求时，使用相同的产品、名称和参数恢复原请求。若上次已成功返回并清理待完成记录，再次 create 会创建新资源；先用 show 核实原实例，不通过重复创建修复连接。
+
+## 凭据与结果
+
+- CLI 保存账号登录态；连接使用有效的账号访问凭据。缺少或过期时登录后复用原实例。
+- 不读取凭据文件、输出密钥或手动向命令注入 Token。资源创建不再以 `credential_saved` 为完成条件。
+- 资源标识、创建状态与认证边界见[实例与凭据](references/instances-and-tokens.md)。
+- 根据命令实际输出判断结果。实例创建的 accepted 只表示受理；使用 `--wait` 或检查实例状态确认就绪。应用发布的 JSON 结果需检查 `status`、`data`、`error` 及实际托管地址。

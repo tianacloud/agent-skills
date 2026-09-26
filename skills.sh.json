@@ -4,7 +4,7 @@
   "groupings": [
     {
       "title": "Core",
-      "description": "Use Tiana Cloud and connect applications to serverless SQLite.",
+      "description": "Build and publish Tiana applications, synchronize source releases and connect to SQLite.",
       "skills": ["tiana", "tiana-sqlite"]
     },
     {
@@ -14,4 +14,3 @@
     }
   ]
 }
-

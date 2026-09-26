@@ -1,43 +1,32 @@
-# Getting started — CLI 0.2.0 preview
+# 开始使用
 
-CLI 0.2.0 is available from npm as `@tianacloud/cli@0.2.0`. The service deployment
-and your account's WorkBuddy Connector entry must be verified separately.
+先执行 `tiana --version`、`tiana login --help` 和 `tiana apps --help`。CLI 必须具备全局 `--config`、`login --start/--resume`、`sqlite`、`git` 和 `apps`。
 
-## First use
+## 安装
 
-In WorkBuddy, use the Tiana Cloud Connector installation/connection entry
-provided for your account by the delivery owner. It prepares the managed CLI
-and opens the existing Console browser login. A Skill alone does not install
-or authenticate the Connector.
+找不到 CLI 或版本不兼容时，执行：
 
-After installation, check:
+```sh
+npm install -g @tianadb/cli@0.2.1-beta.0
+```
 
-    tiana --version
-    tiana verify-install --json
-    tiana auth status --json
+安装后重新检查版本和上述帮助。若旧 `@tianacloud/cli` 占用 `tiana` 命令，先执行 `npm uninstall -g @tianacloud/cli`，再安装新版。安装失败时报告 npm 错误，不搜索下载目录或云盘。
 
-Expect CLI 0.2.0, helper contract 3, matching SQL executor and a readable public
-Gateway CA. If installation fails, restore the complete matching package;
-do not download a different helper, build SDK source during chat, or read
-credential files.
+管理端地址由随技能安装的 [config.json](../config.json) 提供。把示例路径替换为当前加载的 `tiana` 技能目录：
 
-For an ordinary terminal, install the complete native platform package or the
-same CLI npm package, then run:
+```sh
+tiana --config /path/to/tiana/config.json status
+```
 
-    tiana auth login
+后续命令均带同一个 `--config`。切换部署时修改该文件的 `managementOrigin`，无需配置 Shell 环境变量。文件只保存站点地址，登录凭据仍由 CLI 单独管理。私有 CA 使用 `--ca-file`；不要关闭 TLS 校验。
 
-The browser must reach https://console.service.internal.tiana.com from the
-user's network. The CLI and WorkBuddy's managed Node runtime also need the
-deployment's existing trust configuration. Follow the delivery installation
-instructions for the public CA; it is not a Token.
+## 对话中的登录
 
-## Continue across chats and restarts
+1. 执行 `tiana --config /path/to/tiana/config.json login --start --no-open --json`。
+2. 向用户展示 `data.verification_uri`，让用户打开并批准登录。`status=pending`、退出码 3 表示等待授权。
+3. 用户完成授权后执行 `tiana --config /path/to/tiana/config.json login --resume --json`。只有 `status=succeeded` 且 `data.logged_in=true` 才继续；仍等待时保留同一链接并遵循 `data.retry_after`，不要连续创建新登录。
+4. 链接失效后重新 start。CLI 本地保存账号登录态，不需要 Connector。
 
-The CLI stores login and instance credentials separately from installation.
-Use the same account and full instance ID in a new chat. Inspect existing
-instances rather than assuming a new chat needs a new database. For unfinished
-creation, inspect the current account's requests and resume the intended task.
+普通终端也可执行 `tiana login`，打开它输出的链接并等待完成。`tiana status` 检查服务端账号和用量；用量接口失败不等于已经退出登录。
 
-See [CLI commands and recovery](cloud-cli.md) for exact flags and partial
-success handling, and [Instances and tokens](instances-and-tokens.md) for the
-resource model.
+命令与恢复见 [CLI 命令与恢复](cloud-cli.md)。

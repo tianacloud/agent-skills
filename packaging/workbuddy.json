@@ -4,14 +4,14 @@
     "tiana": {
       "display_name": "Tiana Cloud",
       "display_name_en": "Tiana Cloud",
-      "description_zh": "使用 Tiana Cloud 创建和管理 serverless SQLite 实例、状态与连接 Token。",
-      "description_en": "Create and manage Tiana Cloud serverless SQLite instances, lifecycle state, and connection tokens."
+      "description_zh": "Tiana 总入口：创建与发布应用、管理实例和登录，并将版本源码同步到 Tiana Git。",
+      "description_en": "Start here to build and publish Tiana applications, manage instances and login, and synchronize source releases to Tiana Git."
     },
     "tiana-sqlite": {
       "display_name": "Tiana SQLite",
       "display_name_en": "Tiana SQLite",
-      "description_zh": "使用 Tiana CLI 查看表结构、建表和参数化读写 SQLite 数据；0.2.0 预览。",
-      "description_en": "Inspect schemas, create tables and execute parameterized SQLite reads and writes with the Tiana CLI 0.2.0 preview."
+      "description_zh": "使用 Tiana CLI 查看表结构、参数化读写 SQLite，并为 JavaScript、Shell 和 Rust 应用接入数据库；预览版。",
+      "description_en": "Inspect schemas, execute parameterized SQLite queries and connect JavaScript, shell and Rust applications to Tiana SQLite; preview."
     },
     "tiana-branches": {
       "display_name": "Tiana 数据库分支预览",

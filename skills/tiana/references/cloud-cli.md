@@ -1,87 +1,28 @@
-# Management CLI — 0.2.0 preview
+# CLI 命令与恢复
 
-These commands ship in `@tianacloud/cli@0.2.0`. They require the matching MGR
-deployment, including the CLI account and refresh-expiry response fields.
-
-## Commands
-
-Place a positional ID immediately after `get`, `update` or `resume`, then flags.
-Use `--json` for agent calls. Replace example IDs with complete returned IDs.
+本分支使用以下命令。执行前查看对应 `--help`，管理命令不统一输出 JSON。
 
 ```sh
-tiana auth status --json
-tiana instances list --page 1 --page-size 20 --json
-tiana instances get INSTANCE_ID --json
-tiana instances create --name demo --json
-tiana instances update INSTANCE_ID --name renamed --json
-tiana requests list --json
-tiana requests get REQUEST_ID --json
-tiana requests resume REQUEST_ID --json
+tiana status
+tiana sqlite list
+tiana sqlite show INSTANCE
+tiana sqlite create NAME --wait
+tiana git list
+tiana git show INSTANCE
+tiana git create NAME --wait
+tiana sqlite shell INSTANCE -f schema.sql --format json
 ```
 
-`instances list` accepts page >= 1 and page-size 1..20 (defaults 1 and 20).
-Use the returned list pagination to continue; don't decide that a name is
-unique before inspecting relevant pages.
+创建默认只返回异步受理回执；`--wait` 等待已绑定的原始任务和实例状态。记录完整实例 ID、Job ID、Operation ID。不要从实例名称推断另一条创建请求的身份。
 
-`instances create` requires `--name`. It creates SQLite with a `production`
-root branch and `timeline=false`; no engine or branch-selection flags are
-needed. Optional flags: `--labels '{"env":"dev"}'` (string-valued JSON object),
-`--notes 'text'`, `--idle-timeout-ms 60000` (1000..86400000), and `--request-id UUID`.
-If idle timeout is omitted the service default applies. The CLI generates a
-request UUID when omitted and journals the request before sending it.
+如果创建请求中断且仍有待完成记录，保持产品、名称和原始参数重试，CLI 复用请求 ID。若之前已成功返回，再次执行 create 是新请求。遇到未解决的其他待完成操作，应先调查原操作，不删除本地记录来强行创建。
 
-`instances update ID` accepts those metadata/config flags, but not request-id.
-Labels replace the whole map; `{}` clears labels and `--notes ''` clears notes.
-The CLI reads the current revisions before applying the requested update.
-On a conflict, read back the instance and resolve the user's intended change;
-do not force stale data over a concurrent edit.
+删除使用 `sqlite/git delete INSTANCE`；默认需要终端确认。仅在用户已授权相应删除时使用 `--force`。`--wait` 等待删除操作成功，不等于物理存储已经回收完毕。
 
-After explicit approval to add or replace an instance credential:
+SQLite 分支使用 `tiana sqlite branch list/create/delete`。分支创建和删除的等待失败后检查原 Operation ID；不要重复创建来恢复，名称相同不代表原操作。
 
-```sh
-tiana credentials create --instance INSTANCE_ID --name cli --json
-```
+应用命令 `apps create/upload/status` 支持 `--json`。上传结果未知时检查同一项目、版本，并仅用完全相同的产物恢复该版本。
 
-`--instance` is required. `--name` defaults to `cli`.
-`--expires-at` accepts a future `YYYY-MM-DDTHH:mm:ss.SSSZ` value and defaults to
-`9999-12-31T23:59:59.999Z` (no lifetime limit). `--request-id UUID` is optional.
-The CLI saves the Token and selects it for that instance; it never returns the
-raw value in command output. Do not invent list/revoke CLI subcommands.
+登录使用 `login --start --no-open --json` 和 `login --resume --json`，详见[开始使用](getting-started.md)。退出登录使用 `tiana logout`，会清理当前 origin 的账号凭据和未完成登录，不删除旧实例凭据文件。
 
-`auth login [--no-open] [--json]` starts the existing browser Auth Transaction
-and waits up to 240 seconds. WorkBuddy runs it with `--no-open` and opens the
-printed URL itself. `auth status` is a local read-only check: plain output is
-exactly `Logged in` or `Not logged in`, not a live service reachability test.
-`auth logout --json` clears the current account's local login and registered
-instance credentials and attempts remote logout; request metadata remains.
-Do not log out merely to diagnose SQL connectivity.
-
-## Results and recovery
-
-JSON uses `{"status":"succeeded|pending|unknown|failed","data":...,"error":...}`.
-Errors carry `code`, `message`, `next_action` and available `request_id`,
-`instance_id`, `operation_id`, `token_id`. A failed/pending result can also have
-useful `data`: preserve those identifiers when reporting partial completion.
-
-| Exit | Meaning and next step |
-| --- | --- |
-| 0 | Inspect successful data. Creation is ready for SQL only when `credential_saved=true`. |
-| 1 | Known failure. Follow its specific code; don't repeat a write solely because it failed. |
-| 2 | Invalid input. Correct the requested arguments. |
-| 3 | Pending. Use the original `requests resume REQUEST_ID --json`. |
-| 4 | Outcome unknown. For journaled create/credential tasks, inspect and resume the original task; for SQL, use read-only verification. |
-| 5 | Management authorization required. Reconnect, then resume the original task as the same account. |
-
-Each business command is bounded to 25 seconds. A new chat or lost command
-output is not evidence that nothing happened. `requests list/get` reads the
-current account's local journal. Match the task's original input and existing
-IDs; do not resume an unrelated task or edit journal files. `resume` continues
-the original Operation and credential request instead of making a new instance.
-
-`TOKEN_SECRET_UNAVAILABLE`: the instance/Token may exist but the original secret
-cannot be recovered. Explain this partial success. Only after approval, issue
-and save a replacement with `credentials create` for the existing instance.
-`CREDENTIAL_SAVE_FAILED`: restore local credential-store access, then resume
-the original request. Do not ask the model to recover the Token from files.
-`LOGOUT_REMOTE_UNKNOWN`: local cleanup succeeded but remote logout is uncertain;
-report that distinction without claiming remote revocation succeeded.
+SQL 写入中断、输出丢失或响应未知时，先用只读查询确认，不自动重放。账号、配额、网络、证书或资源状态错误均不通过创建新数据库解决。

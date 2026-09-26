@@ -5,6 +5,8 @@ license: MIT
 metadata:
   author: Tiana Cloud
   version: "0.2.0"
+  parent: tiana
+  source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-branches
 ---
 
 # Tiana database branches — preview
@@ -12,6 +14,8 @@ metadata:
 Tiana branch lifecycle is a design proposal under review. Use this skill for
 product planning, API review, client design, and implementation preparation.
 Do not claim that the proposed routes can be called in a current deployment.
+Use the parent `tiana` skill for existing instance management; Git source
+repositories and application releases use its source-release workflow.
 
 ## Read by task
 

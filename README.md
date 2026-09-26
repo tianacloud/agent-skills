@@ -1,27 +1,49 @@
 # Tiana Agent Skills
 
-Agent Skills that help coding agents build with Tiana Cloud, a serverless data
-App platform whose first supported database engine is SQLite.
+Agent Skills that help coding agents build, publish and maintain applications
+with Tiana Cloud, including SQLite connections and source releases in Tiana Git.
 
 Version 0.2.0 in this branch is an unpublished preview. The distribution
 examples below apply after the corresponding artifacts are published.
 
 ## Skills
 
+`tiana` is the shared entry point. Specialist skills are sibling directories,
+identify `tiana` as their parent, and can be selected directly for a focused task.
+Load detailed references only for the workflow being performed.
+
+```text
+skills/
+├── tiana/                 Application workflow, instances, login and source releases
+│   ├── SKILL.md           Entry point and workflow routing
+│   └── references/        Application template, publishing and CLI details
+├── tiana-sqlite/          SQL, schemas and application database connections
+│   ├── SKILL.md
+│   └── references/        CLI, JavaScript, shell and Rust workflows
+└── tiana-branches/        Database branch design (preview only)
+    ├── SKILL.md
+    └── references/        Lifecycle model and proposed API
+```
+
 ### `tiana`
 
-Start here for Tiana Cloud. Create and inspect instances, understand lifecycle
-states, and manage one-time InstanceToken credentials.
+Start here to build and publish a Tiana application, create and inspect instances,
+or recover CLI login and saved credentials. The application workflow covers the
+fixed HTML template, hash routing, hosted versions and source synchronization to
+Tiana Git. Existing external repositories require source-hosting consent;
+approved releases keep their hosted version linked to a verified source commit.
 
 ### `tiana-sqlite`
 
-Connect to Tiana SQLite with the current Tiana CLI or Rust transport SDK. Covers
-Endpoint URLs, safe Token delivery, Hrana HTTP/WebSocket profiles, and project
-integration choices.
+Query and connect to Tiana SQLite with the CLI, JavaScript SDK, shell or Rust
+transport SDK. Browser connection, protocol selection and result decoding live
+here; application packaging and publication live in `tiana`.
 
-The 0.2.0 preview adds direct CLI SQL, typed parameters, schema inspection and
-DDL/CRUD. Management and SQL skills use the CLI's local credential storage;
-they do not read or inject Token values.
+The end-to-end candidate uses the current CLI's native SQLite shell, account
+login, Git transport and integrated application commands. JavaScript application
+SQL uses typed parameters through the documented SDK flow. The old direct CLI
+`sql execute` grammar and local first-token-save requirement are superseded.
+The new CLI capabilities are not yet included in the published npm 0.2.0 package.
 
 ### `tiana-branches`
 
@@ -51,6 +73,8 @@ the portable plugin format discover the immediate children of `skills/`.
 Import the desired directory under `skills/`, preserving its `SKILL.md` and
 `references/` files together. If the client accepts ZIP uploads, zip one skill
 directory with `SKILL.md` at the archive root.
+For application development, import both `tiana` and `tiana-sqlite`.
+`tiana-branches` is only needed for database branch design work.
 
 ### WorkBuddy
 
@@ -81,6 +105,12 @@ The agreed CLI + Skill design is in
 [`docs/workbuddy-connector-mcp.md`](docs/workbuddy-connector-mcp.md).
 
 ## Development
+
+The directories under `skills/` are the canonical source. Edit them first and
+generate distribution archives from them; installed copies and generated ZIPs
+are not separate instruction sources. npm and portable plugins read `skills/`
+directly. WorkBuddy builds copy those same files and add localized metadata
+from `packaging/`; they do not maintain another set of skill instructions.
 
 ```sh
 npm ci

@@ -1,75 +1,15 @@
-# Tiana CLI connections
+# CLI 连接
 
-The current self-contained release is `v0.1.0-dev.7` for Linux amd64 and is
-paired with Turso CLI `v1.0.32`.
-
-## Install
+CLI 安装和 CA 配置按父技能 `tiana` 的开始使用说明处理。下列命令均加上 `--config <tiana 技能目录的绝对路径>/config.json`，读取父技能自带的管理端配置。先执行 `tiana --version` 和 `tiana sqlite shell --help`。
 
 ```sh
-curl -O https://console.service.internal.tiana.com/downloads/tiana-cli-linux-amd64-0.1.0-dev.7
-curl -O https://console.service.internal.tiana.com/downloads/tiana-cli-linux-amd64-0.1.0-dev.7.sha256
-sha256sum -c tiana-cli-linux-amd64-0.1.0-dev.7.sha256
-
-install -d -m 0755 "$HOME/.local/bin"
-install -m 0755 tiana-cli-linux-amd64-0.1.0-dev.7 "$HOME/.local/bin/tiana"
-tiana verify-install
+tiana sqlite shell INSTANCE
+tiana sqlite shell INSTANCE -e 'SELECT 1' --format json
+tiana sqlite show INSTANCE --url
 ```
 
-`verify-install` must report `helper-contract=2 mode=embedded`. The download
-origin uses Tiana's development private CA. Fix network, DNS, or trust access
-rather than disabling certificate verification; there is no insecure mode.
+已知完整 Endpoint 时，可执行 `tiana sqlite shell --endpoint HTTPS_ENDPOINT -e 'SELECT 1'`。使用 MGR 返回的 HTTPS 主机与端口，不猜测地址或关闭 TLS 验证。
 
-## Connect
+SQLite、Git 和 `connect` 默认使用当前 origin 的账号登录态，不自动在连接阶段刷新；缺少有效登录时先完成 `tiana login`。只在用户明确提供相应认证配置时使用 `TIANA_TOKEN` 或 `TIANA_TOKEN_FILE`，两者互斥；不要主动查找、复制或打印这些密钥。
 
-With the default `TIANA_TOKEN` environment source:
-
-```sh
-tiana connect -- \
-  turso db shell https://<endpoint_id>.db.service.internal.tiana.com
-```
-
-Run one statement while retaining Turso's native argument position:
-
-```sh
-tiana connect --token-file ./tiana-token -- \
-  turso db shell https://<endpoint_id>.db.service.internal.tiana.com \
-  "SELECT 1"
-```
-
-The registered adapter accepts only:
-
-```text
-turso db shell <replica-url> [sql]
-```
-
-It does not accept Turso Cloud `--instance` or `--location`, a native `--proxy`,
-alternate URLs, paths, query strings, fragments, user-info, IP addresses, or a
-second locator.
-
-## Token sources
-
-Use one of the Tiana-owned options before `--`:
-
-- default environment variable: `TIANA_TOKEN`
-- alternate environment variable: `--token-env NAME`
-- current-user-owned mode-0600 file: `--token-file PATH`
-- first stdin line: `--token-stdin`
-
-Do not use a raw `--token <secret>` argument. A Token file contains only the raw
-47-byte InstanceToken, with at most one final LF or CRLF.
-
-Non-interactive loopback handoff currently requires
-`--allow-unisolated-loopback`. Interactive terminals warn and allow the current
-loopback handoff by default.
-
-## Profiles and failures
-
-Without `--profile`, the helper classifies the bounded initial request as
-`hrana-http` or `hrana-websocket`. Use
-`--profile hrana-http|hrana-websocket` only when explicit selection is needed
-for diagnosis or controlled integration.
-
-The CLI does not retry or replay a database session after CONNECT succeeds. On
-failure after that point, report the result as potentially unknown and let the
-caller decide whether the database operation itself is safe to repeat.
-
+原生客户端包装命令以当前 `tiana connect --help` 为准。连接成功后发生错误不自动重放 SQL 或 Git 操作；先核实原操作结果。

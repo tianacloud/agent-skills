@@ -1,33 +1,9 @@
-# Instances, accounts and saved credentials
+# 实例与凭据
 
-An instance is the logical database App. Its instance_id identifies management
-operations; its endpoint_id identifies the Gateway connection destination.
-Use IDs returned by the CLI rather than deriving one ID from another. A display
-name is not a unique identity.
+实例 ID 标识数据库或 Git 资源；Endpoint ID 标识已发布的连接入口。名称可重复，后续操作应记录并使用完整实例 ID。Endpoint 的主机与端口以 MGR 返回的连接信息为准。
 
-The local auth status exposes principal_id (the signed-in identity) and
-tenant_id (the tenant context). Saved connections and task journals are scoped
-to that account context. If switching accounts hides a task, reconnect the
-original account instead of re-creating the database.
+`sqlite/git create` 默认只报告受理。`--wait` 成功才表示原始资源已达到可用状态；创建不再自动签发首个实例 Token，也不保存 `instance-tokens.json`。CLI 连接使用已有账号登录态，过期后执行登录并继续使用原资源。
 
-A management session is used with MGR. An InstanceToken authorizes the selected
-database Endpoint. SQL travels from the CLI executor through Gateway to SQLite,
-not through MGR; the two credential types are not interchangeable.
+账号凭据由 CLI 的安全存储管理。不要在聊天、源码、构建文件或 Git URL 中复制凭据。缺少权限、配额超限与登录失效是不同问题，按实际错误处理。
 
-Creating an instance is asynchronous: the product record or an Operation ID
-alone is not full success. The CLI waits for its original operation, obtains
-the published root Endpoint, issues the initial Token, and saves it locally.
-Inspect instance_created and credential_saved separately.
-
-The server delivers a raw InstanceToken once. The CLI saves it directly in its
-credential backend before reporting credential_saved=true. Task metadata and
-command output contain IDs and status, not the Token. If the original secret
-cannot be recovered, keep the existing instance and obtain the user's approval
-before issuing a replacement credential.
-
-A sleeping SQLite instance can wake on connection; do not create a replacement
-because it is idle. A requested desired state is not proof that the operation
-completed. Inspect actual instance/operation results and report failures.
-
-For the supported CLI operations and recovery commands, read
-[CLI commands and recovery](cloud-cli.md).
+浏览器应用通过 `window.tiana.connection()` 获取只限定所需数据库的短期连接信息，只保存在内存。托管应用由服务端鉴权；本地预览单独完成浏览器授权，不把 CLI 账号 Token 暴露给业务 JavaScript。
