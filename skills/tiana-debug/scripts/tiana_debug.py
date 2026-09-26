@@ -389,7 +389,7 @@ def failure_evidence(logs: list[dict], request_id: str = "") -> dict:
     direct_events = [event for event in observed
                      if event["component"] and event["reason"]
                      and event.get("kind") != "app_response"
-                     and not (event["component"] == "gateway" and event["event"] == "connection.closed")
+                     and event["event"] != "connection.closed"
                      and not (event["component"] == "control"
                               and event["event"].startswith("task.")
                               and (event["reason"] == "STORE_DELETE_UNCONFIRMED"
@@ -404,6 +404,13 @@ def failure_evidence(logs: list[dict], request_id: str = "") -> dict:
                                   ("gateway.connect.failed", "Handshake(NotOk(AppUnavailable))"),
                                   ("request.rejected", "INSTANCE_UNAVAILABLE"),
                               })]
+    request_closes = [event for event in observed
+                      if request_id and event["request_id"] == request_id
+                      and event["event"] == "connection.closed" and event.get("kind") != "app_response"]
+    if request_closes:
+        close_traces = {event["trace_id"] for event in request_closes if event["trace_id"]}
+        direct_events = [event for event in direct_events
+                         if event["request_id"] == request_id or event["trace_id"] in close_traces]
     direct = next((event for event in direct_events if request_id and event["request_id"] == request_id),
                   next(iter(direct_events), None))
     if direct and direct["event"] == "http.client.failed" and direct["trace_id"] and not direct["job_id"]:
@@ -414,7 +421,7 @@ def failure_evidence(logs: list[dict], request_id: str = "") -> dict:
                         and record["fields"].get("job_id")}
         if len(attempt_jobs) == 1:
             direct["job_id"] = next(iter(attempt_jobs))
-    first = observed[0] if observed else None
+    first = request_closes[0] if request_closes else (observed[0] if observed else None)
     component = (direct or first or {}).get("component", "")
     if (direct and direct["event"] == "http.client.failed"
             and direct["reason"] == "downstream_http_error"
@@ -424,7 +431,7 @@ def failure_evidence(logs: list[dict], request_id: str = "") -> dict:
     if (direct and direct["event"] == "task.target.failed"
             and direct["target_component"] == "control"):
         component = "control"
-    if direct is None and first and first["component"] == "gateway" and first["event"] == "connection.closed":
+    if direct is None and first and first["event"] == "connection.closed" and first.get("kind") != "app_response":
         component = ""
     return {"failure_component": component,
             "root_cause_evidence": direct,
@@ -481,7 +488,7 @@ def add_span_findings(diagnosis: dict, traces: dict) -> None:
     failures = [span for span in trace_span_rows(traces)
                 if span["status"] in (2, "STATUS_CODE_ERROR")]
     diagnosis["span_failures"] = failures
-    if failures and not diagnosis["failure_component"]:
+    if failures and not diagnosis["failure_component"] and not diagnosis["candidate_failure"]:
         first = failures[0]
         diagnosis["failure_component"] = first["component"]
         diagnosis["candidate_failure"] = {"kind": "span", "component": first["component"],
@@ -573,6 +580,9 @@ def evidence_files(root: Path, summary: dict, logs: list[dict], traces: dict,
         elif (diagnosis["candidate_failure"].get("component") == "gateway"
               and diagnosis["candidate_failure"].get("event") == "connection.closed"):
             report.append("Gateway observed a transport close; this alone does not establish a failed SQL or Git operation or identify its cause. Compare the client result with the Trace and adjacent logs.")
+        elif diagnosis["candidate_failure"].get("event") == "connection.closed":
+            finding = diagnosis["candidate_failure"]
+            report.append(f"{finding['component']} observed a connection close ({finding['reason']}); its cause is unconfirmed. Inspect that connection's Trace and adjacent logs. Failures in other task attempts remain separate evidence.")
         else:
             report.append("Candidate failure event without a structured reason; inspect its Trace and adjacent logs.")
     else:

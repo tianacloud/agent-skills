@@ -422,7 +422,8 @@ class SearchTests(unittest.TestCase):
             "component": "mgr", "event": "connection.closed", "outcome": "failed",
             "request_id": "req-stream", "reason": "upstream_closed"}}]
         diagnosis = debug.failure_evidence(logs, "req-stream")
-        self.assertEqual(diagnosis["root_cause_evidence"]["reason"], "upstream_closed")
+        self.assertIsNone(diagnosis["root_cause_evidence"])
+        self.assertEqual(diagnosis["candidate_failure"]["reason"], "upstream_closed")
         self.assertEqual(len(diagnosis["failure_events"]), 2)
         self.assertEqual(debug.failure_evidence(logs)["root_cause_evidence"]["reason"], "stop accepted")
 
@@ -537,6 +538,34 @@ class SearchTests(unittest.TestCase):
         self.assertIn("| json | logfmt |", query)
         self.assertIn('component="control"', query)
         self.assertIn('cluster="cluster-a"', query)
+
+    def test_stream_close_uses_correlated_cause_or_reports_observation(self):
+        closed = {"time_unix_nano": "2", "stream": {}, "fields": {
+            "event": "connection.closed", "component": "mgr", "request_id": "req-stream",
+            "trace_id": "stream-trace", "outcome": "failed", "reason": "upstream_closed"}}
+        attempt = {"time_unix_nano": "1", "stream": {}, "fields": {
+            "event": "task.attempt.finished", "component": "control", "operation_id": "607",
+            "trace_id": "attempt-trace", "outcome": "failed", "reason": "Runtime stop is ACCEPTED"}}
+        for records in [[closed], [attempt, closed]]:
+            with self.subTest(records=len(records)):
+                finding = debug.failure_evidence(records, "req-stream")
+                self.assertIsNone(finding["root_cause_evidence"])
+                self.assertEqual(finding["failure_component"], "")
+                self.assertEqual(finding["candidate_failure"]["reason"], "upstream_closed")
+                self.assertEqual(len(finding["failure_events"]), len(records))
+                with patch.object(debug, "trace_span_rows", return_value=[{
+                    "status": "STATUS_CODE_ERROR", "component": "control", "trace_id": "attempt-trace",
+                    "span_id": "attempt-span", "reason": "operation_attempt_failed"}]):
+                    debug.add_span_findings(finding, {})
+                self.assertEqual(finding["candidate_failure"]["reason"], "upstream_closed")
+                self.assertEqual(finding["failure_component"], "")
+                self.assertEqual(len(finding["span_failures"]), 1)
+        cause = {"time_unix_nano": "3", "stream": {}, "fields": {
+            "event": "request.failed", "component": "control", "trace_id": "stream-trace",
+            "reason": "subscriber limit reached"}}
+        finding = debug.failure_evidence([attempt, closed, cause], "req-stream")
+        self.assertEqual(finding["root_cause_evidence"]["reason"], "subscriber limit reached")
+        self.assertEqual(finding["failure_component"], "control")
 
     def test_control_task_log_keeps_identity_and_reason(self):
         fields = debug.attr_fields(
