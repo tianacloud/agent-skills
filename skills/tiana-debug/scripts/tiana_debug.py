@@ -227,6 +227,58 @@ def search_logs(client: Backend, env: str, field: str, value: str,
     return sorted(matches, key=lambda event: int(event["time_unix_nano"]))
 
 
+def web_deletion_evidence(client: Backend, env: str, request_id: str, logs: list[dict],
+                          start: datetime, end: datetime, gaps: list[str]) -> tuple[list[dict], dict]:
+    """Follow explicit request links; keep resource lifecycle separate from request causation."""
+    links = {}
+    for record in logs:
+        fields = record["fields"]
+        if (fields.get("event") == "web.deletion.link" and fields.get("component") == "mgr"
+                and fields.get("request_id") == request_id
+                and fields.get("tenant_id") and fields.get("project_id")):
+            key = (str(fields["tenant_id"]), str(fields["project_id"]))
+            links[key] = min(links.get(key, int(record["time_unix_nano"])), int(record["time_unix_nano"]))
+    results, traces = [], {}
+    for (tenant, project), linked_at in sorted(links.items()):
+        records = {}
+        for event in ("web.deletion.batch_completed", "web.deletion.completed"):
+            criteria = {"component": "mgr", "tenant_id": tenant, "project_id": project, "event": event}
+            for parser in ("", "json", "logfmt"):
+                query = "{environment=" + json.dumps(env) + "}"
+                if parser:
+                    query += " | " + parser + " " + ", ".join(
+                        "tiana_debug_" + key + "=" + json.dumps(key) for key in criteria)
+                for key, value in criteria.items():
+                    query += " | " + ("tiana_debug_" if parser else "") + key + "=" + json.dumps(value)
+                for left, right in bounded_windows(start, end):
+                    lower = max(ns(left), linked_at)
+                    if lower >= ns(right):
+                        continue
+                    try:
+                        loki_window(client, query, lower, ns(right), records, gaps)
+                    except QueryError as exc:
+                        gaps.append(str(exc))
+        events = sorted((r for r in records.values()
+                         if int(r["time_unix_nano"]) >= linked_at
+                         and str(r["fields"].get("tenant_id", "")) == tenant
+                         and str(r["fields"].get("project_id", "")) == project
+                         and r["fields"].get("component") == "mgr"
+                         and r["fields"].get("event") in {"web.deletion.batch_completed", "web.deletion.completed"}),
+                        key=lambda r: int(r["time_unix_nano"]))
+        terminal = any(r["fields"].get("event") == "web.deletion.completed"
+                       and r["fields"].get("state") == "deleted" for r in events)
+        ids = {canonical_trace_id(str(r["fields"]["trace_id"])) for r in events if r["fields"].get("trace_id")}
+        traces.update(fetch_traces(client, ids, gaps))
+        if not terminal:
+            gaps.append(f"Web deletion tenant={tenant} project={project}: terminal completion absent in selected window; state unknown (batch success is not terminal)")
+        if any(not r["fields"].get("trace_id") for r in events):
+            gaps.append(f"Web deletion tenant={tenant} project={project}: lifecycle event lacks trace identity")
+        results.append({"tenant_id": tenant, "project_id": project, "linked_at_unix_nano": str(linked_at),
+                        "state": "deleted" if terminal else "unknown", "events": events, "trace_ids": sorted(ids),
+                        "association": "resource lifecycle after explicit request link; not original request failure causation"})
+    return results, traces
+
+
 def resource_failure_candidates(client: Backend, env: str, logs: list[dict],
                                 start: datetime, end: datetime, gaps: list[str]) -> list[dict]:
     identities = {tuple(str(record["fields"].get(key, "")) for key in
@@ -332,7 +384,9 @@ def task_ids(logs: list[dict]) -> set[tuple[str, str, str, str]]:
 def async_acceptance_gaps(logs: list[dict], gaps: list[str]) -> None:
     linked_requests, linked_traces = set(), set()
     for record in logs:
-        if not task_ids([record]):
+        if not task_ids([record]) and not (record["fields"].get("event") == "web.deletion.link"
+                and record["fields"].get("component") == "mgr"
+                and record["fields"].get("tenant_id") and record["fields"].get("project_id")):
             continue
         fields = record["fields"]
         if fields.get("request_id"):
@@ -574,6 +628,10 @@ def evidence_files(root: Path, summary: dict, logs: list[dict], traces: dict,
               f"Identity: {summary['identity']}", f"Status: {summary['status']}",
               f"Window: {summary['window']['start']} to {summary['window']['end']}",
               f"Logs: {len(logs)}; full traces: {len(traces)}", ""]
+    if summary.get("web_deletions"):
+        report += ["## Web deletion lifecycle", "", "Resource-linked background evidence; not original request failure causation."]
+        for deletion in summary["web_deletions"]:
+            report.append(f"Tenant {deletion['tenant_id']} project {deletion['project_id']}: {deletion['state']}; events={len(deletion['events'])}; traces={', '.join(deletion['trace_ids']) or 'absent'}")
     diagnosis = summary["diagnosis"]
     component = diagnosis["failure_component"] or (
         "none observed" if diagnosis.get("terminal_state") == "success" else "undetermined")
@@ -896,7 +954,11 @@ def investigate(args: argparse.Namespace, profile: dict, client: Backend) -> int
                     "event": "operation.control.rejected", "reason": item.get("result_code", ""),
                     "detail": item.get("result_message", ""), "trace_id": "",
                     "operation_id": item.get("operation_id", ""), "control_request_id": item.get("request_id", "")}
+    web_deletions, web_traces = web_deletion_evidence(client, args.env, args.identity, logs, start, end, gaps) if args.command == "request" else ([], {})
+    traces.update(web_traces)
+    status = "partial" if gaps else "complete"
     summary = {"environment": args.env, "identity": args.identity,
+               "web_deletions": web_deletions,
                "status": status, "window": {"start": start.isoformat(), "end": end.isoformat()},
                "trace_ids": sorted(traces), "task_ids": sorted([list(item) for item in seen if item[0] in {"job_id", "operation_id", "collaboration_id", "transaction_id", "expiry_plan_id"}]),
                "diagnosis": diagnosis, "resource_candidates": candidates, "gaia_operations": gaia_operations,

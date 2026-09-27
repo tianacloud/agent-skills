@@ -41,3 +41,21 @@ Task completion and attempt failure are separate evidence. When a failed Span ca
 An MGR HTTP 202 completion without a task identity linked by the same request ID or Trace is reported as partial asynchronous evidence. The tool does not infer a task ID or failure cause from that gap. For an identified MGR job, missing execution or terminal events in the selected window also produces a partial result. An absent terminal event does not distinguish a pending task from missing telemetry; it is not evidence of success or failure. A complete query result still does not prove every expected application event was emitted.
 
 The log search queries structured fields, JSON bodies and logfmt bodies separately, then combines matching records. Each query keeps the same environment, time window and component/Cluster scope. The evidence bundle records all backend queries; an error or saturated time slice makes the result partial.
+
+## Web deletion lifecycle
+
+For an exact request, `web.deletion.link` from `component=mgr` identifies the durable
+resource by both `tenant_id` and `project_id`. The investigator queries only those
+two identities and the explicit `web.deletion.batch_completed` /
+`web.deletion.completed` events from the link timestamp through the selected window.
+It fetches their independent Tempo traces through the existing Gaia profile.
+No MGR endpoint or credential is required.
+
+`web.deletion.batch_completed outcome=success` may describe a partial batch or a
+lock skip. Only `web.deletion.completed state=deleted` observes the committed
+terminal transition. Its log timestamp is emission time, not persisted `deleted_at`.
+The separate `web_deletions` evidence includes lifecycle records and trace IDs;
+background failures are not promoted to the original request's root cause.
+Unrelated project logs and earlier lifecycle events are excluded. Missing terminal
+events mean unknown state within this window; missing traces and saturated Loki
+pages remain explicit evidence gaps even when a terminal event was observed.
