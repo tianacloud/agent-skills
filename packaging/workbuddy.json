@@ -18,12 +18,6 @@
       "display_name_en": "Tiana Database Branches Preview",
       "description_zh": "基于尚未发布的设计草案规划 Tiana 数据库分支生命周期与客户端流程。",
       "description_en": "Plan Tiana database branch lifecycle and client flows from the unreleased design proposal."
-    },
-    "tiana-debug": {
-      "display_name": "Tiana 排障",
-      "display_name_en": "Tiana Debug",
-      "description_zh": "按请求 ID 或 Operation ID 排查 Tiana 故障，并巡检已配置环境的可观测性。",
-      "description_en": "Investigate Tiana incidents by request or operation ID and inspect observability health in a configured environment."
     }
   }
 }
