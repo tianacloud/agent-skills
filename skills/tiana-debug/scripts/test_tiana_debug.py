@@ -450,6 +450,21 @@ class SearchTests(unittest.TestCase):
         missing = {"environment": "test", "job": "gateway", "instance": "pod-new"}
         self.assertEqual(debug.scrape_target_coverage(series, targets + [{"labels": missing, "health": "down"}], 1000, "test", None), "partial")
 
+    def test_recovered_subscription_does_not_inherit_other_request_close(self):
+        logs = [{"time_unix_nano": "1", "stream": {}, "fields": {
+            "component": "mgr", "event": "connection.closed", "outcome": "failed",
+            "request_id": "req-old", "reason": "upstream_closed", "error": "result decode failed"}},
+            {"time_unix_nano": "2", "stream": {}, "fields": {
+            "component": "mgr", "event": "connection.closed", "outcome": "success",
+            "request_id": "req-recovered", "reason": "terminal_received"}}]
+        recovered = debug.failure_evidence(logs, "req-recovered")
+        self.assertIsNone(recovered["candidate_failure"])
+        self.assertIsNone(recovered["root_cause_evidence"])
+        self.assertEqual(recovered["failure_component"], "")
+        self.assertEqual(len(recovered["failure_events"]), 1)
+        self.assertEqual(debug.failure_evidence(logs, "req-old")["candidate_failure"]["reason"], "result decode failed")
+        self.assertEqual(debug.failure_evidence(logs)["candidate_failure"]["reason"], "result decode failed")
+
     def test_requested_stream_failure_precedes_linked_task_retry(self):
         logs = [{"time_unix_nano": "1", "stream": {}, "fields": {
             "component": "control", "event": "task.attempt.finished", "outcome": "failed",

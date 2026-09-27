@@ -444,7 +444,10 @@ def failure_evidence(logs: list[dict], request_id: str = "") -> dict:
                         and record["fields"].get("job_id")}
         if len(attempt_jobs) == 1:
             direct["job_id"] = next(iter(attempt_jobs))
-    first = request_closes[0] if request_closes else (observed[0] if observed else None)
+    candidates = [event for event in observed
+                  if not (request_id and event["event"] == "connection.closed"
+                          and event["request_id"] and event["request_id"] != request_id)]
+    first = request_closes[0] if request_closes else next(iter(candidates), None)
     component = (direct or first or {}).get("component", "")
     if (direct and direct["event"] == "http.client.failed"
             and direct["reason"] == "downstream_http_error"
