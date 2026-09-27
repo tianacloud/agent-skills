@@ -79,6 +79,27 @@ class SearchTests(unittest.TestCase):
         debug.task_execution_gaps([link, started, unrelated], gaps)
         self.assertTrue(any("764" in gap and "terminal" in gap for gap in gaps))
 
+    def test_search_preserves_body_and_metadata_identity_without_duplicate_events(self):
+        class Backend:
+            def get(self, backend, path, params):
+                query = params["query"]
+                if "| json" in query and "| logfmt" in query:
+                    return {"status": "success", "data": {"result": []}}
+                label = {"environment": "test", "component": "mgr", "job_id": "764"}
+                records = [{"stream": label, "values": [["1", "task accepted"]]}]
+                if "| json" in query:
+                    records.append({"stream": label, "values": [["2", '{"job_id":764,"component":"mgr","event":"task.completed"}']]})
+                elif "| logfmt" in query:
+                    records.append({"stream": label, "values": [["3", 'job_id=764 component=mgr event=task.attempt.started']]})
+                return {"status": "success", "data": {"result": records}}
+        gaps = []
+        result = debug.search_logs(Backend(), "test", "job_id", "764",
+                                  debug.instant("1970-01-01T00:00:00Z"),
+                                  debug.instant("1970-01-01T00:00:01Z"), gaps, "mgr")
+        self.assertEqual(len(result), 3)
+        self.assertTrue(all(str(item["fields"]["job_id"]) == "764" for item in result))
+        self.assertEqual(gaps, [])
+
     def test_fractional_tempo_window_keeps_matching_trace(self):
         start = debug.instant("2026-09-25T10:34:15.184875Z")
         end = debug.instant("2026-09-25T10:34:15.188367Z")
@@ -550,7 +571,6 @@ class SearchTests(unittest.TestCase):
 
     def test_operation_query_uses_component_and_cluster(self):
         query = debug.log_query("test", "operation_id", "42", "control", "cluster-a")
-        self.assertIn("| json | logfmt |", query)
         self.assertIn('component="control"', query)
         self.assertIn('cluster="cluster-a"', query)
 

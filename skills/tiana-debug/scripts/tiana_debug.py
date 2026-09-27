@@ -161,13 +161,18 @@ def attr_fields(line: str, metadata: dict) -> dict:
 
 
 def log_query(env: str, field: str, value: str, component: str = "",
-              cluster: str = "") -> str:
+              cluster: str = "", parser: str = "") -> str:
     if field not in {"request_id", "trace_id", "job_id", "operation_id", "collaboration_id", "transaction_id", "instance_id", "expiry_plan_id"}:
         raise QueryError(f"Unsupported log field: {field}")
-    query = "{environment=" + json.dumps(env) + "} | json | logfmt | " + field + "=" + json.dumps(value)
-    for key, qualifier in (("component", component), ("cluster", cluster)):
-        if qualifier:
-            query += " | " + key + "=" + json.dumps(qualifier)
+    criteria = [(field, value)]
+    criteria.extend((key, qualifier) for key, qualifier in
+                    (("component", component), ("cluster", cluster)) if qualifier)
+    query = "{environment=" + json.dumps(env) + "}"
+    if parser:
+        query += " | " + parser + " " + ", ".join(
+            "tiana_debug_" + key + "=" + json.dumps(key) for key, _ in criteria)
+    for key, qualifier in criteria:
+        query += " | " + ("tiana_debug_" if parser else "") + key + "=" + json.dumps(qualifier)
     return query
 
 
@@ -182,14 +187,15 @@ def loki_window(client: Backend, query: str, start_ns: int, end_ns: int,
         raise QueryError("Loki returned non-success query status")
     page = []
     for stream in response.get("data", {}).get("result", []):
-        labels = stream.get("stream", {})
+        labels = {key: value for key, value in stream.get("stream", {}).items()
+                  if not key.startswith("tiana_debug_")}
         for item in stream.get("values", []):
             if len(item) < 2:
                 continue
             timestamp, line = str(item[0]), str(item[1])
             metadata = item[2] if len(item) > 2 and isinstance(item[2], dict) else {}
             event = {"time_unix_nano": timestamp, "stream": labels,
-                     "fields": attr_fields(line, metadata), "line": clean(line)}
+                     "fields": attr_fields(line, {**labels, **metadata}), "line": clean(line)}
             key = (timestamp, json.dumps(labels, sort_keys=True), line,
                    json.dumps(metadata, sort_keys=True))
             records[key] = event
@@ -208,13 +214,17 @@ def search_logs(client: Backend, env: str, field: str, value: str,
                 start: datetime, end: datetime, gaps: list[str],
                 component: str = "", cluster: str = "") -> list[dict]:
     records: dict[tuple, dict] = {}
-    query = log_query(env, field, value, component, cluster)
-    for left, right in bounded_windows(start, end):
-        try:
-            loki_window(client, query, ns(left), ns(right), records, gaps)
-        except QueryError as exc:
-            gaps.append(str(exc))
-    return sorted(records.values(), key=lambda event: int(event["time_unix_nano"]))
+    for parser in ("", "json", "logfmt"):
+        query = log_query(env, field, value, component, cluster, parser)
+        for left, right in bounded_windows(start, end):
+            try:
+                loki_window(client, query, ns(left), ns(right), records, gaps)
+            except QueryError as exc:
+                gaps.append(str(exc))
+    criteria = [(field, value), ("component", component), ("cluster", cluster)]
+    matches = [record for record in records.values() if all(
+        not expected or str(record["fields"].get(key, "")) == expected for key, expected in criteria)]
+    return sorted(matches, key=lambda event: int(event["time_unix_nano"]))
 
 
 def resource_failure_candidates(client: Backend, env: str, logs: list[dict],
