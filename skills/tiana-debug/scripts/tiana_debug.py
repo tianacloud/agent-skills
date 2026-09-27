@@ -157,6 +157,11 @@ def attr_fields(line: str, metadata: dict) -> dict:
                     fields[key] = value
         except ValueError:
             pass
+    parent = re.fullmatch(r"00-([0-9a-f]{32})-([0-9a-f]{16})-[0-9a-f]{2}",
+                          str(fields.get("traceparent", "")))
+    if (not fields.get("trace_id") and parent
+            and parent[1] != "0" * 32 and parent[2] != "0" * 16):
+        fields["trace_id"] = parent[1]
     return fields
 
 
@@ -169,10 +174,17 @@ def log_query(env: str, field: str, value: str, component: str = "",
                     (("component", component), ("cluster", cluster)) if qualifier)
     query = "{environment=" + json.dumps(env) + "}"
     if parser:
+        extracted = criteria + ([("traceparent", "")] if field == "trace_id" else [])
         query += " | " + parser + " " + ", ".join(
-            "tiana_debug_" + key + "=" + json.dumps(key) for key, _ in criteria)
+            "tiana_debug_" + key + "=" + json.dumps(key) for key, _ in extracted)
+    prefix = "tiana_debug_" if parser else ""
     for key, qualifier in criteria:
-        query += " | " + ("tiana_debug_" if parser else "") + key + "=" + json.dumps(qualifier)
+        if key == "trace_id":
+            parent_pattern = "^00-" + re.escape(qualifier) + "-[0-9a-f]{16}-[0-9a-f]{2}$"
+            query += " | (" + prefix + key + "=" + json.dumps(qualifier)
+            query += " or " + prefix + "traceparent=~" + json.dumps(parent_pattern) + ")"
+        else:
+            query += " | " + prefix + key + "=" + json.dumps(qualifier)
     return query
 
 

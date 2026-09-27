@@ -20,7 +20,7 @@ Use this skill when investigating a Tiana customer report or checking the observ
 
 ## Investigation
 
-- `request` searches logs and traces for the exact request ID, retrieves full traces, follows recorded task links, and writes a local evidence directory. For linked Gaia Operations it also reads current state and paginated stage events; unavailable queries remain explicit evidence gaps. Read its `diagnosis.md` first, then inspect `evidence.json`, `logs.jsonl` and individual traces.
+- `request` searches logs and traces for the exact request ID, retrieves full traces, correlates exact Trace IDs from standard `traceparent` log fields, follows recorded task links, and writes a local evidence directory. For linked Gaia Operations it also reads current state and paginated stage events; unavailable queries remain explicit evidence gaps. Read its `diagnosis.md` first, then inspect `evidence.json`, `logs.jsonl` and individual traces.
   It also queries known instances in the selected time window, including when the connection Trace succeeded but the application rejected the request. Errors matching the known Cluster, tenant and branch are saved in `resource-candidates.jsonl`; these resource/time matches are candidates, not proof of causation.
 - `operation` starts from a known task identity and follows recorded links and attempts. A numeric ID alone is insufficient: specify `--component mgr` for an MGR job or `--component control --cluster <cluster>` for a Control operation. Check its terminal state before treating a failed retry as the final outcome.
 - `inspect` checks the fixed daily metrics and live backend status. A missing series is reported separately from healthy idle traffic.
