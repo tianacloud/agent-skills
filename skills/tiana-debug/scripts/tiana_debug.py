@@ -432,8 +432,20 @@ def task_execution_gaps(logs: list[dict], gaps: list[str]) -> None:
 
 def failure_evidence(logs: list[dict], request_id: str = "") -> dict:
     observed = []
+    degradations = []
     for record in logs:
         fields = record["fields"]
+        if (fields.get("event") == "directory.redis.degraded"
+                and fields.get("component") == "directory"
+                and fields.get("dependency") == "redis"):
+            degradations.append({"time_unix_nano": record["time_unix_nano"],
+                                 "component": "directory", "dependency": "redis",
+                                 "event": fields["event"],
+                                 "operation": str(fields.get("operation", "")),
+                                 "reason": str(fields.get("error", "")),
+                                 "trace_id": fields.get("trace_id", ""),
+                                 "request_id": fields.get("request_id", "")})
+            continue
         app_status = fields.get("app_http_status")
         if isinstance(app_status, str) and app_status.isdecimal():
             app_status = int(app_status)
@@ -528,7 +540,8 @@ def failure_evidence(logs: list[dict], request_id: str = "") -> dict:
     return {"failure_component": component,
             "root_cause_evidence": direct,
             "candidate_failure": first if direct is None else None,
-            "failure_events": observed}
+            "failure_events": observed,
+            "dependency_degradations": degradations}
 
 
 def trace_span_rows(traces: dict) -> list[dict]:
@@ -645,8 +658,20 @@ def evidence_files(root: Path, summary: dict, logs: list[dict], traces: dict,
         for deletion in summary["web_deletions"]:
             report.append(f"Tenant {deletion['tenant_id']} project {deletion['project_id']}: {deletion['state']}; events={len(deletion['events'])}; traces={', '.join(deletion['trace_ids']) or 'absent'}")
     diagnosis = summary["diagnosis"]
+    if diagnosis.get("dependency_degradations"):
+        report += ["## Directory Redis dependency degradation", "",
+                   "Observed cache dependency errors; these do not establish a failed request or a Redis outage."]
+        for event in diagnosis["dependency_degradations"]:
+            report.append(f"- directory / redis: {event['operation'] or '-'}; reason: {event['reason'] or 'not recorded'}; trace: {event['trace_id'] or '-'}")
+        for record in logs:
+            fields = record["fields"]
+            if fields.get("component") == "directory" and fields.get("event") == "request.completed":
+                report.append(f"Observed request completion: HTTP {fields.get('status', 'unknown')}; request: {fields.get('request_id', '-')}")
+        report.append("")
     component = diagnosis["failure_component"] or (
-        "none observed" if diagnosis.get("terminal_state") == "success" else "undetermined")
+        "none observed" if diagnosis.get("terminal_state") == "success" else
+        "request failure not established; dependency degradation observed above"
+        if diagnosis.get("dependency_degradations") else "undetermined")
     report += ["## Failure finding", "", f"Component: {component}"]
     if recovered_attempt(diagnosis.get("root_cause_evidence") or {}, diagnosis.get("task_terminal_states", [])):
         report.append("The associated task succeeded after retry; the following attempt error is historical.")

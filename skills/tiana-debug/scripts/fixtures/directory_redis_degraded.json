@@ -1,0 +1,23 @@
+[
+  {
+    "time_unix_nano": "1790508808281962603",
+    "line": "{\"time\":\"2026-09-27T11:33:28.281887079Z\",\"level\":\"WARN\",\"msg\":\"directory redis cache degraded\",\"event\":\"directory.redis.degraded\",\"component\":\"directory\",\"dependency\":\"redis\",\"operation\":\"get_cluster\",\"error\":\"read tcp 192.0.2.10:12345->192.0.2.20:6379: i/o timeout\",\"request_id\":\"req-directory-degraded\",\"cluster\":\"test-cluster\",\"trace_id\":\"1234567890abcdef1234567890abcdef\"}",
+    "stream": {
+      "component": "directory"
+    }
+  },
+  {
+    "time_unix_nano": "1790508808383399026",
+    "line": "{\"time\":\"2026-09-27T11:33:28.383335815Z\",\"level\":\"WARN\",\"msg\":\"directory redis cache degraded\",\"event\":\"directory.redis.degraded\",\"component\":\"directory\",\"dependency\":\"redis\",\"operation\":\"put_cluster\",\"error\":\"i/o timeout\",\"request_id\":\"req-directory-degraded\",\"cluster\":\"test-cluster\",\"trace_id\":\"1234567890abcdef1234567890abcdef\"}",
+    "stream": {
+      "component": "directory"
+    }
+  },
+  {
+    "time_unix_nano": "1790508808383425564",
+    "line": "{\"time\":\"2026-09-27T11:33:28.383375119Z\",\"level\":\"INFO\",\"msg\":\"request completed\",\"event\":\"request.completed\",\"component\":\"directory\",\"request_id\":\"req-directory-degraded\",\"trace_id\":\"1234567890abcdef1234567890abcdef\",\"method\":\"GET\",\"route\":\"GET /directory/v1/control-clusters/{cluster}\",\"status\":200,\"duration_ms\":201,\"cluster\":\"test-cluster\"}",
+    "stream": {
+      "component": "directory"
+    }
+  }
+]
