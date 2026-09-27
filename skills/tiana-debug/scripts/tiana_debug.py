@@ -341,6 +341,19 @@ def async_acceptance_gaps(logs: list[dict], gaps: list[str]) -> None:
                 gaps.append(gap)
 
 
+def task_execution_gaps(logs: list[dict], gaps: list[str]) -> None:
+    jobs = {str(record["fields"]["job_id"]) for record in logs
+            if record["fields"].get("component") == "mgr" and record["fields"].get("job_id")}
+    for identity in sorted(jobs):
+        events = {record["fields"].get("event") for record in logs
+                  if record["fields"].get("component") == "mgr"
+                  and str(record["fields"].get("job_id", "")) == identity}
+        if not events.intersection({"task.attempt.started", "task.attempt.finished"}):
+            gaps.append(f"MGR job_id={identity} has no execution evidence in the query window")
+        if "task.completed" not in events:
+            gaps.append(f"MGR job_id={identity} has no terminal evidence in the query window; it may still be pending or evidence may be missing")
+
+
 def failure_evidence(logs: list[dict], request_id: str = "") -> dict:
     observed = []
     for record in logs:
@@ -798,6 +811,7 @@ def investigate(args: argparse.Namespace, profile: dict, client: Backend) -> int
             gaps.append(str(exc))
     connection_trace_gaps(traces, gaps, logs)
     async_acceptance_gaps(logs, gaps)
+    task_execution_gaps(logs, gaps)
     if not logs:
         gaps.append("No matching Loki records in the selected window")
     if not traces:

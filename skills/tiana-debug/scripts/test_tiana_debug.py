@@ -64,6 +64,21 @@ class SearchTests(unittest.TestCase):
         debug.async_acceptance_gaps([direct], gaps)
         self.assertEqual(gaps, [])
 
+    def test_linked_mgr_task_requires_execution_and_terminal_evidence(self):
+        link = {"fields": {"component": "mgr", "event": "task.link", "job_id": 764}}
+        started = {"fields": {"component": "mgr", "event": "task.attempt.started", "job_id": 764, "cluster": "resolved"}}
+        terminal = {"fields": {"component": "mgr", "event": "task.completed", "job_id": 764, "outcome": "success", "cluster": "resolved"}}
+        for records, missing in (([link], 2), ([link, started], 1), ([link, terminal], 1), ([link, started, terminal], 0)):
+            gaps = []
+            debug.task_execution_gaps(records, gaps)
+            self.assertEqual(len(gaps), missing)
+            if missing:
+                self.assertTrue(all("764" in gap for gap in gaps))
+        gaps = []
+        unrelated = {"fields": dict(terminal["fields"], job_id=765)}
+        debug.task_execution_gaps([link, started, unrelated], gaps)
+        self.assertTrue(any("764" in gap and "terminal" in gap for gap in gaps))
+
     def test_fractional_tempo_window_keeps_matching_trace(self):
         start = debug.instant("2026-09-25T10:34:15.184875Z")
         end = debug.instant("2026-09-25T10:34:15.188367Z")
