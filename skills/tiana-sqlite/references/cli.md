@@ -1,6 +1,6 @@
 # CLI 连接
 
-CLI 安装和 CA 配置按父技能 `tiana` 的开始使用说明处理。下列命令均加上 `--config <tiana 技能目录的绝对路径>/config.json`，读取父技能自带的管理端配置。先执行 `tiana --version` 和 `tiana sqlite shell --help`。
+CLI 安装和 CA 配置按父技能 `tiana` 的开始使用说明处理。下列命令直接继承启动 Agent 或 Shell 的环境，不由技能选择或覆盖管理地址。先执行 `tiana --version` 和 `tiana sqlite shell --help`。
 
 ```sh
 tiana sqlite shell INSTANCE

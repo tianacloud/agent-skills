@@ -1,22 +1,11 @@
 # JavaScript applications — HTTP SQL preview
 
-Use this workflow for browser or JavaScript application integration. CLI SQL
-remains the workflow for inspecting schemas and executing SQL from an agent.
-
-## Availability and source
-
-The `@tianadb/serverless` source at serverless-js commit
-`c846fe5` implements `createTianaFetch` with `protocol: "tiana-http"`.
-The inspected package is **private, unreleased**, version `0.1.0-dev.0`.
-Do not invent a public npm installation command or assume the installed CLI
-contains this JavaScript package. Inspect the application's existing dependency;
-otherwise obtain an authorized SDK artifact or a pinned source checkout.
-
-Implementation evidence in the [SDK repository](https://git.service.internal.tiana.com/tiana/serverless-js):
-`src/index.ts`, `README.md`, `tests/http-data-interop.mjs` and
-`tests/browser-http-data-interop.mjs`. Verify changed interfaces against the
-version being used. These tests exercise a Gateway/Agent/App fixture; their
-presence does not prove a user's deployed service is ready.
+Use this workflow only when the runtime selects `sql_api: "tiana-http"`.
+Authentication uses the same mandatory account provider as
+[JavaScript applications](js-sdk.md); SQL protocol selection does not change the
+authentication mechanism. Use that reference for SDK candidate/release requirements
+and hosted runtime readiness. No static-token or old-version fallback is provided.
+CLI SQL remains the workflow for inspecting schemas from an agent.
 
 ## Request path
 
@@ -33,24 +22,29 @@ not required for this data path. MGR instance management and CLI login remain
 separate from database requests.
 
 The adapter only accepts canonical HTTPS Endpoint origins matching
-`ep-[0-7][0-9a-hjkmnp-tv-z]{25}.db.service.internal.tiana.com`, logical port 443,
-without paths or queries. Use the returned Endpoint, not an instance ID guessed
-into a URL. Localhost, IP literals and alternate ports are rejected. A local
+`ep-[0-7][0-9a-hjkmnp-tv-z]{25}.db.service.internal.tiana.com`, without paths
+or queries. Preserve the returned HTTPS origin including its explicit port;
+do not guess a hostname from the instance ID. Localhost and IP literals are rejected. A local
 test fixture can inject a custom `fetch` transport while retaining the SDK's
 canonical logical origin; do not loosen the production validation.
 
 ```js
 import { createTianaFetch } from "@tianadb/serverless";
 
-// Supplied by the application's authorized runtime integration.
-// Do not replace with a Token literal or a public build-time environment value.
-export async function checkDatabase({ databaseOrigin, instanceToken }) {
-  const http = createTianaFetch({
-    origin: databaseOrigin,
-    tianaToken: instanceToken,
-    protocol: "tiana-http",
-  });
-  const response = await http(`${databaseOrigin}/v1/sql`, {
+// The trusted runtime retains refresh credentials; the browser consumes auth.
+const auth = window.tiana.auth;
+if (typeof auth?.getAccessToken !== "function") {
+  throw new Error("Tiana account-auth runtime is not ready");
+}
+const connection = await window.tiana.connection();
+if (connection.sql_api !== "tiana-http") throw new Error("Unsupported SQL API");
+const http = createTianaFetch({
+  origin: connection.origin,
+  auth,
+  protocol: "tiana-http",
+});
+export async function checkDatabase() {
+  const response = await http(`${connection.origin}/v1/sql`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ sql: "SELECT 1 AS answer;" }),
@@ -70,13 +64,13 @@ alone. Preserve exact integer values rather than coercing every cell to Number.
 
 ## Authentication and user input
 
-- The SDK needs an InstanceToken; a Console cookie or management access token
-  is not interchangeable. CLI-owned credentials are not automatically available
-  to browser JavaScript. Do not read CLI credential files to bridge this gap.
-- A static browser bundle cannot hide a database Token. Keep production Tokens
-  out of source, build output, URLs, logs and persisted browser storage. Verify
-  the intended user identity and authorized runtime credential-delivery design
-  before calling a live database. This SDK does not implement that design.
+- A shared runtime provider supplies the account access token for outer Gateway
+  authorization. A Console cookie is not a Gateway token. Never read CLI credential
+  files or expose refresh credentials in the browser. Missing provider support
+  blocks use; do not fall back to an InstanceToken.
+- Account access has tenant-level permissions; application code must be trusted
+  within that account boundary. Keep credentials out of source, build output,
+  URLs, logs and browser storage. The CLI/hosted runtime owns login and refresh.
 - The inspected HTTP examples establish `{ sql }` requests. They do **not**
   establish a parameter-binding request contract. CLI typed `params` and Hrana
   requests are different protocols: do not copy their JSON into `/v1/sql` and

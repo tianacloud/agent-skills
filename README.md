@@ -12,6 +12,12 @@ examples below apply after the corresponding artifacts are published.
 identify `tiana` as their parent, and can be selected directly for a focused task.
 Load detailed references only for the workflow being performed.
 
+Deployment routing belongs to the outer launcher. When needed, the user or
+runtime sets TIANA_API_ORIGIN before starting the agent or shell. Skills inherit
+that environment for CLI and native Git commands; they do not inject/override
+it or carry a management-origin configuration file. Missing or ambiguous origins
+are reported to the launcher/user instead of choosing a deployment in the skill.
+
 ```text
 skills/
 ├── tiana/                 Application workflow, instances, login and source releases
@@ -44,6 +50,12 @@ login, Git transport and integrated application commands. JavaScript application
 SQL uses typed parameters through the documented SDK flow. The old direct CLI
 `sql execute` grammar and local first-token-save requirement are superseded.
 The new CLI capabilities are not yet included in the published npm 0.2.0 package.
+Browser application guidance requires the new SDK `auth` interface and a shared
+`window.tiana.auth` runtime provider. No static-token or older-version fallback is
+provided. Refresh credentials remain with the trusted CLI/runtime, never skills
+or browser code. The SDK auth implementation is currently an unpublished
+candidate; hosted publication is blocked until MGR's Bootstrap provides the same
+account-auth interface. Do not present local-preview readiness as hosted readiness.
 
 ### `tiana-branches`
 

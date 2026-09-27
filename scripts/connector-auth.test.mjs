@@ -44,10 +44,9 @@ test('real CLI auth processes with delayed fixture approval (not WorkBuddy)', { 
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
   t.after(() => new Promise(resolve => server.close(resolve)));
-  const env = { ...process.env, TIANA_MGR_ORIGIN: `http://127.0.0.1:${server.address().port}`,
+  const env = { ...process.env, TIANA_API_ORIGIN: `http://127.0.0.1:${server.address().port}`,
     TIANA_CREDENTIALS_FILE: path.join(directory, 'credentials.json'),
     TIANA_INSTANCE_TOKENS_FILE: path.join(directory, 'instance-tokens.json') };
-  delete env.TIANA_AUTH_ORIGIN;
   function start(command) {
     // The configured commands have only fixed words; no shell or browser is used.
     const [name, ...args] = command.split(' ');

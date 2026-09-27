@@ -13,7 +13,7 @@ metadata:
 
 本技能使用与 `feat/tiana-end-to-end` 匹配的 CLI。执行前阅读 [SQL 命令](references/sql.md)。实例创建、登录和应用发布使用父技能 `tiana`。
 
-执行 `tiana` 命令时，在子命令前加上 `--config <tiana 技能目录的绝对路径>/config.json`，使用父技能的 [管理端配置](../tiana/config.json)。
+执行 `tiana` 命令时继承启动 Agent 或 Shell 的环境。技能不设置、覆盖或逐命令注入 `TIANA_API_ORIGIN`，也不查找父技能的部署配置文件；地址缺失或歧义交由外围环境处理。
 
 ## 查询与命令行
 
@@ -31,4 +31,4 @@ CLI 从保存的账号登录态取得连接凭据。缺少或过期时按 `tiana
 
 ## 应用连接
 
-JavaScript 应用阅读 [JS SDK 与 SQL 协议](references/js-sdk.md)，使用参数化 SQL。托管 Bootstrap 提供 `window.tiana.connection()`，不把 Token 写进源码。终端连接见 [CLI 连接](references/cli.md)，Rust 客户端见 [Rust SDK](references/rust-sdk.md)。
+JavaScript 应用阅读 [JS SDK 与 SQL 协议](references/js-sdk.md)，使用参数化 SQL。应用必须使用支持 `auth` 的 SDK 和 Bootstrap 的 `window.tiana.auth`，通过 `connection()` 获取连接元信息；不传静态 Token、不保留旧版回退。能力缺失时报告未就绪，不把 Token 写进源码。终端连接见 [CLI 连接](references/cli.md)，Rust 客户端见 [Rust SDK](references/rust-sdk.md)。
