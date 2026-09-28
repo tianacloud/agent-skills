@@ -2,6 +2,10 @@
 
 创建 Tiana 应用或发布应用版本时使用此流程。根据下方用户对源码托管的选择，一个版本包含 Tiana Git 中的源码快照及对应的托管构建产物。
 
+## 准备 Git 客户端
+
+在 Agent 实际执行命令的环境中检查 `git --version`、`tiana --version` 及 `git-remote-tiana` 的命令路径。macOS/Linux 使用 `command -v git-remote-tiana`；Windows 按 [Windows 安装与 Git helper 排查](windows-git-helper.md)检查 npm 生成的入口与 PATH。缺少 CLI 或 helper 时，按[开始使用](getting-started.md)安装同一个 `@tianacloud/cli` 包，安装成功并核验后再继续。
+
 ## 确定源码托管方式
 
 创建仓库或上传源码前，检查应用所在的 Git 仓库、远程地址，以及项目已记录的托管选择。
@@ -23,9 +27,17 @@
 tiana git create APP_NAME --wait
 ```
 
-确认实例已就绪，并记录实例 ID。创建中断时按原始待完成请求恢复。根据返回的 Git 实例已发布 Endpoint 的主机和端口，组成 `tiana://HOST[:PORT]/repo.git`；这是用户自己的原生 Git 实例，不是平台内部源码 Git 服务。原生 Git 与 CLI 必须继承同一外围启动环境；技能不单独设置管理地址。已安装的 `git-remote-tiana` 使用该环境选定的 CLI 账号登录态。缺少此能力时，报告安装缺失，不要求提供或嵌入 Token。
+确认实例已就绪，并记录实例 ID。创建中断时按原始待完成请求恢复。根据返回的 Git 实例已发布 Endpoint 的主机和端口，组成 `tiana://HOST[:PORT]/repo.git`；这是用户自己的原生 Git 实例，不是平台内部源码 Git 服务。原生 Git 与 CLI 必须继承同一外围启动环境；技能不单独设置管理地址。已安装的 `git-remote-tiana` 使用该环境选定的 CLI 账号登录态。
 
 新仓库将 Tiana 配置为源码远程仓库。已有外部仓库则添加单独的 Tiana remote，保留现有 origin 和跟踪配置。复用匹配的远程地址；遇到远程名称或仓库绑定冲突时先澄清，不直接替换。上传内容保持在授权范围内，排除密钥，使用普通推送，不重写远程历史。
+
+例如，确认 `tiana` 这个远程名称尚未使用后，添加实际 Endpoint 对应的地址：
+
+```sh
+git remote add tiana 'tiana://HOST:PORT/repo.git'
+```
+
+将 `HOST:PORT` 替换为实际 Endpoint。这里的 `tiana` 是远程名称；执行 `git fetch tiana` 或向它推送时，Git 根据 `tiana://` 自动调用 `git-remote-tiana`。推送时使用项目已确定的分支或版本引用。
 
 ## 发布对应源码的版本
 

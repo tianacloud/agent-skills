@@ -1,14 +1,18 @@
 # 开始使用
 
-先执行 `tiana --version`、`tiana login --help` 和 `tiana web --help`。CLI 必须具备 `login --start/--resume`、`sqlite`、`git` 和 `web`。
+在 Agent 实际执行命令的环境中检查 `tiana --version`、`tiana login --help` 和 `tiana web --help`。CLI 必须具备 `login --start/--resume`、`sqlite`、`git` 和 `web`。命令不存在时先按下方安装。
 
 ## 安装
 
-使用同时支持 `TIANA_API_ORIGIN` 和 `web` 命令的已核验 CLI 构建。本轮接口改名尚未发布，不用旧的固定版本号推断能力，也不臆造新发布版本。已提供符合要求的 CLI 时直接复用。
+通过 npm 安装 `@tianacloud/cli`。安装需要 Node.js 20 或更高版本，并能访问 npm registry 和 Gitee 发布附件；使用 Tiana Git 还需要原生 Git（Windows 使用 Git for Windows）。
 
-缺少 CLI 时，使用用户或发布流程提供的正式版本或获授权候选包。例如，本地 npm 候选包可通过 `npm install -g /实际路径/tiana-cli-VERSION.tgz` 安装；路径和版本必须来自实际交付产物，不按示例猜测。正式发布后固定核实过的版本及锁定来源。
+```sh
+npm install -g @tianacloud/cli --registry=https://registry.npmjs.org/
+```
 
-安装后检查版本及 `tiana web --help`。无法取得符合要求的构建、安装失败或命令缺失时报告具体阻塞，不切回旧命令、不搜索下载目录或云盘。
+Windows PowerShell 使用 `npm.cmd` 执行同一安装命令。该包同时安装 `tiana` 和 `git-remote-tiana`，后者将 Git 请求交给 `tiana git remote-helper`。导入 Skill 不等于安装 CLI；已安装符合要求的版本时直接复用。
+
+安装成功后重新检查版本及命令。安装失败或回滚后，先解决实际安装错误，再重装和核验，不能以包内存在脚本作为安装成功的依据。Windows 环境中找不到命令时，阅读 [Windows 安装与 Git helper 排查](windows-git-helper.md)。
 
 管理端选择由外围环境负责。需要指定部署时，由用户或运行器在启动 Agent 或 Shell 前设置 `TIANA_API_ORIGIN`；技能不执行 export、不按命令注入或覆盖该变量，不修改 Shell 启动文件或技能安装文件。原生 Git 与 CLI 继承同一环境。
 

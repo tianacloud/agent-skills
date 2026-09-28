@@ -3,9 +3,6 @@
 Agent Skills that help coding agents build, publish and maintain applications
 with Tiana Cloud, including SQLite connections and source releases in Tiana Git.
 
-Version 0.2.0 in this branch is an unpublished preview. The distribution
-examples below apply after the corresponding artifacts are published.
-
 ## Skills
 
 `tiana` is the shared entry point. Specialist skills are sibling directories,
@@ -52,7 +49,8 @@ The end-to-end candidate uses the current CLI's native SQLite shell, account
 login, Git transport and integrated application commands. JavaScript application
 SQL uses typed parameters through the documented SDK flow. The old direct CLI
 `sql execute` grammar and local first-token-save requirement are superseded.
-The new CLI capabilities are not yet included in the published npm 0.2.0 package.
+Install `@tianacloud/cli` from npm; see
+[CLI installation](skills/tiana/references/getting-started.md).
 Browser application guidance requires the new SDK `auth` interface and a shared
 `window.tiana.auth` runtime provider. No static-token or older-version fallback is
 provided. Refresh credentials remain with the trusted CLI/runtime, never skills
@@ -74,6 +72,12 @@ current design-only Control API proposal and does not present it as a released
 or callable public API.
 
 ## Install
+
+Skills use the separately installed `@tianacloud/cli` package, which provides
+both `tiana` and `git-remote-tiana`. Importing a skill does not install these
+commands. Follow [CLI installation](skills/tiana/references/getting-started.md)
+in the agent's execution environment. For Windows and WorkBuddy, see
+[Git helper troubleshooting](skills/tiana/references/windows-git-helper.md).
 
 Install all skills from GitHub with a compatible Agent Skills client:
 

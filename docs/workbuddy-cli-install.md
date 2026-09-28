@@ -1,5 +1,7 @@
 # 在 macOS WorkBuddy 使用 Tiana Cloud
 
+本文记录 2026-09-12 的 macOS Connector 验收环境。当前 CLI 安装见[开始使用](../skills/tiana/references/getting-started.md)，Windows / WorkBuddy 的命令查找问题见 [Git helper 排查](../skills/tiana/references/windows-git-helper.md)。
+
 2026-09-12 最新安排：乌兰察布服务被其他需求占用，下面的云端登录、实例与 SQL 步骤暂缓执行，等待新的环境窗口。
 源码已 rebase CLI main `1a69699`，后续构建统一使用 `XDG_CONFIG_HOME/tiana` 或 `~/.config/tiana` 保存凭据、账号索引与任务。
 这项变化尚未进入已发布 npm 0.2.0；下方临时安装路径仍指向旧制品。后续版本需重新验证登录和任务可见性；仅有旧 Keychain/旧目录记录的用户需要重新授权，不能把当前源码测试视为旧任务已恢复。
