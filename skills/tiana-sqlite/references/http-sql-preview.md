@@ -29,7 +29,7 @@ test fixture can inject a custom `fetch` transport while retaining the SDK's
 canonical logical origin; do not loosen the production validation.
 
 ```js
-import { createTianaFetch } from "@tianadb/serverless";
+import { createTianaFetch } from "@tianacloud/serverless";
 
 // The trusted runtime retains refresh credentials; the browser consumes auth.
 const auth = window.tiana.auth;
