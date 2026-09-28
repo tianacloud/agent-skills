@@ -19,6 +19,7 @@ metadata:
 | 任务 | 指引 |
 | --- | --- |
 | 创建或发布 Tiana 应用 | 按下方应用流程操作。 |
+| 创建备孕陪伴、学习管理或协作白板应用 | 分别使用 `tiana-two-to-three`、`tiana-study` 或 `tiana-whiteboard` 的完整模板，再按本技能发布。 |
 | 管理实例或恢复 CLI 凭据 | 按下方实例管理流程操作。 |
 | 查询 SQLite、查看表结构或连接应用代码 | 使用 `tiana-sqlite`。 |
 | 规划数据库分支生命周期或未来的分支客户端 | 使用 `tiana-branches`（仅供设计）。 |
@@ -27,7 +28,7 @@ metadata:
 
 ## 创建和发布应用
 
-一并阅读[应用开发与发布](references/csr-apps.md)与 [JavaScript 数据库连接](../tiana-sqlite/references/js-sdk.md)，按其中的接口实现应用。使用固定的 [index.html 模板](references/index.html)、哈希路由和 `tiana.app.json`。已提供且已核实的工具、数据库和表结构直接复用；缺少哪项再查询哪项。应用连接实际使用的 Tiana 数据库，必须使用新版 SDK/Bootstrap 的动态账号鉴权，不保留静态 Token 回退。除非用户只要求本地开发，否则在托管运行时具备该能力后发布并交付访问地址；能力未就绪时报告发布阻塞。
+一并阅读[应用开发与发布](references/csr-apps.md)与 [JavaScript 数据库连接](../tiana-sqlite/references/js-sdk.md)，按其中的接口实现应用。使用平台渲染的固定 [index.html 模板](references/index.html)、哈希路由和 `tiana.app.json`。已提供且已核实的工具、数据库和表结构直接复用；缺少哪项再查询哪项。应用连接实际使用的 Tiana 数据库，必须使用新版 SDK/Bootstrap 的动态账号鉴权，不保留静态 Token 回退。除非用户只要求本地开发，否则在托管运行时具备该能力后发布并交付访问地址；能力未就绪时报告发布阻塞。
 
 发布托管版本时，按[应用源码与版本发布](references/source-releases.md)确认源码托管授权、关联 Tiana Git，并在发布托管产物前同步该版本对应的源码提交。仅开发本地版本时无需执行源码同步和发布步骤。
 

@@ -2,7 +2,9 @@
 
 ## 入口与路由
 
-使用平台固定的 [index.html](index.html) 和哈希路由。哈希深链接在直接打开或刷新后也应恢复当前路由；若页面数据需异步读取，应在读取完成后恢复该路由对应的状态。服务端先检查登录会话和应用访问权限，再返回此 HTML。未登录的托管请求跳转到 Console 登录页；授权通过后，文档加载所选版本的 JavaScript 和 CSS。
+使用平台渲染的固定 [index.html 模板](index.html) 和哈希路由。该参考文件与 CLI/Web 的服务端模板一致：服务端先将 `__TIANA_BOOTSTRAP_SCRIPT__` 替换为 `/apps/<实际 app_id>/_tiana/bootstrap.js`，再将 `__TIANA_BOOTSTRAP_DATA__` 替换为应用运行时 JSON；浏览器收到的是已完成替换的 HTML。
+
+哈希深链接在直接打开或刷新后也应恢复当前路由；若页面数据需异步读取，应在读取完成后恢复该路由对应的状态。服务端先检查登录会话和应用访问权限，再返回此 HTML。未登录的托管请求跳转到 Console 登录页；授权通过后，文档加载所选版本的 JavaScript 和 CSS。
 
 模板提供 `<div id="app"></div>`。`entry` 指定的模块按正常方式启动并渲染应用。需要数据库连接时，调用 `window.tiana.connection()`；返回的凭据只保存在内存中。加载指示器是临时的，与应用样式隔离。
 
@@ -13,8 +15,8 @@
 1. 复用本轮已完成的账号和额度检查；尚未检查时执行 `tiana status`。需要登录时，按分步登录流程展示链接并确认完成，不读取或输出凭据。
 2. 项目已记录且已核实可用的数据库实例 ID 可直接复用，无需列举实例。否则用 `tiana sqlite list/show` 查找；确实没有可用数据库时执行一次 `tiana sqlite create NAME --wait`，保存完整实例 ID。中断后核实原请求和实例，不重复创建。
 3. 复用已提供的实际表结构；缺少时执行 `tiana sqlite shell INSTANCE -e "SELECT name, sql FROM sqlite_schema WHERE type='table' ORDER BY name LIMIT 100" --format json`。将表结构和迁移文件保存在项目中。对已核对的 SQL 文件执行 `tiana sqlite shell INSTANCE -f schema.sql --format json`。`-e` 接受一条语句，多语句使用 `-f`。动态数据按 [JavaScript 数据库连接](../../tiana-sqlite/references/js-sdk.md)使用参数化 SQL。
-4. 复用项目中已记录、已核实的 Web ID；未记录时先用 `tiana web list --json` 查找并核实，重名时依据实际 ID 确认归属；首次创建时执行一次 `tiana web create "应用名称" -m "应用描述" --json`，保存返回的 `data.id`。ID 由服务端生成，格式为 `web-` 加随机串；描述为可选元数据（`-m`/`--description`，最多 1024 个 UTF-8 字节），名称仅用于展示，不能用名称推导 ID，不能自行指定 ID。结果未知时保持名称和描述不变，重复同一条 create 命令恢复原请求，不删除待完成记录、不另发创建请求。成功后继续构建、预览或发布时复用该 ID，不重复创建。
-5. 在项目和清单中保存非敏感的 Web、数据库 ID；清单的 `app_id` 填写实际返回的 Web ID。
+4. 复用项目中已记录、已核实的 App ID；未记录时先用 `tiana web list --json` 查找并核实，重名时依据实际 ID 确认归属；首次创建时执行一次 `tiana web create "应用名称" -m "应用描述" --json`，保存返回的 `data.app_id`。新 App ID 仅由 MGR 以 9 字节随机值编码为 12 字符 base64url 生成；CLI 不生成或提交 App ID，已有 ID 保持原值；描述为可选元数据（`-m`/`--description`，最多 1024 个 UTF-8 字节），名称仅用于展示，不能用名称推导 ID，不能自行指定 ID。结果未知时保持名称和描述不变，重复同一条 create 命令恢复原请求，不删除待完成记录、不另发创建请求。成功后继续构建、预览或发布时复用该 ID，不重复创建。
+5. 在项目和清单中保存非敏感的 App、数据库 ID；清单的 `app_id` 填写实际返回的 App ID。
 
 ## 运行时数据库连接
 
@@ -31,7 +33,7 @@ CLI 本地预览优先复用已保存的 CLI 登录，通过一次性本地启�
 ```json
 {
   "schema_version": 1,
-  "app_id": "ACTUAL_WEB_ID",
+  "app_id": "ACTUAL_APP_ID",
   "name": "我的账单",
   "rendering": "csr",
   "routing": "hash",
@@ -51,19 +53,19 @@ CLI 本地预览优先复用已保存的 CLI 登录，通过一次性本地启�
 
 1. 构建后执行 `tiana web serve --dir DIST --port 4174`，保持预览服务运行，将输出的本地开发地址交给用户。
 2. 发布前执行 `tiana status`，需要时完成分步登录。
-3. 使用前面已经创建并保存的 Web ID，发布新的不可变版本：
+3. 使用前面已经创建并保存的 App ID，发布新的不可变版本：
 
 ```sh
-tiana web upload WEB_ID --version VERSION_ID --dir DIST --json
-tiana web status WEB_ID --version VERSION_ID --json
+tiana web upload APP_ID --version VERSION_ID --dir DIST --json
+tiana web status APP_ID --version VERSION_ID --json
 ```
 
 上传结果不确定时，仅对完全相同的产物使用同一版本恢复。产物有变化就使用新版本；恢复过程不另建数据库。
 
-4. 报告返回的 `application_url`、应用 ID、版本、数据库 ID、源码仓库和提交。托管地址为 `https://<console-host>/web/<app-id>/`，可用 `?version=<version-id>` 固定版本。托管受阻时，说明具体阻塞原因并提供本地开发地址。创建应用的授权不包含变更服务端部署。
+4. 报告返回的 `application_url`、应用 ID、版本、数据库 ID、源码仓库和提交。托管地址为 `https://<console-host>/apps/<app_id>`，入口无尾斜杠，可用 `?version=<version-id>` 固定版本；Console 详情页为 `/console/apps/<app_id>`。托管受阻时，说明具体阻塞原因并提供本地开发地址。创建应用的授权不包含变更服务端部署。
 
 ## 应用列表与删除
 
-用 `tiana web list --json` 核对当前账号拥有的 Web 应用，优先使用已保存的真实 ID。用户明确要求删除时，执行 `tiana web delete WEB_ID --force`；需要等待源站清理完成时加 `--wait --json`。不得把失败恢复、重新发布或清理本地构建目录当作删除云端应用的授权。
+用 `tiana web list --json` 核对当前账号拥有的 Web 应用，优先使用已保存的真实 ID。用户明确要求删除时，执行 `tiana web delete APP_ID --force`；需要等待源站清理完成时加 `--wait --json`。不得把失败恢复、重新发布或清理本地构建目录当作删除云端应用的授权。
 
 删除会关闭应用入口并清理所有版本和托管文件，关联 SQLite、Git 不随之删除。只收到 `state: deleting` 时报告已受理；收到 `state: deleted` 才报告本次源站清理完成。创建中或任一版本尚未完成上传时直接拒绝删除，应先恢复并完成原操作，不能强制删除。已受理的删除仅可能因分批清理和失败重试延迟完成，不等待上传保护期；公开缓存按缓存策略失效。中断后保留待完成记录，用原 ID 恢复，详情见[CLI 命令](cloud-cli.md)。

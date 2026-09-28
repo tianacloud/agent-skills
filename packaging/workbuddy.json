@@ -18,6 +18,24 @@
       "display_name_en": "Tiana Database Branches Preview",
       "description_zh": "基于尚未发布的设计草案规划 Tiana 数据库分支生命周期与客户端流程。",
       "description_en": "Plan Tiana database branch lifecycle and client flows from the unreleased design proposal."
+    },
+    "tiana-two-to-three": {
+      "display_name": "从两个人，到三个人",
+      "display_name_en": "Two to Three",
+      "description_zh": "创建从备孕到生产的双人陪伴应用，包含阶段清单、留言与鼓励，数据保存到 Tiana SQLite。",
+      "description_en": "Build a companion app from pregnancy planning to birth with shared tasks and notes backed by Tiana SQLite."
+    },
+    "tiana-study": {
+      "display_name": "间刻学习管理",
+      "display_name_en": "Study Workspace",
+      "description_zh": "创建带任务、专注计时和学习大盘的应用，使用 Tiana SQLite 保存学习记录。",
+      "description_en": "Build a study workspace with tasks, focus sessions and a progress dashboard backed by Tiana SQLite."
+    },
+    "tiana-whiteboard": {
+      "display_name": "浮岛协作白板",
+      "display_name_en": "Floating Island Whiteboard",
+      "description_zh": "创建可拖拽便签、绘画和连线的协作白板，使用 Tiana SQLite 同步画布。",
+      "description_en": "Build a collaborative sticky-note whiteboard with drawing and links synchronized through Tiana SQLite."
     }
   }
 }

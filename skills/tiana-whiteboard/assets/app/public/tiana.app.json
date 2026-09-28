@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "app_id": "REPLACE_WITH_ACTUAL_APP_ID",
+  "name": "浮岛白板",
+  "rendering": "csr",
+  "routing": "hash",
+  "entry": "assets/app.js",
+  "styles": [
+    "assets/app.css"
+  ],
+  "database_instance_id": "REPLACE_WITH_ACTUAL_INSTANCE_ID"
+}

@@ -26,6 +26,9 @@ skills/
 ├── tiana-sqlite/          SQL, schemas and application database connections
 │   ├── SKILL.md
 │   └── references/        CLI, JavaScript, shell and Rust workflows
+├── tiana-two-to-three/    Pregnancy planning and family journey app starter
+├── tiana-study/           Study planning and focus dashboard app starter
+├── tiana-whiteboard/      Collaborative whiteboard app starter
 └── tiana-branches/        Database branch design (preview only)
     ├── SKILL.md
     └── references/        Lifecycle model and proposed API
@@ -57,6 +60,13 @@ or browser code. The SDK auth implementation is currently an unpublished
 candidate; hosted publication is blocked until MGR's Bootstrap provides the same
 account-auth interface. Do not present local-preview readiness as hosted readiness.
 
+### Application starters
+
+`tiana-two-to-three`, `tiana-study`, and `tiana-whiteboard` include complete
+application templates, SQLite schemas, and guided first screens. They use
+`tiana` for source releases and hosting and `tiana-sqlite` for database access.
+Use a verified SDK build with the account-auth provider before building them.
+
 ### `tiana-branches`
 
 Plan around Tiana's preview database-branch lifecycle. This skill includes the
@@ -85,7 +95,8 @@ the portable plugin format discover the immediate children of `skills/`.
 Import the desired directory under `skills/`, preserving its `SKILL.md` and
 `references/` files together. If the client accepts ZIP uploads, zip one skill
 directory with `SKILL.md` at the archive root.
-For application development, import both `tiana` and `tiana-sqlite`.
+For application development, import `tiana`, `tiana-sqlite`, and the relevant
+application starter.
 `tiana-branches` is only needed for database branch design work.
 
 ### WorkBuddy

@@ -8,6 +8,11 @@
       "skills": ["tiana", "tiana-sqlite"]
     },
     {
+      "title": "App Starters",
+      "description": "Create polished, working applications with Tiana SQLite data and Tiana Git source releases.",
+      "skills": ["tiana-two-to-three", "tiana-study", "tiana-whiteboard"]
+    },
+    {
       "title": "Preview",
       "description": "Plan for Tiana capabilities whose public interfaces are not yet released.",
       "skills": ["tiana-branches"]

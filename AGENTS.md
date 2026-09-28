@@ -75,41 +75,31 @@ web; root CLI help labels web/sqlite/git as Products. Use only those names in
 canonical skills, examples, troubleshooting and auth fixtures; no old aliases.
 Skills still inherit deployment routing from the launcher and must not set it.
 The environment rename does not change saved-origin keys or credentials. The
-command rename does not change MGR API paths, project/version identity or retry
+command rename does not change MGR API paths, App/release identity or retry
 rules. Existing launch scripts must migrate; no package version is invented and
 no deployment is implied. Keep the provider-only account-auth instructions from
 the previous decision. Validate all six CI checks and canonical archive contents;
 roll back CLI and skill command/routing names together if rollback is requested.
 
 
-## Server-generated Web identity (2026-09-27)
+## Server-generated App identity (2026-09-28)
 
-User requires Web to follow SQLite/Git: create takes NAME; ID is generated only
-by MGR (`web-` + 18 random bytes in unpadded base64url), and public Web project
-and version metadata use `id`. CLI upload/status take positional ID; no old
---project/--name creation aliases. Manifest app_id must be the returned ID.
-Display names may repeat and never select resource identity.
+The CLI product group remains web. App identity is app_id in create, list,
+detail, release and deletion JSON. MGR alone creates new IDs from 9 random bytes
+encoded as 12 unpadded base64url characters. Existing IDs retain their values.
+CLI create sends name, description and request_id; skills save data.app_id in
+source manifests and reuse it for upload/status/delete.
 
-Creation is POST /api/v1/web-projects with name and request_id. Scope idempotency
-to tenant + principal + request, persist in the same MySQL row under a unique
-index, and return the original ID across concurrency/restart/response loss. A
-changed name under a reused request conflicts. CLI uses the shared locked pending
-store, binds to origin/user/tenant, persists before sending, retains uncertain
-results and output failures, and clears after confirmed output. Skills must save
-data.id before constructing the manifest and reuse it instead of recreating.
+The management API is /api/v1/apps. Hosted entry is /apps/<app_id> and Console
+detail is /console/apps/<app_id>, both without a trailing slash. Platform-rendered
+index.html replaces the absolute Bootstrap script URL before inserting App JSON.
+App build output contains modules, assets and tiana.app.json.
 
-MGR schema 24 adds nullable request_id + unique index to mgr_web_projects; keep
-physical project_id columns, existing IDs and object paths to protect stored data.
-23→24 migration checks DDL then CASes schema version under the existing advisory
-lock. Request identities live as long as their resources. Cost is one bounded
-unique index per resource, no new hot-path table scans. No Control change or
-production migration/deployment is included. Public naming change requires
-coordinated CLI/MGR/Console/skill rollout. Rollback requires matching clients and
-reviewed schema rollback; never rewrite IDs or drop request recovery silently.
-
-Verify ID entropy/prefix, rejected caller IDs/old routes, isolated ownership,
-concurrent replay/name conflict, lost-response recovery, durable MySQL migration,
-CLI output/pending preservation, Console rendering, and all skill validators.
+Creation retries preserve the original request_id and exact name/description.
+The pending command store and uncertainty recovery remain unchanged. App tables
+are mgr_apps and mgr_app_releases, with app_id as their business identity field.
+Validate returned identity binding, retry recovery, preview routes and canonical
+skill archives together with the matching CLI/MGR/Web changes.
 
 
 ## Web listing and deletion work in progress (2026-09-27)
@@ -124,22 +114,22 @@ Validate multi-page output, terminal quit, bad cursors, and identity isolation.
 User subsequently chose A; the approved deletion contract is recorded below.
 
 
-## Approved Web deletion — project lifecycle (2026-09-27)
+## Approved Web deletion — App lifecycle (2026-09-27)
 
 User approved deleting all Web versions/origin files while retaining SQLite/Git,
-and merging deletion state into mgr_web_projects. Retain request_id creation
+and merging deletion state into mgr_apps. Retain request_id creation
 idempotency. Only add state (active/deleting/deleted), delete_requested_at and
-deleted_at, plus index(state,tenant_id,project_id). Do not add a separate deletion
+deleted_at, plus index(state,tenant_id,app_id). Do not add a separate deletion
 table or delete_storage_namespace/delete_error_code/delete_next_attempt_at fields.
 
-Mark under the project row lock shared with version creation. Reject any unfinished
+Mark under the App row lock shared with version creation. Reject any unfinished
 upload without side effects; incomplete CLI creation blocks deletion. Active-only
 reads and publication prevent reusing deleted IDs. Owner-scoped receipts remain
-on project rows; previously accepted create requests cannot resurrect them.
+on App rows; previously accepted create requests cannot resurrect them.
 
-Every minute, cleanup visits <=10 projects within 20 seconds. An in-memory cursor
+Every minute, cleanup visits <=10 apps within 20 seconds. An in-memory cursor
 prevents failed rows starving later ones; restart needs only durable deleting
-state. Each project uses a <=5-second transaction holding its row FOR UPDATE SKIP
+state. Each app uses a <=5-second transaction holding its row FOR UPDATE SKIP
 LOCKED through bounded OSS I/O and metadata commit. This consumes a DB connection
 and can delay mutation of that deleting row, but avoids stored leases and skips
 competing workers. No new Actor Call/Monitor API. Cancellation/crash rolls back
@@ -152,11 +142,9 @@ later pass. No persisted error code, per-row retry schedule, upload grace or dai
 sweep. CLI --wait polls state until completion/cancellation; it cannot present a
 stored cleanup failure. Origin cleanup cannot revoke issued URLs/cached copies.
 
-Schema head remains 26: revise the unpublished 24→25 migration to add lifecycle
-columns/index, preserving 23→24 request identity and 25→26 description. Validate
-partial DDL and defaults/index before version CAS. No compatibility for discarded
-experimental deletion-table layouts, and no production migration or table drop.
-Preserve previous work on codex/a1a6f054/web-project-deletion; no commit/push/release.
+App lifecycle metadata is stored on mgr_apps; immutable releases are stored in
+mgr_app_releases. Keep creation request identity and descriptions across the
+coordinated App table and field rename.
 
 Verify real MySQL migration recovery/drift, state defaults, missing forbidden
 fields/table, upload/delete serialization, worker exclusion/cancellation/restart,
@@ -169,20 +157,15 @@ terminal receipts and CLI recovery. Run full MGR tests/race/vet and skills check
 User requested `web create -m` for application descriptions. Implement optional
 `--description` / `-m`, default empty, max 1024 UTF-8 bytes; preserve whitespace,
 line breaks and tabs, reject invalid UTF-8/other control characters. Store only
-project metadata; do not change ID generation, routing or manifests. Create/list/
+App metadata; do not change ID generation, routing or manifests. Create/list/
 detail JSON expose description; plain list keeps its existing ID/NAME format.
 
 Creation intent includes the exact description. The same tenant/owner/request ID
 must match name and description; conflicts never overwrite metadata or mint a
 replacement request. Verify the returned description before clearing intent.
 
-MGR schema 26 adds a non-null varchar(1024) with empty default to existing rows.
-Validate additive DDL under the schema lock, CAS 25→26 and read back; recovery
-from partial DDL must be idempotent and drift must fail closed. No new index,
-extra read round trip or Control/storage-object contract. Cost is a bounded
-metadata field per app. Retain prior work on the new task branch
-codex/a1a6f054/web-description. Coordinate MGR schema/service/CLI rollout; rollback
-must not discard descriptions. No commit/push/production migration authorized.
+MGR persists descriptions on App metadata. Coordinate MGR/CLI/Console behavior;
+rollback must not discard descriptions. No extra index or Control read is needed.
 
 Test empty/Unicode/multiline/max-byte/invalid inputs, exact receipt validation,
 lost-response retry and pending-description conflicts, MySQL persistence/list/
@@ -227,6 +210,6 @@ supersedes earlier implementation-only publication restrictions for the pending
 changes in this session. Preserve all already-reviewed pending work; integrate
 remote main without rewriting history. No npm release/version bump is implied.
 The paired source association requires the matching client/server rollout and a
-new immutable application version. Existing deployment settings and schema 26
-remain unchanged. Verify remote commit identities, clean source image provenance,
+new immutable application version. Deployment settings remain owned by the
+deployment system. Verify remote commit identities, clean source image provenance,
 Gaia success/IN_SYNC and live readiness/auth boundaries after deployment.

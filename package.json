@@ -1,7 +1,7 @@
 {
   "name": "@tianacloud/agent-skills",
   "version": "0.2.0",
-  "description": "Agent Skills for Tiana Cloud applications, SQLite connections and Git source releases",
+  "description": "Agent Skills and app starters for Tiana Cloud, SQLite and Git source releases",
   "license": "MIT",
   "repository": {
     "type": "git",
