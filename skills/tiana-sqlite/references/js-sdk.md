@@ -1,14 +1,18 @@
 # JavaScript 应用
 
-应用使用 `window.tiana.auth`、`window.tiana.connection()` 和 `@tianadb/serverless` 连接数据库。根据连接返回的 `sql_api` 选择协议：`hrana-v3` 使用下文原生通道；`tiana-http` 通道阅读 [HTTP SQL 预览协议](http-sql-preview.md)。
+应用使用 `window.tiana.auth`、`window.tiana.connection()` 和 `@tianacloud/serverless` 连接数据库。根据连接返回的 `sql_api` 选择协议：`hrana-v3` 使用下文原生通道；`tiana-http` 通道阅读 [HTTP SQL 预览协议](http-sql-preview.md)。
 
 ## SDK 与运行时要求
 
-应用必须使用支持 `auth: TianaAuthProvider` 的 `@tianadb/serverless`，以及提供 `window.tiana.auth.getAccessToken()` 的 Bootstrap。两者是必要条件，不保留静态 Token 或旧版本回退路径。
+应用必须使用支持 `auth: TianaAuthProvider` 的 `@tianacloud/serverless`，以及提供 `window.tiana.auth.getAccessToken()` 的 Bootstrap。两者是必要条件，不保留静态 Token 或旧版本回退路径。
 
-新增鉴权实现目前尚未发布。使用经授权且已核实包含该实现的候选构建；发布后固定实际发布版本。检查实际依赖的类型声明和构建来源，不用候选包沿用的版本号推断能力，不臆造 npm 版本或将旧包当作新实现。无法取得符合要求的 SDK 时，报告依赖未就绪，不继续生成降级应用。
+在应用目录中安装包含账号鉴权实现的 Beta：
 
-将 `package.json` 和锁文件随源码提交到 Tiana Git，克隆后通过包管理器恢复依赖。SDK 包本身不放进应用仓库，候选构建也不引用其他机器无法访问的临时路径。安装失败时报告实际错误。
+```sh
+npm install --save-exact @tianacloud/serverless@0.1.0-beta.1
+```
+
+将 `package.json` 和锁文件随源码提交到 Tiana Git，克隆后通过包管理器恢复依赖。SDK 包本身不放进应用仓库。安装失败时报告实际错误。
 
 ## 运行时连接
 
@@ -19,7 +23,7 @@ access token 具有账号/租户级数据权限，不能把应用目标实例 ID
 `sql_api: "hrana-v3"` 使用 SDK 默认原生通道，省略 `protocol`。每次操作发送参数化 execute + close pipeline：
 
 ```js
-import { createTianaFetch } from '@tianadb/serverless';
+import { createTianaFetch } from '@tianacloud/serverless';
 const auth = window.tiana.auth;
 if (typeof auth?.getAccessToken !== 'function') {
   throw new Error('Tiana account-auth runtime is not ready');

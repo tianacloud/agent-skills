@@ -1,14 +1,18 @@
 # 开始使用
 
-先执行 `tiana --version`、`tiana login --help` 和 `tiana web --help`。CLI 必须具备 `login --start/--resume`、`sqlite`、`git` 和 `web`。
+先执行 `tiana --version`、`tiana login --help` 和 `tiana app --help`。CLI 必须具备 `login --start/--resume`、`sqlite`、`git` 和 `app`。
 
 ## 安装
 
-使用同时支持 `TIANA_API_ORIGIN` 和 `web` 命令的已核验 CLI 构建。本轮接口改名尚未发布，不用旧的固定版本号推断能力，也不臆造新发布版本。已提供符合要求的 CLI 时直接复用。
+缺少 CLI 或版本不兼容时，安装已发布的 Beta：
 
-缺少 CLI 时，使用用户或发布流程提供的正式版本或获授权候选包。例如，本地 npm 候选包可通过 `npm install -g /实际路径/tiana-cli-VERSION.tgz` 安装；路径和版本必须来自实际交付产物，不按示例猜测。正式发布后固定核实过的版本及锁定来源。
+```sh
+npm install -g @tianacloud/cli@0.2.2-beta.1
+```
 
-安装后检查版本及 `tiana web --help`。无法取得符合要求的构建、安装失败或命令缺失时报告具体阻塞，不切回旧命令、不搜索下载目录或云盘。
+若旧 `@tianadb/cli` 占用 `tiana` 命令，先执行 `npm uninstall -g @tianadb/cli`，再安装新版。
+
+安装后检查版本及 `tiana app --help`。无法取得符合要求的构建、安装失败或命令缺失时报告具体阻塞，不切回旧命令、不搜索下载目录或云盘。
 
 管理端选择由外围环境负责。需要指定部署时，由用户或运行器在启动 Agent 或 Shell 前设置 `TIANA_API_ORIGIN`；技能不执行 export、不按命令注入或覆盖该变量，不修改 Shell 启动文件或技能安装文件。原生 Git 与 CLI 继承同一环境。
 

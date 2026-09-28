@@ -8,9 +8,9 @@
 
 浏览器应用通过 `window.tiana.connection()` 获取连接元信息，通过共享的 `window.tiana.auth` 获取动态 access token。应用不使用 `connection.tianaToken` 快照、不传静态 Token，也不回退到实例 Token。
 
-新版 CLI 本地预览单独完成浏览器登录，使用该会话的 access token，不再签发实例 Token。access token 具有账号/租户级数据权限，应用代码必须处于该账号的信任范围；应用清单中的数据库实例 ID 并不收窄凭据权限。refresh token 留在 CLI 进程内存，既不交给页面，也不读取或覆盖 CLI 原有账号文件。
+CLI 本地预览优先通过一次性启动链接复用已保存的 CLI 登录，凭据刷新由 SDK 的账号存储管理；无法复用时才单独通过 Console 登录。浏览器只接收 access token，refresh token 留在可信 CLI 中。access token 具有账号/租户级数据权限，应用清单中的数据库实例 ID 不收窄凭据权限。
 
-托管应用同样要求动态账号鉴权 provider。当前 MGR 托管 Bootstrap 尚未完成接入，发布需要等待其升级；缺少能力直接报告阻塞，不保留旧版 Token 方案。CLI 和 SDK 升级不等同于托管运行时已升级。
+托管应用同样要求动态账号鉴权 provider。发布时核实目标 MGR/Web 具备该能力；缺失时报告部署阻塞。CLI 和 SDK 升级不等同于托管运行时已升级。
 
 SDK 要求、调用示例和失败恢复见 [JavaScript 数据库连接](../../tiana-sqlite/references/js-sdk.md)。skills 不读取或保存 refresh token，不自行调用刷新接口，也不从 CLI 凭据文件向浏览器复制凭据。登录与刷新由 CLI/SDK 或可信运行时代理负责。
 

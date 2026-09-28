@@ -1,4 +1,4 @@
-import { createTianaFetch } from '@tianadb/serverless';
+import { createTianaFetch } from '@tianacloud/serverless';
 
 export const arg = (value) => {
   if (value === null) return { type: 'null' };
