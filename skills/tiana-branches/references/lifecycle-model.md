@@ -1,62 +1,25 @@
-# Branch lifecycle model — design-only
+# 身份与操作结果
 
-## Identity
+## 身份
 
-| Concept | Proposed meaning |
+| 标识 | CLI 中的含义 |
 | --- | --- |
-| `branch_id` | Permanent, non-reusable identity for one branch creation. |
-| `branch_name` | User-facing name unique within a live family; reusable after deletion. |
-| `source_branch_id` | Permanent direct source captured when the branch is created. |
-| `operation_id` | Idempotent identity for one normalized create, delete, or rename command. |
-| `family` | A set of related branches under one tenant/project, Control authority, and compatible storage domain. |
+| `instance_id` | SQLite 实例身份；命令的 INSTANCE 使用完整 ID，避免实例重名。 |
+| `branch_id` | 实例内分支的固定身份；默认分支为 `main`，新分支由服务端分配 ID。 |
+| `name` | 分支显示名称；`--parent`、`--branch` 和默认删除参数按精确名称解析。 |
+| `endpoint_id` | 所选分支的连接入口；地址取自返回的连接信息。 |
+| `operation_id` | 已受理的异步操作身份，与实例及操作目标一起保留。 |
 
-The proposed first model equates a branch's instance identity with its
-`branch_id`; names do not participate in Endpoint, Token, storage, Runtime
-binding, pin, or cleanup identity.
+实例 ID、分支 ID 和 Endpoint ID 不能互换。分支名称不能替代不确定操作的固定目标；名称重用或变化后重新解析可能选中另一分支。`show INSTANCE` 默认查看固定 ID `main`，不依赖默认分支的显示名称。
 
-## Lifecycle dimensions
+## 等待与恢复
 
-Logical branch state:
+创建和删除默认返回 accepted，表示异步受理。`--wait` 跟踪原操作：`pending`、`running`、`retry_wait` 继续等待，`success` 成功，`failed` 报错。操作缺失、查询失败、未知状态或身份不匹配都不证明成功。删除操作成功与物理存储回收完成是不同结果。
 
-```text
-CREATING -> ACTIVE -> DELETING -> DELETED
-```
+Ctrl-C 只停止等待，不取消服务端操作。保存已经报告的实例、操作和分支 ID。
 
-Resource state is separate:
+当前 CLI 每次执行分支变更都会生成新的幂等键，没有分支创建的本地 receipt-resume，也没有独立的 operation 查询或恢复子命令。不要将实例创建的本地待完成请求恢复规则套到分支创建。
 
-```text
-PRESENT -> RETAINED -> RECLAIMING -> RECLAIMED
-```
-
-`DELETED + RETAINED` is a normal result when descendants still depend on the
-deleted branch's data. Deletion releases the user-facing name at its logical
-commit point; reclamation may finish later.
-
-## Create
-
-The proposed create operation freezes the source ID, a generated child ID, the
-target name, and any time selection. The source App/fs layer creates the
-snapshot and durable dependency pin. Only after the child proof and Control
-directory commit succeed does the child become `ACTIVE` and connectable.
-
-If a response is lost, query or retry the same operation. Do not generate a new
-child ID or resample a relative time such as "now".
-
-## Rename and query
-
-Rename and directory reads operate on Control's persistent branch directory.
-They do not wake the SQLite instance or ask fs to rename physical storage.
-Renaming leaves branch ID, source relation, Endpoint, Token, storage, and
-Runtime binding unchanged.
-
-## Delete and reclamation
-
-Delete targets an explicit branch ID and does not recursively delete
-descendants. The branch stops admitting new children, settles in-flight work,
-logically deletes the target, and later releases source references when safe.
-Ancestors can reclaim retained pages only after no live descendant depends on
-them.
-
-The initial scope has one source per branch. Merge, multiple parents, backward
-cascade deletion, and cross-Control family copying are outside the proposal.
-
+- 创建中断、回执输出失败或响应未知：检查原实例的 `branch list`，必要时分页，并用 `show --branch NAME` 核对可见分支身份与状态。已报告的 operation ID 留作排查；分支暂未出现不证明原创建失败，同名也不证明是原操作。无法确定时报告未知，不再次 create。
+- 删除结果未知：先核对原目标和可用的操作信息。确需重试时使用原实例 ID 和原分支 ID 加 `--by-id`，不重新按名称选择。重试不是恢复原幂等请求。
+- CLI 报告已有其他未完成请求时，先按该请求所属流程处理；不要删除本地待完成记录来绕过阻塞。

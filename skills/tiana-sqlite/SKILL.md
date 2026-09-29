@@ -1,6 +1,6 @@
 ---
 name: tiana-sqlite
-description: 查询 Tiana SQLite 表结构、执行 SQL、连接数据库与 JavaScript 应用。创建实例、登录和发布应用使用 tiana。
+description: 查询 Tiana SQLite 表结构、执行 SQL、选择数据库分支并连接命令行与 JavaScript 应用。创建实例、登录和发布应用使用 tiana；创建和删除数据库分支使用 tiana-branches。
 license: MIT
 metadata:
   author: Tiana Cloud
@@ -15,7 +15,7 @@ metadata:
 
 ## 查询与命令行
 
-1. 确认用户指定的完整实例 ID；名称有歧义时先选择，不在失败后切换目标。
+1. 确认用户指定的完整实例 ID 和目标分支。`--branch NAME` 按精确名称选择；省略时连接默认分支（固定 ID `main`）。需要列出、创建或删除分支时使用 [Tiana 分支](../tiana-branches/SKILL.md)。名称有歧义时先选择，不在失败后切换目标。
 2. 查询 `sqlite_schema` 和 `pragma_table_info` 后再使用现有表。读取行时限制数量，保留大整数和数据库返回类型。
 3. 明确目标和范围后执行用户要求的 DDL 或修改；删除范围不明确时先澄清。
 4. CLI 的每次调用是独立连接，不跨调用拆分事务。SQL 文件中的事务语句在同一会话顺序执行；不要假设失败或断线证明已回滚。

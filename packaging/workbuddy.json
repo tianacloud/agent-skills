@@ -10,14 +10,14 @@
     "tiana-sqlite": {
       "display_name": "Tiana SQLite",
       "display_name_en": "Tiana SQLite",
-      "description_zh": "使用 Tiana CLI 查看表结构、参数化读写 SQLite，并为 JavaScript、Shell 和 Rust 应用接入数据库；预览版。",
-      "description_en": "Inspect schemas, execute parameterized SQLite queries and connect JavaScript, shell and Rust applications to Tiana SQLite; preview."
+      "description_zh": "查看 SQLite 表结构、执行 SQL、选择数据库分支，并连接 JavaScript、Shell 和 Rust 应用。",
+      "description_en": "Inspect SQLite schemas, execute SQL, select database branches and connect JavaScript, shell and Rust applications."
     },
     "tiana-branches": {
-      "display_name": "Tiana 数据库分支预览",
-      "display_name_en": "Tiana Database Branches Preview",
-      "description_zh": "基于尚未发布的设计草案规划 Tiana 数据库分支生命周期与客户端流程。",
-      "description_en": "Plan Tiana database branch lifecycle and client flows from the unreleased design proposal."
+      "display_name": "Tiana 数据库分支",
+      "display_name_en": "Tiana Database Branches",
+      "description_zh": "使用 CLI 列出、创建和删除 SQLite 分支，选择来源与历史时间、设置 TTL，并处理异步结果。",
+      "description_en": "List, create and delete SQLite branches with the CLI, select sources and historical timestamps, set TTL, and handle asynchronous outcomes."
     },
     "tiana-two-to-three": {
       "display_name": "从两个人，到三个人",

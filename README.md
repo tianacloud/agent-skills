@@ -38,9 +38,9 @@ skills/
 ├── tiana-ledger/          Personal income and expense ledger
 ├── tiana-notes/           Autosaving notebook with search and folders
 ├── tiana-calendar/        Personal calendar and daily agenda
-└── tiana-branches/        Database branch design (preview only)
+└── tiana-branches/        SQLite database branch management
     ├── SKILL.md
-    └── references/        Lifecycle model and proposed API
+    └── references/        CLI operations, identity and recovery
 ```
 
 ### `tiana`
@@ -79,9 +79,9 @@ Use a verified SDK build with the account-auth provider before building them.
 
 ### `tiana-branches`
 
-Plan around Tiana's preview database-branch lifecycle. This skill includes the
-current design-only Control API proposal and does not present it as a released
-or callable public API.
+List, create and delete SQLite database branches with the CLI, select source
+branches and historical timestamps, configure creation TTL, and handle
+asynchronous results and uncertain outcomes.
 
 ## Install
 
@@ -112,7 +112,7 @@ Import the desired directory under `skills/`, preserving its `SKILL.md`, `refere
 directory with `SKILL.md` at the archive root.
 For application development, import `tiana`, `tiana-sqlite`, and the relevant
 application starter.
-`tiana-branches` is only needed for database branch design work.
+`tiana-branches` covers SQLite database branch management.
 
 ### WorkBuddy
 

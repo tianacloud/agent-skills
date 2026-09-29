@@ -19,7 +19,7 @@ tiana sqlite shell INSTANCE -f schema.sql --format json
 
 删除使用 `sqlite/git delete INSTANCE`；默认需要终端确认。仅在用户已授权相应删除时使用 `--force`。`--wait` 等待删除操作成功，不等于物理存储已经回收完毕。
 
-SQLite 分支使用 `tiana sqlite branch list/create/delete`。分支创建和删除的等待失败后检查原 Operation ID；不要重复创建来恢复，名称相同不代表原操作。
+SQLite 分支操作使用 [Tiana 分支](../../tiana-branches/SKILL.md)。`branch list` 每次只返回一页；创建和删除默认只报告受理。分支创建没有本地待完成请求恢复机制，不能套用上面的实例创建重试规则；结果未知时先核实，保留原 Operation ID。分支查询和连接用 `sqlite show/shell INSTANCE --branch NAME`，省略时选择默认分支（固定 ID `main`）。
 
 应用列表使用 `tiana web list`；脚本可用 `tiana web list --json` 取得全部分页的 `data.items`，保存真实 `id`。列表只包含当前账号拥有的应用；名称可以重复，不能仅凭同名断定是原应用。
 

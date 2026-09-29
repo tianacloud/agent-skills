@@ -1,11 +1,12 @@
 # SQL 命令
 
-使用 `tiana sqlite shell INSTANCE`，其中 INSTANCE 是已确认的完整实例 ID。
+使用 `tiana sqlite shell INSTANCE`，其中 INSTANCE 是已确认的完整实例 ID。省略 `--branch` 时选择默认分支；用户指定其他分支时，在每次 SQL 调用中保持相同的 `--branch NAME`，包括表结构查询、写入和事后核实。`--branch` 接受精确名称，不接受分支 ID。
 
 ```sh
 tiana sqlite shell INSTANCE -e "SELECT name, type, sql FROM sqlite_schema WHERE type IN ('table','view') ORDER BY name LIMIT 100" --format json
 tiana sqlite shell INSTANCE -e "SELECT * FROM pragma_table_info('notes') LIMIT 100" --format json
 tiana sqlite shell INSTANCE -f schema.sql --format json
+tiana sqlite shell INSTANCE --branch preview -e "SELECT name FROM sqlite_schema LIMIT 100" --format json
 ```
 
 文件模式先做语法预检，再按顺序执行。事务语句保持同一连接；每条 CLI 调用之间不共享事务、TEMP 表或会话设置。不要使用不支持的 `--atomic`。

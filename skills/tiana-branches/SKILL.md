@@ -1,6 +1,6 @@
 ---
 name: tiana-branches
-description: Plan and review Tiana database branch workflows, branch identity, create/delete/rename behavior, and the proposed Control branch API. Use when a task explicitly mentions Tiana branches, branch families, reset-from-parent-style workflows, branch retention, or implementing a future Tiana branch client. This capability is preview/design-only and not a released public API.
+description: 使用 Tiana CLI 列出、创建和删除 SQLite 数据库分支，设置创建时的来源、历史时间、描述和 TTL，并处理等待与结果不确定的情况。分支内 SQL 查询和连接使用 tiana-sqlite；Git 源码分支使用 tiana 的源码发布流程。
 license: MIT
 metadata:
   author: Tiana Cloud
@@ -9,29 +9,21 @@ metadata:
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-branches
 ---
 
-# Tiana database branches — preview
+# Tiana 数据库分支
 
-Tiana branch lifecycle is a design proposal under review. Use this skill for
-product planning, API review, client design, and implementation preparation.
-Do not claim that the proposed routes can be called in a current deployment.
-Use the parent `tiana` skill for existing instance management; Git source
-repositories and application releases use its source-release workflow.
+通过 `tiana sqlite branch` 管理数据库分支。安装与登录使用 [Tiana](../tiana/SKILL.md)，分支内查询使用 [Tiana SQLite](../tiana-sqlite/SKILL.md)。相对路径以本 `SKILL.md` 所在目录为基准；分开安装时从已安装技能目录表定位同名依赖。
 
-## Read by task
+## 按任务阅读
 
-- For identity, lifecycle, retention, and workflow semantics, read
-  [Lifecycle model](references/lifecycle-model.md).
-- For proposed paths and request/response expectations, read
-  [Draft API](references/draft-api.md).
+- 列出、创建或删除分支：阅读 [CLI 操作](references/cli.md)。
+- 核对实例、分支和 Endpoint 身份，或处理等待中断：阅读 [身份与操作结果](references/lifecycle-model.md)。
 
-## Working rules
+## 操作原则
 
-- Label commands, examples, and UI plans as preview or design-only.
-- Keep `branch_id` as permanent identity and `branch_name` as a reusable label.
-- Freeze source and target IDs under the original idempotent operation. A retry
-  must continue that operation rather than resolve names again.
-- Treat logical deletion separately from physical resource reclamation.
-- Do not invent exact JSON fields, error codes, limits, or SDK methods that the
-  draft has not frozen.
-- If the user wants to execute a branch operation, explain that the public API
-  is not released and offer a design or integration plan instead.
+- 先确定完整实例 ID，再核对分支名称和 ID。`--parent`、`--branch` 按精确名称选择；默认分支的固定 ID 是 `main`。
+- 创建、删除默认只报告受理；需要等待结果时加 `--wait`。创建成功后再取得该分支连接信息。
+- 创建结果未知时先检查原实例下的分支和已报告的操作信息，不直接重跑 create；当前 CLI 没有分支创建的本地恢复机制。
+- 删除前确认目标和用户授权；结果未知时保留原实例 ID、分支 ID，核实后仅按原 ID 重试。
+- 当前 CLI 只提供分支 `list/create/delete`。重命名、reset、历史列表及修改已有分支保护或过期设置尚无对应 CLI 子命令；遇到这些请求说明 CLI 边界，不编造命令或改用 Control 草案接口。
+
+部署是否支持相应能力，以实际 CLI 返回为准；命令已实现不代表当前服务部署已验证。
