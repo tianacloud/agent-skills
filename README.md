@@ -3,11 +3,26 @@
 Agent Skills that help coding agents build, publish and maintain applications
 with Tiana Cloud, including SQLite connections and source releases in Tiana Git.
 
+## 安装并开始任务
+
+这个仓库提供技能。用户同时要求安装技能和完成任务时，按以下流程衔接：
+
+1. 用当前客户端支持的方式，从用户指定的仓库安装技能。所需技能的 `SKILL.md` 与引用资源可读取后，继续用户任务；本仓库的 npm 打包脚本属于分发维护流程。
+2. 根据用户当前需求和技能描述选择入口，只加载对应技能及其明确引用的依赖。已有匹配的应用模板时从该模板技能开始；通用应用创建、发布或实例管理从 [Tiana](skills/tiana/SKILL.md) 开始；数据库操作从 [SQLite](skills/tiana-sqlite/SKILL.md) 开始。仅要求安装时，报告安装结果即可。
+3. 需要使用应用模板时，将所选技能的 `assets/app/` 复制到用户的应用项目目录；尚无项目时，在技能安装目录和仓库检出之外创建独立应用目录。应用的依赖安装、Git、构建与发布在应用目录执行。技能来源仓库及其 Git remote 属于技能源码。
+4. 任务需要 CLI 且命令缺失或登录需要恢复时，按 [CLI 安装与登录](skills/tiana/references/getting-started.md) 处理，然后继续原任务。
+
+技能文件的相对路径从各自 `SKILL.md` 所在目录解析；安装器若将技能分别存放，使用客户端返回的安装位置。
+
 ## Skills
 
 `tiana` is the shared entry point. Specialist skills are sibling directories,
 identify `tiana` as their parent, and can be selected directly for a focused task.
-Load detailed references only for the workflow being performed.
+Load detailed references only for the workflow being performed. After installation,
+start at the selected skill’s `SKILL.md`; application work uses that skill’s
+references/assets and the explicitly linked `tiana` / `tiana-sqlite` dependencies.
+Copy the application template to a project directory before running its npm
+commands. The repository root package manages skill distribution.
 
 Deployment routing belongs to the outer launcher. When needed, the user or
 runtime sets TIANA_API_ORIGIN before starting the agent or shell. Skills inherit
@@ -48,10 +63,6 @@ Query and connect to Tiana SQLite with the CLI, JavaScript SDK, shell or Rust
 transport SDK. Browser connection, protocol selection and result decoding live
 here; application packaging and publication live in `tiana`.
 
-The end-to-end candidate uses the current CLI's native SQLite shell, account
-login, Git transport and integrated application commands. JavaScript application
-SQL uses typed parameters through the documented SDK flow. The old direct CLI
-`sql execute` grammar and local first-token-save requirement are superseded.
 Install `@tianacloud/cli` from npm; see
 [CLI installation](skills/tiana/references/getting-started.md).
 Browser application guidance requires the new SDK `auth` interface and a shared
@@ -85,7 +96,7 @@ commands. Follow [CLI installation](skills/tiana/references/getting-started.md)
 in the agent's execution environment. For Windows and WorkBuddy, see
 [Git helper troubleshooting](skills/tiana/references/windows-git-helper.md).
 
-Install all skills from GitHub with a compatible Agent Skills client:
+Install skills from GitHub with a compatible Agent Skills client:
 
 ```sh
 npx skills add tianacloud/agent-skills
@@ -102,8 +113,7 @@ the portable plugin format discover the immediate children of `skills/`.
 
 ### Doubao and other directory-based clients
 
-Import the desired directory under `skills/`, preserving its `SKILL.md` and
-`references/` files together. If the client accepts ZIP uploads, zip one skill
+Import the desired directory under `skills/`, preserving its `SKILL.md`, `references/`, and any `assets/` files together. If the client accepts ZIP uploads, zip one skill
 directory with `SKILL.md` at the archive root.
 For application development, import `tiana`, `tiana-sqlite`, and the relevant
 application starter.
@@ -111,61 +121,15 @@ application starter.
 
 ### WorkBuddy
 
-WorkBuddy marketplace uploads require additional localized metadata. Generate
-one ready-to-upload archive per skill:
+Import the skill archives supplied for your client. For application development,
+load `tiana`, `tiana-sqlite`, and the chosen application starter, then follow their
+`SKILL.md` entry points.
 
-```sh
-npm ci
-npm run build:workbuddy
-```
+## Maintaining this repository
 
-The archives are written to `dist/workbuddy/` and are not committed.
-
-### WorkBuddy CLI Connector (0.2.0 preview)
-
-```sh
-npm run build:connector
-```
-
-This creates `dist/workbuddy/tiana-cloud-0.2.0.zip` and its SHA-256. The ZIP
-contains CLI installation/auth configuration and the two canonical skills
-`tiana` and `tiana-sqlite`; it does not bundle the native CLI tarball.
-The configured download URL is a release target, not yet a published artifact.
-See [platform handoff](docs/workbuddy-platform-handoff.md) for U-02 and remaining
-installation prerequisites. A generated ZIP is not a verified Connector install.
-
-The agreed CLI + Skill design is in
-[`docs/workbuddy-connector-mcp.md`](docs/workbuddy-connector-mcp.md).
-
-## Development
-
-The directories under `skills/` are the canonical source. Edit them first and
-generate distribution archives from them; installed copies and generated ZIPs
-are not separate instruction sources. npm and portable plugins read `skills/`
-directly. WorkBuddy builds copy those same files and add localized metadata
-from `packaging/`; they do not maintain another set of skill instructions.
-
-```sh
-npm ci
-npm run validate:ci
-npm run build:workbuddy
-npm run build:connector
-```
-
-The ledger, notebook and calendar templates have SQLite/SDK and browser fixtures.
-With Node.js 22.13+ and Chromium installed (`npx playwright install chromium`),
-run `npm run test:apps`. These tests build isolated source repositories, use the
-published SDK against in-memory SQLite, and exercise browser editing and save
-recovery. They do not provision or validate a deployed Tiana service.
-
-For an isolated process-level auth scheduling test, point
-`TIANA_TEST_CLI_BINARY` at a locally built CLI and run `npm run test:connector-auth`.
-It uses a loopback fixture and a temporary credential directory, waits more
-than 10 seconds before approval, and checks restart status/logout/cancellation.
-It neither opens the browser nor proves WorkBuddy's own scheduling behavior.
-
-The source skills follow the [Agent Skills specification](https://agentskills.io/specification).
-The root `plugin.json` follows [Agent Plugins v1](https://agent-plugins.org/specification).
+Package generation, Connector integration and repository tests are covered in
+[Contributing](https://github.com/tianacloud/agent-skills/blob/main/CONTRIBUTING.md).
+These are maintainer workflows, separate from creating a customer's application.
 
 ## License
 

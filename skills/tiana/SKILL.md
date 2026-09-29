@@ -1,6 +1,6 @@
 ---
 name: tiana
-description: 使用 Tiana Cloud 创建和发布应用、管理实例与 CLI 登录，并将应用版本源码同步到 Tiana Git。Tiana 应用任务从此技能开始；数据库查询与连接使用 tiana-sqlite，数据库分支设计使用 tiana-branches。
+description: 使用 Tiana Cloud 创建和发布应用、管理实例与 CLI 登录，并将应用版本源码同步到 Tiana Git。通用应用任务从此技能开始；已有对应模板时从模板技能开始并引用本技能；数据库查询与连接使用 tiana-sqlite，数据库分支设计使用 tiana-branches。
 license: MIT
 metadata:
   author: Tiana Cloud
@@ -16,16 +16,18 @@ metadata:
 
 ## 选择工作流程
 
+收到“安装 skills 并创建应用”的组合请求时，技能安装完成后继续创建应用。用户需求匹配下表的应用模板时，从对应模板开始；其他任务按任务类型选择流程，共享指引按需读取。技能来源仓库仅用于取得技能，模板复制到独立应用项目后再执行应用命令，其 Git remote 不作为客户应用的源码托管选择。
+
 | 任务 | 指引 |
 | --- | --- |
 | 创建或发布 Tiana 应用 | 按下方应用流程操作。 |
-| 创建备孕陪伴、学习管理或协作白板应用 | 分别使用 `tiana-two-to-three`、`tiana-study` 或 `tiana-whiteboard` 的完整模板，再按本技能发布。 |
-| 创建账单、记事本或日历应用 | 分别使用 `tiana-ledger`、`tiana-notes` 或 `tiana-calendar` 的完整模板，再按本技能发布。 |
+| 创建备孕陪伴、学习管理或协作白板应用 | 分别使用 [备孕](../tiana-two-to-three/SKILL.md)、[学习](../tiana-study/SKILL.md) 或 [白板](../tiana-whiteboard/SKILL.md) 的完整模板，再按本技能发布。 |
+| 创建账单、记事本或日历应用 | 分别使用 [账单](../tiana-ledger/SKILL.md)、[记事本](../tiana-notes/SKILL.md) 或 [日历](../tiana-calendar/SKILL.md) 的完整模板，再按本技能发布。 |
 | 管理实例或恢复 CLI 凭据 | 按下方实例管理流程操作。 |
 | 查询 SQLite、查看表结构或连接应用代码 | 使用 `tiana-sqlite`。 |
 | 规划数据库分支生命周期或未来的分支客户端 | 使用 `tiana-branches`（仅供设计）。 |
 
-按当前任务读取对应技能和参考资料。明确的 SQL 或分支设计任务可以直接从对应技能开始。
+按当前任务读取对应技能和直接链接的参考资料；相对路径以本 `SKILL.md` 所在目录为基准，跨技能路径按已安装技能位置解析。普通应用任务无需读取技能仓库的 `docs/`、`packaging/` 或根目录构建脚本；这些资料服务于技能分发和 Connector 维护。应用模板复制到项目目录后，在该目录安装依赖、构建和执行 Git。明确的 SQL 或分支设计任务可以直接从对应技能开始。
 
 ## 创建和发布应用
 
