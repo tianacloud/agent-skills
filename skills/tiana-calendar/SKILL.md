@@ -19,7 +19,7 @@ metadata:
 
 完成构建、清单与源码关联核对后发布到 Tiana，以 CLI 发布状态确认交付。页面交互和实际使用由用户打开托管链接自行检查；本流程不要求 Agent 安装或调用浏览器自动化工具，也不以浏览器验收作为发布前置步骤。
 
-1. 加载已安装的 `tiana` 和 `tiana-sqlite`，按应用流程完成账号与数据库检查。CLI 和原生 Git 继承 launcher 的 `TIANA_API_ORIGIN`，技能不设置部署地址。
+1. 加载已安装的 `tiana` 和 `tiana-sqlite`，按应用流程完成账号与数据库检查。
 2. 将 `assets/app/` 复制为独立应用源码，将 [gitignore.template](assets/app/gitignore.template) 重命名为 `.gitignore`。把已核实的 App ID（新建时来自 `tiana web create NAME --json` 的 `data.id`）和数据库实例 ID 分别填入 `public/tiana.app.json` 的 `web_id` 与 `database_instance_id`。模板用该 App ID 区分同库中的应用记录。对选定实例执行 `schema.sql`，首屏保持零记录与可操作的起步引导。
 3. 依照 [JavaScript 数据库连接](../tiana-sqlite/references/js-sdk.md) 核对 SDK 依赖与运行时接口用法。模板固定的 `@tianacloud/serverless@0.1.0-beta.1` 已核验含 `auth: TianaAuthProvider`；使用 `window.tiana.auth` 与共享 adapter，`connection()` 只供连接元信息。运行 `npm ci`。正式记录通过参数化 SQL 保存到 Tiana SQLite。
 4. 按 [源码发布指引](../tiana/references/source-releases.md) 创建或复用 Tiana Git，保存实际实例 ID 到 `source.json`。提交应用源码、锁文件、SQL、清单与构建配置，再按同一发布指引的“构建时传入源码提交”步骤，在命令工具中核验干净工作树并读取 HEAD，执行 `node scripts/build.mjs <完整提交号>`；[构建脚本](assets/app/scripts/build.mjs)接收该提交号，只向 `dist/tiana.app.json` 写入 Git ID 和完整提交 hash。核对模块、CSS、清单和源码关联字段。

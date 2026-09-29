@@ -13,8 +13,6 @@ metadata:
 
 执行 SQL 前阅读 [SQL 命令](references/sql.md)；JavaScript 应用直接阅读下方应用连接指引。实例创建、登录和应用发布使用 [Tiana](../tiana/SKILL.md)。相对路径以本 `SKILL.md` 所在目录为基准；客户端分开存放技能时，从已安装技能目录表定位同名依赖，不向上遍历仓库寻找安装或 Connector 文档。
 
-执行 `tiana` 命令时继承启动 Agent 或 Shell 的环境。技能不设置、覆盖或逐命令注入 `TIANA_API_ORIGIN`，也不查找父技能的部署配置文件；地址缺失或歧义交由外围环境处理。
-
 ## 查询与命令行
 
 1. 确认用户指定的完整实例 ID；名称有歧义时先选择，不在失败后切换目标。

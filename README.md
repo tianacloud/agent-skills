@@ -24,12 +24,6 @@ references/assets and the explicitly linked `tiana` / `tiana-sqlite` dependencie
 Copy the application template to a project directory before running its npm
 commands. The repository root package manages skill distribution.
 
-Deployment routing belongs to the outer launcher. When needed, the user or
-runtime sets TIANA_API_ORIGIN before starting the agent or shell. Skills inherit
-that environment for CLI and native Git commands; they do not inject/override
-it or carry a management-origin configuration file. Missing or ambiguous origins
-are reported to the launcher/user instead of choosing a deployment in the skill.
-
 ```text
 skills/
 ├── tiana/                 Application workflow, instances, login and source releases

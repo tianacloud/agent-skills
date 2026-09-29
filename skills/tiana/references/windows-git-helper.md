@@ -4,7 +4,7 @@
 
 ## 核验安装与入口
 
-需要安装 CLI 时先读 [Windows CLI 安装](windows-install.md)，按实际失败阶段恢复；安装器子进程被拒绝时，切换外层 Shell 后重装仍可能失败。确认 Node.js 20+、Git for Windows 与安装命令成功后执行：
+需要安装 CLI 时先读 [Windows CLI 安装](windows-install.md)，按实际失败阶段恢复。确认 Node.js 20+、Git for Windows 与安装命令成功后执行：
 
 ```powershell
 npm.cmd ls --global @tianacloud/cli --depth=0
@@ -27,7 +27,7 @@ tiana.cmd git remote-helper --help
 | `npm ls` 缺包、版本不符，或 prefix 下缺少 helper 入口 | 查看安装错误；`npm.cmd config get bin-links` 应为 `true`。解决安装原因后重装；若明确关闭了命令链接，可在安装命令上加 `--bin-links=true`。由 npm 生成命令入口。 |
 | prefix 下入口存在，但 `where.exe` 找不到命令 | 将实际 `$npmPrefix` 加入 Agent 启动环境的 PATH，重新启动 Agent，再在其执行环境中核验。Windows 全局命令目录就是 prefix 本身。 |
 | `where.exe` 返回多个位置，或 `tiana` 版本与 `npm ls` 不符 | 核对 Agent 所用 Node/npm 和 PATH 顺序，确保调用本次核验安装的命令。 |
-| 命令已找到，但报告原生二进制缺失或下载失败 | 按 [Windows CLI 安装](windows-install.md)区分下载、校验、脚本跳过和解压子进程失败，再处理对应原因。 |
+| 命令已找到，但报告原生二进制缺失或下载失败 | 按 [Windows CLI 安装](windows-install.md)区分下载、校验、脚本跳过和解压失败，再处理对应原因。 |
 
 要验证是否只是当前进程缺少 PATH，可在**同一次 PowerShell 调用**中临时加入目录并重试原 Git 操作：
 

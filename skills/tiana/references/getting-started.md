@@ -4,7 +4,7 @@
 
 ## 安装
 
-Windows 安装前先阅读 [Windows CLI 安装](windows-install.md)，确认实际 Node 平台、安装器子进程要求与日志方式。
+Windows 安装前先阅读 [Windows CLI 安装](windows-install.md)，确认实际 Node 平台、安装版本与日志方式。
 
 通过 npm 安装 `@tianacloud/cli`。安装需要 Node.js 20 或更高版本，并能访问 npm registry 和 Gitee 发布附件；使用 Tiana Git 还需要原生 Git（Windows 使用 Git for Windows）。
 
@@ -12,13 +12,11 @@ Windows 安装前先阅读 [Windows CLI 安装](windows-install.md)，确认实�
 npm install -g @tianacloud/cli --registry=https://registry.npmjs.org/
 ```
 
-Windows PowerShell 使用 `npm.cmd`；切换外层 Shell 不会消除安装器内部的 PowerShell 子进程。该包同时安装 `tiana` 和 `git-remote-tiana`，后者将 Git 请求交给 `tiana git remote-helper`。导入 Skill 不等于安装 CLI；已安装符合要求的版本时直接复用。
+Windows PowerShell 使用 `npm.cmd`；`0.2.2-beta.4` 已改为 Node 内解压 ZIP。该包同时安装 `tiana` 和 `git-remote-tiana`，后者将 Git 请求交给 `tiana git remote-helper`。导入 Skill 不等于安装 CLI；已安装符合要求的版本时直接复用。
 
 安装成功后重新检查版本及命令。安装失败或回滚后，先按失败阶段解决实际安装错误，再决定是否重试和核验，不能以包内存在脚本作为安装成功的依据。Windows 环境中找不到命令时，阅读 [Windows 安装与 Git helper 排查](windows-git-helper.md)。
 
-管理端选择由外围环境负责。需要指定部署时，由用户或运行器在启动 Agent 或 Shell 前设置 `TIANA_API_ORIGIN`；技能不执行 export、不按命令注入或覆盖该变量，不修改 Shell 启动文件或技能安装文件。原生 Git 与 CLI 继承同一环境。
-
-直接执行 `tiana status`。CLI 可以复用唯一已保存的管理地址；如果报告地址缺失或多个地址无法选择，说明需在外围启动环境中配置，再重新运行。不要猜测部署地址。私有 CA 使用既有 `TIANA_CA_FILE` 或用户提供的 `--ca-file`；不要关闭 TLS 校验。
+安装成功后直接执行 `tiana status`，根据 CLI 实际返回的状态继续任务或恢复登录。未执行的命令保持“尚未验证”，不从安装包 README 或环境变量预判登录与部署不可用。CLI 报告具体配置或证书错误时，如实提供错误及 CLI 的处理提示。
 
 ## 对话中的登录
 

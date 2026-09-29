@@ -27,7 +27,7 @@
 tiana git create APP_NAME --wait
 ```
 
-确认实例已就绪，并记录实例 ID。创建中断时按原始待完成请求恢复。根据返回的 Git 实例已发布 Endpoint 的主机和端口，组成 `tiana://HOST[:PORT]/repo.git`；这是用户自己的原生 Git 实例，不是平台内部源码 Git 服务。原生 Git 与 CLI 必须继承同一外围启动环境；技能不单独设置管理地址。已安装的 `git-remote-tiana` 使用该环境选定的 CLI 账号登录态。
+确认实例已就绪，并记录实例 ID。创建中断时按原始待完成请求恢复。根据返回的 Git 实例已发布 Endpoint 的主机和端口，组成 `tiana://HOST[:PORT]/repo.git`；这是用户自己的原生 Git 实例，不是平台内部源码 Git 服务。已安装的 `git-remote-tiana` 使用 CLI 保存的账号登录态。
 
 新仓库将 Tiana 配置为源码远程仓库。已有外部仓库则添加单独的 Tiana remote，保留现有 origin 和跟踪配置。复用匹配的远程地址；遇到远程名称或仓库绑定冲突时先澄清，不直接替换。上传内容保持在授权范围内，排除密钥，使用普通推送，不重写远程历史。
 

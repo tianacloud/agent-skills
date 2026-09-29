@@ -77,7 +77,7 @@ CLI 预览在进程内刷新账号凭据，等待授权同步到数据面后再�
 
 ## 刷新与错误恢复
 
-- 正常的 access token 临近到期由 SDK/CLI 处理，skills 不定时刷新、不读取 refresh token、不把管理地址注入应用。`TIANA_API_ORIGIN` 仍由启动 agent/shell 的外围环境按需设置。
+- 正常的 access token 临近到期由 SDK/CLI 处理，skills 不定时刷新、不读取 refresh token、不把管理地址注入应用。
 - `AUTH_LOGIN_REQUIRED` 或 `AUTH_REFRESH_UNCERTAIN`：报告需重新登录。结果不明的刷新可能已消费旧 refresh token，不能重试旧值。
 - `AUTH_PERSIST_FAILED`：在持有会话 provider 的可信宿主中修复凭据存储，再重试保存新凭据；不能恢复旧凭据或重新消费旧 refresh token。
 - `AUTH_NOT_READY`：尚未向数据面发送请求，后续可重新检查授权同步。CLI 浏览器代理可能只返回通用授权错误，不保证透传这些 SDK 错误码；按实际接口报告并重新认证，不自行推断刷新已成功。
