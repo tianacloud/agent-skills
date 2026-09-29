@@ -20,6 +20,7 @@ metadata:
 | --- | --- |
 | 创建或发布 Tiana 应用 | 按下方应用流程操作。 |
 | 创建备孕陪伴、学习管理或协作白板应用 | 分别使用 `tiana-two-to-three`、`tiana-study` 或 `tiana-whiteboard` 的完整模板，再按本技能发布。 |
+| 创建账单、记事本或日历应用 | 分别使用 `tiana-ledger`、`tiana-notes` 或 `tiana-calendar` 的完整模板，再按本技能发布。 |
 | 管理实例或恢复 CLI 凭据 | 按下方实例管理流程操作。 |
 | 查询 SQLite、查看表结构或连接应用代码 | 使用 `tiana-sqlite`。 |
 | 规划数据库分支生命周期或未来的分支客户端 | 使用 `tiana-branches`（仅供设计）。 |

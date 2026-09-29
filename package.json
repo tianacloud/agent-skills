@@ -27,7 +27,9 @@
     "access": "public"
   },
   "pi": {
-    "skills": ["./skills"]
+    "skills": [
+      "./skills"
+    ]
   },
   "scripts": {
     "build:workbuddy": "node scripts/build-workbuddy.mjs",
@@ -39,10 +41,12 @@
     "validate:plugin": "node scripts/validate-plugin.mjs",
     "validate:versions": "node scripts/validate-versions.mjs",
     "validate:workbuddy": "node scripts/validate-workbuddy.mjs",
-    "validate:ci": "npm run validate:skills && npm run validate:references && npm run validate:plugin && npm run validate:versions && npm run validate:workbuddy && npm run validate:connector"
+    "validate:ci": "npm run validate:skills && npm run validate:references && npm run validate:plugin && npm run validate:versions && npm run validate:workbuddy && npm run validate:connector",
+    "test:apps": "node --test scripts/everyday-apps.test.mjs scripts/everyday-apps.browser.test.mjs"
   },
   "devDependencies": {
     "fflate": "0.8.3",
+    "playwright": "1.63.0",
     "skills-ref": "0.1.5"
   }
 }

@@ -36,6 +36,24 @@
       "display_name_en": "Floating Island Whiteboard",
       "description_zh": "创建可拖拽便签、绘画和连线的协作白板，使用 Tiana SQLite 同步画布。",
       "description_en": "Build a collaborative sticky-note whiteboard with drawing and links synchronized through Tiana SQLite."
+    },
+    "tiana-ledger": {
+      "display_name": "拾账 · 账单",
+      "display_name_en": "Shizhang Ledger",
+      "description_zh": "使用 Tiana 创建个人账单与收支记账应用，包含快速记账、月份筛选和分类统计。用户要求账单 app、日常记账或收支管理时使用。",
+      "description_en": "Build a personal income and expense ledger with monthly summaries, backed by Tiana SQLite and Tiana Git."
+    },
+    "tiana-notes": {
+      "display_name": "一页 · 记事本",
+      "display_name_en": "Yiye Notebook",
+      "description_zh": "使用 Tiana 创建记事本应用，包含自动保存、全文搜索、分类和置顶。用户要求笔记 app、随手记或个人记事本时使用。",
+      "description_en": "Build an autosaving notebook with search, folders and pinned notes, backed by Tiana SQLite and Tiana Git."
+    },
+    "tiana-calendar": {
+      "display_name": "朝夕 · 日历",
+      "display_name_en": "Zhaoxi Calendar",
+      "description_zh": "使用 Tiana 创建个人日历应用，包含月历、日程列表和当天安排。用户要求日历 app、个人日程或生活安排应用时使用。",
+      "description_en": "Build a personal month calendar with daily agendas and event editing, backed by Tiana SQLite and Tiana Git."
     }
   }
 }

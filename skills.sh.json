@@ -5,17 +5,29 @@
     {
       "title": "Core",
       "description": "Build and publish Tiana applications, synchronize source releases and connect to SQLite.",
-      "skills": ["tiana", "tiana-sqlite"]
+      "skills": [
+        "tiana",
+        "tiana-sqlite"
+      ]
     },
     {
       "title": "App Starters",
       "description": "Create polished, working applications with Tiana SQLite data and Tiana Git source releases.",
-      "skills": ["tiana-two-to-three", "tiana-study", "tiana-whiteboard"]
+      "skills": [
+        "tiana-two-to-three",
+        "tiana-study",
+        "tiana-whiteboard",
+        "tiana-ledger",
+        "tiana-notes",
+        "tiana-calendar"
+      ]
     },
     {
       "title": "Preview",
       "description": "Plan for Tiana capabilities whose public interfaces are not yet released.",
-      "skills": ["tiana-branches"]
+      "skills": [
+        "tiana-branches"
+      ]
     }
   ]
 }

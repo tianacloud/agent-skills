@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "web_id": "REPLACE_WITH_ACTUAL_APP_ID",
+  "name": "拾账",
+  "rendering": "csr",
+  "routing": "hash",
+  "entry": "assets/app.js",
+  "styles": [
+    "assets/app.css"
+  ],
+  "database_instance_id": "REPLACE_WITH_ACTUAL_INSTANCE_ID"
+}

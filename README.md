@@ -26,6 +26,9 @@ skills/
 ├── tiana-two-to-three/    Pregnancy planning and family journey app starter
 ├── tiana-study/           Study planning and focus dashboard app starter
 ├── tiana-whiteboard/      Collaborative whiteboard app starter
+├── tiana-ledger/          Personal income and expense ledger
+├── tiana-notes/           Autosaving notebook with search and folders
+├── tiana-calendar/        Personal calendar and daily agenda
 └── tiana-branches/        Database branch design (preview only)
     ├── SKILL.md
     └── references/        Lifecycle model and proposed API
@@ -54,13 +57,14 @@ Install `@tianacloud/cli` from npm; see
 Browser application guidance requires the new SDK `auth` interface and a shared
 `window.tiana.auth` runtime provider. No static-token or older-version fallback is
 provided. Refresh credentials remain with the trusted CLI/runtime, never skills
-or browser code. The SDK auth implementation is currently an unpublished
-candidate; hosted publication is blocked until MGR's Bootstrap provides the same
-account-auth interface. Do not present local-preview readiness as hosted readiness.
+or browser code. The published `@tianacloud/serverless@0.1.0-beta.1` package has been verified
+to include the SDK auth interface; verify that the target hosted Bootstrap
+provides the same account-auth interface before publication. Do not present local-preview readiness as hosted readiness.
 
 ### Application starters
 
-`tiana-two-to-three`, `tiana-study`, and `tiana-whiteboard` include complete
+`tiana-two-to-three`, `tiana-study`, `tiana-whiteboard`, `tiana-ledger`,
+`tiana-notes`, and `tiana-calendar` include complete
 application templates, SQLite schemas, and guided first screens. They use
 `tiana` for source releases and hosting and `tiana-sqlite` for database access.
 Use a verified SDK build with the account-auth provider before building them.
@@ -145,6 +149,12 @@ npm run validate:ci
 npm run build:workbuddy
 npm run build:connector
 ```
+
+The ledger, notebook and calendar templates have SQLite/SDK and browser fixtures.
+With Node.js 22.13+ and Chromium installed (`npx playwright install chromium`),
+run `npm run test:apps`. These tests build isolated source repositories, use the
+published SDK against in-memory SQLite, and exercise browser editing and save
+recovery. They do not provision or validate a deployed Tiana service.
 
 For an isolated process-level auth scheduling test, point
 `TIANA_TEST_CLI_BINARY` at a locally built CLI and run `npm run test:connector-auth`.
