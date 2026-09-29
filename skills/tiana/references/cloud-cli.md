@@ -21,9 +21,9 @@ tiana sqlite shell INSTANCE -f schema.sql --format json
 
 SQLite 分支使用 `tiana sqlite branch list/create/delete`。分支创建和删除的等待失败后检查原 Operation ID；不要重复创建来恢复，名称相同不代表原操作。
 
-应用列表使用 `tiana web list`；脚本可用 `tiana web list --json` 取得全部分页的 `data.items`，保存真实 `app_id`。列表只包含当前账号拥有的应用；名称可以重复，不能仅凭同名断定是原应用。
+应用列表使用 `tiana web list`；脚本可用 `tiana web list --json` 取得全部分页的 `data.items`，保存真实 `id`。列表只包含当前账号拥有的应用；名称可以重复，不能仅凭同名断定是原应用。
 
-应用命令 `web create NAME [-m DESCRIPTION]`、`web upload ID`、`web status ID` 支持 `--json`。create 返回 MGR 生成的 `data.app_id`（9 字节随机值编码为 12 字符 base64url），CLI 不生成或提交 App ID，已有 ID 保持原值；将其保存并用作清单 `app_id`。可用 `-m "应用描述"`（等价 `--description`）填写描述，默认空，最多 1024 个 UTF-8 字节，创建和 list 的 JSON 包含 `description`。创建结果未知时重复相同名称和描述的命令恢复，不删除待完成记录、不修改描述后另发请求。上传结果未知时检查同一 App、版本，并仅用完全相同的产物恢复该版本。
+应用命令 `web create NAME [-m DESCRIPTION]`、`web upload ID`、`web status ID` 支持 `--json`。create 返回 MGR 生成的 `data.id`（9 字节随机值编码为 12 字符 base64url），CLI 不生成或提交 App ID，已有 ID 保持原值；将其保存并用作清单 `web_id`。可用 `-m "应用描述"`（等价 `--description`）填写描述，默认空，最多 1024 个 UTF-8 字节，创建和 list 的 JSON 包含 `description`。创建结果未知时重复相同名称和描述的命令恢复，不删除待完成记录、不修改描述后另发请求。上传结果未知时检查同一 App、版本，并仅用完全相同的产物恢复该版本。
 
 登录使用 `login --start --no-open --json` 和 `login --resume --json`，详见[开始使用](getting-started.md)。退出登录使用 `tiana logout`，会清理当前 origin 的账号凭据和未完成登录，不删除旧实例凭据文件。
 
