@@ -10,6 +10,16 @@
 
 将 `package.json` 和锁文件随源码提交到 Tiana Git，克隆后通过包管理器恢复依赖。SDK 包本身不放进应用仓库，候选构建也不引用其他机器无法访问的临时路径。安装失败时报告实际错误。
 
+## 核验目标托管环境
+
+配套托管运行时已实现账号 provider；文档中的能力要求不是对所有环境“尚未部署”的判定。同一任务已有目标部署、登录会话和应用数据库的有效验证结果时直接复用，环境变化或出现具体失败时再核验。
+
+1. 在目标托管页面完成登录并等待 Bootstrap 初始化，检查 `typeof window.tiana?.auth?.getAccessToken === 'function'` 和 `typeof window.tiana?.connection === 'function'`。检查页面实际加载的 Bootstrap 源码可辅助确认接口已提供，但不能仅凭文件中的字符串、行号或 HTTP 200 宣称运行成功；登录页响应也不是 Bootstrap 缺失。
+2. 调用 `connection()` 核对目标数据库和协议；六个应用模板使用 `hrana-v3`。通过下文共享 provider/SDK 通道执行只读 `SELECT 1 AS ready`，同时检查 HTTP、SQL 语句结果和返回值。仅报告接口是否存在、协议与只读结果，不输出 access token 或整个连接对象。不用 CLI SQL 或本地预览成功替代托管页面验证。
+3. 接口与只读查询通过后继续正常发布和验收，不再引用历史部署提醒报告阻塞。仅在实际确认接口缺失时报告运行时能力阻塞；登录、网络、授权或 SQL 失败分别按实际错误处理，不能一概归因为 Bootstrap 未升级。没有目标页面或浏览器验证能力时记录“托管运行时未验证”，继续可完成的构建及已授权发布步骤，并在取得托管入口后验收；未验证不能写成“已连通”或“确认未部署”。
+
+这个只读检查验证当前会话的数据读取链路。应用写入、刷新后的持久化和具体交互仍按各模板的验收步骤检查；它不证明未来刷新或所有写操作都成功。
+
 ## 运行时连接
 
 `window.tiana.connection()` 提供 `origin`、`sql_api`、实例 ID 等连接信息；应用使用共享的 `window.tiana.auth` 获取动态 access token。不要读取或缓存 `connection.tianaToken`，不要向 adapter 传入静态 `tianaToken`，也不要同时传入两种鉴权参数。
@@ -61,7 +71,7 @@ const {result} = await execute('SELECT ? AS description, ? AS cents', [
 
 CLI 预览在进程内刷新账号凭据，等待授权同步到数据面后再向页面交付 access token；并发调用共享刷新，取消一个调用不取消其他调用的刷新。业务代码只消费 provider，不从浏览器构造含 refresh token 的 `createTianaSessionAuth`，不自行轮询 MGR。`sql_api` 的选择与鉴权方式独立，仍按返回值选择 SQL 协议。
 
-配套 Web/MGR 托管 Bootstrap 已实现同一个 `window.tiana.auth` 接口，以 HttpOnly 登录会话在服务端取得并同步账号授权；浏览器不持有 refresh token。发布前核实目标环境已部署该能力。缺少能力时报告发布阻塞，不切回实例 Token，也不把本地预览成功当作托管鉴权已就绪。
+配套 Web/MGR 托管 Bootstrap 已实现同一个 `window.tiana.auth` 接口，以 HttpOnly 登录会话在服务端取得并同步账号授权；浏览器不持有 refresh token。按上文“核验目标托管环境”检查当前部署并记录结果；确认缺少能力时报告发布阻塞，不切回实例 Token，也不把本地预览成功当作托管鉴权已就绪。
 
 ## 刷新与错误恢复
 

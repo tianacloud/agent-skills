@@ -22,7 +22,7 @@
 
 SDK、参数化 SQL 和结果解析按 [JavaScript 数据库连接](../../tiana-sqlite/references/js-sdk.md)处理。应用必须使用支持 `auth` 的 SDK 和 `window.tiana.auth` provider；`window.tiana.connection()` 用于获取连接元信息。共享 provider 和 adapter，不读取 Token 快照，不保留旧 SDK、旧 Bootstrap 或实例 Token 回退路径。
 
-CLI 本地预览优先复用已保存的 CLI 登录，通过一次性本地启动链接授权浏览器；凭据刷新和持久化锁由 CLI/SDK 负责，refresh token 不交给页面。没有可用的已保存账号时才走独立 Console 登录。配套 Web/MGR 托管 Bootstrap 也提供 `window.tiana.auth`，由现有 HttpOnly 登录会话在服务端取得并同步账号授权。账号/租户级 access token 的权限不局限于应用目标实例，业务代码应在相应信任范围内运行。发布前核实目标环境具备 provider；缺失时报告阻塞，不因本地预览成功就声称托管鉴权已就绪。
+CLI 本地预览优先复用已保存的 CLI 登录，通过一次性本地启动链接授权浏览器；凭据刷新和持久化锁由 CLI/SDK 负责，refresh token 不交给页面。没有可用的已保存账号时才走独立 Console 登录。配套 Web/MGR 托管 Bootstrap 也提供 `window.tiana.auth`，由现有 HttpOnly 登录会话在服务端取得并同步账号授权。账号/租户级 access token 的权限不局限于应用目标实例，业务代码应在相应信任范围内运行。按 [目标托管环境核验](../../tiana-sqlite/references/js-sdk.md#核验目标托管环境)检查实际 provider 和只读 SQL 链路；确认缺失才报告能力阻塞，未验证时如实记录验证状态，不因本地预览成功就声称托管鉴权已就绪。
 
 凭据只保存在内存，不写入源码、构建产物或浏览器持久存储。skills 不读取 refresh token、不调用刷新接口、不设置管理地址；刷新和授权同步由 SDK/CLI 或运行时代理处理，部署路由由外围环境负责。鉴权失败不自动重放 SQL，写入结果不明时先用独立只读查询核实。
 
@@ -43,7 +43,7 @@ CLI 本地预览优先复用已保存的 CLI 登录，通过一次性本地启�
 }
 ```
 
-关联 Tiana Git 时，构建产物还必须同时含 `git_instance_id` 和 `source_commit`。前者使用实际 Git 实例 ID（`git-...`），后者使用完整的小写 commit hash（40 或 64 位）；具体提交、构建与远端引用核验顺序见[应用源码与版本发布](source-releases.md)。在已提交的源码模板中保存仓库 ID，由构建脚本读取干净源码 HEAD 生成产物的 commit，避免提交 hash 自引用。两字段都省略表示未关联；只填一个会被拒绝。该接口需要配套 CLI/MGR/Console，未部署时明确报告阻塞；更改关联必须发布新版本。
+关联 Tiana Git 时，构建产物还必须同时含 `git_instance_id` 和 `source_commit`。前者使用实际 Git 实例 ID（`git-...`），后者使用完整的小写 commit hash（40 或 64 位）；具体提交、构建与远端引用核验顺序见[应用源码与版本发布](source-releases.md)。在已提交的源码模板中保存仓库 ID，在命令工具中核验干净工作树并读取 HEAD，再将完整提交号传给构建脚本生成产物的 commit，避免提交 hash 自引用。两字段都省略表示未关联；只填一个会被拒绝。该接口需要配套 CLI/MGR/Console，未部署时明确报告阻塞；更改关联必须发布新版本。
 
 服务端提供 HTML 模板并填入运行时元数据。只上传应用模块、资源和清单。构建路径必须位于构建目录内，不包含 HTML 文件、隐藏文件、符号链接或密钥。清单仍是需要鉴权的元数据，已发布的 JS、CSS 和资源可公开访问。
 

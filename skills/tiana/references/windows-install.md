@@ -1,6 +1,6 @@
 # Windows CLI 安装
 
-先在 Agent 实际执行命令的环境中检查现有 `tiana --version`、`tiana login --help`、`tiana web --help`；PowerShell 使用 `tiana.cmd`。符合[开始使用](getting-started.md)要求就直接复用。导入 Skill 不会安装 CLI。
+先在 Agent 实际执行命令的环境中检查现有 `tiana --version`、`tiana login --help`、`tiana web --help`；PowerShell 使用 `tiana.cmd`。符合[开始使用](getting-started.md)要求就直接复用，不因此前采用过手工安装而重新安装。导入 Skill 不会安装 CLI。
 
 ## 确认环境，再安装一次
 
@@ -35,12 +35,13 @@ Set-Content -Path $installResult -Value $installExit
 | --- | --- |
 | 下载失败、连接超时或 HTTP 错误 | 根据日志修复对应 npm registry 或 Gitee 附件访问，再重试安装。 |
 | SHA-256 不匹配 | 保留校验失败信息，核对官方发布附件；不跳过校验，不安装该附件。 |
+| Node 启动子进程返回 `EBUSY` 等错误，但没有明确的策略拒绝 | 保留原始错误、失败阶段与实际 Node/可执行文件路径；不凭错误码认定是沙箱或本机策略，不因换 Shell 就假定已修复。没有新的环境证据时不重复安装；将安装器启动失败交由安装环境排查。 |
 | 解压时报 `powershell.exe` 缺失 | 由外围安装环境补齐安装器所需的系统 PowerShell，再执行官方安装。 |
 | 沙箱明确禁止 Bash 调 PowerShell，或 Node 启动 `powershell.exe` | 记录被拒绝的命令与执行层级。由环境负责人在获准的外部终端完成官方安装，并确保 Agent 可使用同一安装结果，再回到 Agent 核验。切换外层 Shell、清缓存和重复安装不能修复子进程策略；不通过手写下载/解压脚本绕过限制。 |
 | 安装脚本被跳过，包与命令入口存在但原生二进制缺失 | `--ignore-scripts` 不会完成 CLI 安装。仅在确认脚本执行获准且先前只是误跳过时，执行 `npm.cmd rebuild --global @tianacloud/cli --ignore-scripts=false --foreground-scripts`，然后核验；它仍会调用相同安装器，不能解决沙箱拒绝。 |
 | 安装退出码为 0，但命令找不到或版本不一致 | 按 [Windows Git helper 与 PATH 排查](windows-git-helper.md)检查实际 prefix、入口与 PATH，不先重装。 |
 
-不把 `--ignore-scripts` 加自行下载、校验和摆放二进制作为默认替代安装流程。失败后先读错误；当前安装器会清理自身临时解压目录，无需先卸载 CLI 或清空 npm 缓存。
+不把 `--ignore-scripts` 加自行下载、校验和摆放二进制作为默认替代安装流程。附件或 exe 的哈希匹配只能证明与对应期望值一致，不能单独证明手工安装与官方流程等价；官方安装器当前使用包内 `release.json` 的附件 SHA-256，不把其他清单的二次校验描述为官方安装步骤。失败后先读错误；当前安装器会清理自身临时解压目录，无需先卸载 CLI 或清空 npm 缓存。
 
 成功后在 Agent 的实际环境中核验 `tiana.cmd --version`、`tiana.cmd login --help`、`tiana.cmd web --help`。需要 Tiana Git 时再按 [Git helper 排查](windows-git-helper.md)核验 Git for Windows 和 helper。安装阻塞时说明具体失败阶段与所需环境能力，仍可继续不依赖 CLI 的本地工作，不宣称安装或发布成功。
 

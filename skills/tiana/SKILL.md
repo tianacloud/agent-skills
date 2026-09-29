@@ -29,7 +29,7 @@ metadata:
 
 ## 创建和发布应用
 
-一并阅读[应用开发与发布](references/csr-apps.md)与 [JavaScript 数据库连接](../tiana-sqlite/references/js-sdk.md)，按其中的接口实现应用。使用平台渲染的固定 [index.html 模板](references/index.html)、哈希路由和 `tiana.app.json`。已提供且已核实的工具、数据库和表结构直接复用；缺少哪项再查询哪项。应用连接实际使用的 Tiana 数据库，必须使用新版 SDK/Bootstrap 的动态账号鉴权，不保留静态 Token 回退。除非用户只要求本地开发，否则在托管运行时具备该能力后发布并交付访问地址；能力未就绪时报告发布阻塞。
+一并阅读[应用开发与发布](references/csr-apps.md)与 [JavaScript 数据库连接](../tiana-sqlite/references/js-sdk.md)，按其中的接口实现应用。使用平台渲染的固定 [index.html 模板](references/index.html)、哈希路由和 `tiana.app.json`。已提供且已核实的工具、数据库和表结构直接复用；缺少哪项再查询哪项。应用连接实际使用的 Tiana 数据库，必须使用新版 SDK/Bootstrap 的动态账号鉴权，不保留静态 Token 回退。除非用户只要求本地开发，否则按 JavaScript 数据库连接中的“核验目标托管环境”完成发布与验收；根据当前部署的实际证据判断能力，确认缺失时报告发布阻塞，未验证时如实说明。
 
 发布托管版本时，按[应用源码与版本发布](references/source-releases.md)确认源码托管授权、关联 Tiana Git，并在发布托管产物前同步该版本对应的源码提交。仅开发本地版本时无需执行源码同步和发布步骤。
 

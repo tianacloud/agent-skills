@@ -43,7 +43,49 @@ git remote add tiana 'tiana://HOST:PORT/repo.git'
 
 1. 提交应用源码、构建配置、依赖声明与锁文件、数据库表结构或迁移，以及清单源码和生成步骤。注册表版本依赖保留声明与锁文件即可；引用 `file:` 本地依赖时，还需包含对应目标文件（例如本地 SDK 的 tgz）。从这个确定的源码快照构建应用；发布前处理所有额外的源码变更。
 2. 将该提交推送到关联的 Tiana 仓库。上传托管产物前，验证远程发布分支或版本标签指向该源码提交。每个版本保留持久的版本引用；已有匹配引用时复用，不移动已分配给其他版本快照的引用。
-3. 使用支持源码关联的 CLI/MGR/Console 版本发布：构建产物的 `tiana.app.json` 同时填写 `git_instance_id` 和 `source_commit`（完整的小写 40 或 64 位 Git commit hash）。先提交源码，再由构建脚本读取干净工作树的 `git rev-parse HEAD`，仅向忽略的构建目录写入 `source_commit`；不要把当前提交 hash 写进该提交自身包含的清单。已有构建的字节必须确实来自该提交，不可仅修改标签冒充新构建。源码模板保存 Git 实例 ID，构建阶段补齐 commit；本地预览读取的产物也必须包含完整字段对。
-   MGR 校验 Git 实例属于当前租户且可用，将关联保存到该 Web 版本已有的 manifest JSON。MGR 不验证远端 commit 对象，发布者必须完成上一步远端引用核验。关联字段参与不可变版本指纹：增加或更改仓库/commit 都要使用新版本，不能补写旧版本。发布后用 `tiana web status` 核对 `manifest.application` 中的两个字段，再确认 Console 详情和版本记录显示正确仓库与 commit；本地记录不能代替平台关联。未部署配套接口时报告阻塞，不删字段绕过校验，也不声称已经关联。
+3. 使用支持源码关联的 CLI/MGR/Console 版本发布：构建产物的 `tiana.app.json` 同时填写 `git_instance_id` 和 `source_commit`（完整的小写 40 或 64 位 Git commit hash）。先提交源码，再在命令工具中核验干净工作树、读取 `git rev-parse HEAD` 并传给构建脚本（见下方“构建时传入源码提交”），仅向忽略的构建目录写入 `source_commit`；不要把当前提交 hash 写进该提交自身包含的清单。已有构建的字节必须确实来自该提交，不可仅修改标签冒充新构建。源码模板保存 Git 实例 ID，构建阶段补齐 commit；本地预览读取的产物也必须包含完整字段对。
+   MGR 校验 Git 实例属于当前租户且可用，将关联保存到该 Web 版本已有的 manifest JSON。MGR 不验证远端 commit 对象，发布者必须完成上一步远端引用核验。`web status` 的指纹与关联字段匹配只证明平台保存的版本信息符合上传内容，不证明产物由该源码构建，也不证明临时拆开的步骤与原构建等价。关联字段参与不可变版本指纹：增加或更改仓库/commit 都要使用新版本，不能补写旧版本。发布后用 `tiana web status` 核对 `manifest.application` 中的两个字段，再确认 Console 详情和版本记录显示正确仓库与 commit；本地记录不能代替平台关联。未部署配套接口时报告阻塞，不删字段绕过校验，也不声称已经关联。
    在项目发布记录中一起保存托管地址、App ID、版本 ID、Git 实例与远程地址、版本引用和源码提交。用户明确不使用 Tiana Git 时可同时省略两个字段，详情页会显示此版本未关联源码仓库。
 4. 交付托管地址、源码仓库，以及匹配的版本与提交。源码推送失败时，停止关联的托管发布。源码上传成功但托管失败时，保留已推送的快照并报告部分完成。推送或上传中断后，先读取实际远程状态再决定是否重试；复用匹配的资源，不重复创建。
+
+
+## 构建时传入源码提交
+
+账单、记事本、日历、学习、备孕和白板这六个应用模板统一由命令工具执行 Git，构建脚本接收完整提交号并生成产物。`source.json` 保留 Git 实例 ID；提交号只写入忽略的 `dist/tiana.app.json`。在应用仓库根目录完成依赖安装和源码提交后，使用当前命令工具对应的一组命令。
+
+Bash：
+
+```sh
+sourceStatus=$(git status --porcelain) || exit 1
+[ -z "$sourceStatus" ] || { echo '请先处理并提交源码变更'; exit 1; }
+sourceCommit=$(git rev-parse HEAD) || exit 1
+node scripts/build.mjs "$sourceCommit" || exit 1
+buildStatus=$(git status --porcelain) || exit 1
+buildCommit=$(git rev-parse HEAD) || exit 1
+[ -z "$buildStatus" ] && [ "$buildCommit" = "$sourceCommit" ] || { echo '构建期间源码变化，请从确认的提交重新构建'; exit 1; }
+```
+
+PowerShell（直接使用已有的 PowerShell 命令工具）：
+
+```powershell
+$sourceStatus = git status --porcelain
+if ($LASTEXITCODE -ne 0) { throw '读取 Git 状态失败' }
+if ($sourceStatus) { throw '请先处理并提交源码变更' }
+$sourceCommit = git rev-parse HEAD
+if ($LASTEXITCODE -ne 0) { throw '读取 Git 提交失败' }
+node scripts/build.mjs $sourceCommit
+if ($LASTEXITCODE -ne 0) { throw '构建失败' }
+$buildStatus = git status --porcelain
+if ($LASTEXITCODE -ne 0) { throw '读取构建后的 Git 状态失败' }
+$buildCommit = git rev-parse HEAD
+if ($LASTEXITCODE -ne 0) { throw '读取构建后的 Git 提交失败' }
+if ($buildStatus -or $buildCommit -ne $sourceCommit) { throw '构建期间源码变化，请从确认的提交重新构建' }
+```
+
+以上命令在同一次工具调用中执行；构建期间保持源码不变。核对产物清单的 `source_commit` 与本次 `$sourceCommit`、远程版本引用一致后再上传。脚本只检查提交号格式，不证明源码归属；调用方的 Git 核验是发布流程的一部分。
+
+### 遇到子进程启动失败
+
+记录失败的具体层级和原始错误：命令工具启动失败、npm 生命周期失败、Node 启动 Git 失败、Vite/esbuild 启动失败是不同阶段。`EBUSY` 等 `spawn` / `execFileSync` 错误本身不能证明是沙箱或本机策略，只有明确的策略拒绝才能据此归因。没有环境变化时，不盲目重复同一命令。
+
+模板构建不再需要 Node 启动 Git，但 Vite/esbuild 仍可能需要子进程；这不保证整个构建能在禁止所有子进程的环境中运行。明确禁止执行的操作交由获准的构建环境完成。若旧应用仍在构建脚本中调用 Git，先按该应用的实际构建步骤修改源码并提交，再从新提交构建；保留它的其他生成逻辑，不临时拆解“等价构建”、手填产物清单或删除源码核验来宣称完成。

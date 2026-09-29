@@ -41,7 +41,10 @@ export async function prepareApp(name) {
       "-qm",
       "Application build fixture",
     ]);
-    run("npm", ["run", "build"]);
+    if (run("git", ["status", "--porcelain"]).trim())
+      throw new Error("Build fixture must use a clean source tree");
+    const sourceCommit = run("git", ["rev-parse", "HEAD"]).trim();
+    run(process.execPath, ["scripts/build.mjs", sourceCommit]);
     const sdkTypes = await readFile(
       path.join(
         directory,
