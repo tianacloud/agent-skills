@@ -10,7 +10,7 @@ metadata:
 
 # Tiana Cloud
 
-本技能使用 `@tianacloud/cli`，包中同时提供 `tiana` 与 `git-remote-tiana`。安装 CLI 或通过浏览器登录时，阅读[开始使用](references/getting-started.md)；Windows 环境中找不到 Git helper 时，阅读 [Windows 排查](references/windows-git-helper.md)。
+本技能使用 `@tianacloud/cli`，包中同时提供 `tiana` 与 `git-remote-tiana`。安装 CLI 或通过浏览器登录时，阅读[开始使用](references/getting-started.md)；Windows 安装前阅读 [Windows CLI 安装](references/windows-install.md)，命令或 Git helper 找不到时阅读 [PATH 与 helper 排查](references/windows-git-helper.md)。
 
 管理端选择由外围运行环境负责。如需指定部署，由用户或运行器在启动 Agent 或 Shell 前设置 `TIANA_API_ORIGIN`。技能直接执行 `tiana` 和原生 Git 命令，继承现有环境；不设置、覆盖或逐命令注入该变量，不维护部署地址配置文件。CLI 报告地址缺失或歧义时，说明需由外围环境配置后重新运行，不自行选择部署。
 
