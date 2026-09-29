@@ -22,7 +22,7 @@
 
 SDK、参数化 SQL 和结果解析按 [JavaScript 数据库连接](../../tiana-sqlite/references/js-sdk.md)处理。应用必须使用支持 `auth` 的 SDK 和 `window.tiana.auth` provider；`window.tiana.connection()` 用于获取连接元信息。共享 provider 和 adapter，不读取 Token 快照，不保留旧 SDK、旧 Bootstrap 或实例 Token 回退路径。
 
-CLI 本地预览优先复用已保存的 CLI 登录，通过一次性本地启动链接授权浏览器；凭据刷新和持久化锁由 CLI/SDK 负责，refresh token 不交给页面。没有可用的已保存账号时才走独立 Console 登录。配套 Web/MGR 托管 Bootstrap 也提供 `window.tiana.auth`，由现有 HttpOnly 登录会话在服务端取得并同步账号授权。账号/租户级 access token 的权限不局限于应用目标实例，业务代码应在相应信任范围内运行。按 [目标托管环境核验](../../tiana-sqlite/references/js-sdk.md#核验目标托管环境)检查实际 provider 和只读 SQL 链路；确认缺失才报告能力阻塞，未验证时如实记录验证状态，不因本地预览成功就声称托管鉴权已就绪。
+CLI 本地预览优先复用已保存的 CLI 登录，通过一次性本地启动链接授权浏览器；凭据刷新和持久化锁由 CLI/SDK 负责，refresh token 不交给页面。没有可用的已保存账号时才走独立 Console 登录。配套 Web/MGR 托管 Bootstrap 也提供 `window.tiana.auth`，由现有 HttpOnly 登录会话在服务端取得并同步账号授权。账号/租户级 access token 的权限不局限于应用目标实例，业务代码应在相应信任范围内运行。用户要求验证或排查连接故障时，按 [目标托管环境核验](../../tiana-sqlite/references/js-sdk.md#核验目标托管环境)检查实际 provider 和只读 SQL 链路。六个模板常规发布后由用户检查页面；没有运行时验证结果不等于确认缺失，也不代表链路已连通。
 
 凭据只保存在内存，不写入源码、构建产物或浏览器持久存储。skills 不读取 refresh token、不调用刷新接口、不设置管理地址；刷新和授权同步由 SDK/CLI 或运行时代理处理，部署路由由外围环境负责。鉴权失败不自动重放 SQL，写入结果不明时先用独立只读查询核实。
 
@@ -51,7 +51,7 @@ CLI 本地预览优先复用已保存的 CLI 登录，通过一次性本地启�
 
 每次发布托管版本时，先按[应用源码与版本发布](source-releases.md)完成源码同步，再上传该源码提交对应的构建产物。
 
-1. 构建后执行 `tiana web serve --dir DIST --port 4174`，保持预览服务运行，将输出的本地开发地址交给用户。
+1. 用户需要本地预览时，构建后执行 `tiana web serve --dir DIST --port 4174`，将输出地址交给用户。六个模板常规交付在构建核对后直接进入托管发布。
 2. 发布前执行 `tiana status`，需要时完成分步登录。
 3. 使用前面已经创建并保存的 App ID，发布新的不可变版本：
 

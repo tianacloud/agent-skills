@@ -70,9 +70,10 @@ Browser application guidance requires the new SDK `auth` interface and a shared
 provided. Refresh credentials remain with the trusted CLI/runtime, never skills
 or browser code. The published `@tianacloud/serverless@0.1.0-beta.1` package has been verified
 to include the SDK auth interface. Hosted runtime support is implemented; determine
-the target environment’s readiness through the [hosted runtime checks](skills/tiana-sqlite/references/js-sdk.md#核验目标托管环境),
-not a historical deployment warning. Distinguish interface presence, a successful
-authenticated read, and application acceptance; local preview does not verify hosting.
+the target environment’s readiness from current evidence, not a historical
+deployment warning. The six app starters deliver a published URL for the user
+to check; browser-based [runtime diagnosis](skills/tiana-sqlite/references/js-sdk.md#核验目标托管环境)
+is for requested verification or connection troubleshooting.
 
 ### Application starters
 
