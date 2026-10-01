@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "web_id": "REPLACE_WITH_ACTUAL_APP_ID",
+  "web_id": "REPLACE_WITH_ACTUAL_WEB_ID",
   "name": "浮岛白板",
   "rendering": "csr",
   "routing": "hash",

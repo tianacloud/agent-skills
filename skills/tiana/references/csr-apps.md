@@ -15,8 +15,8 @@
 1. 复用本轮已完成的账号和额度检查；尚未检查时执行 `tiana status`。需要登录时，按分步登录流程展示链接并确认完成，不读取或输出凭据。
 2. 项目已记录且已核实可用的数据库实例 ID 可直接复用，无需列举实例。否则用 `tiana sqlite list/show` 查找；确实没有可用数据库时执行一次 `tiana sqlite create NAME --wait`，保存完整实例 ID。中断后核实原请求和实例，不重复创建。
 3. 复用已提供的实际表结构；缺少时执行 `tiana sqlite shell INSTANCE -e "SELECT name, sql FROM sqlite_schema WHERE type='table' ORDER BY name LIMIT 100" --format json`。将表结构和迁移文件保存在项目中。对已核对的 SQL 文件执行 `tiana sqlite shell INSTANCE -f schema.sql --format json`。`-e` 接受一条语句，多语句使用 `-f`。动态数据按 [JavaScript 数据库连接](../../tiana-sqlite/references/js-sdk.md)使用参数化 SQL。
-4. 复用项目中已记录、已核实的 App ID；未记录时先用 `tiana web list --json` 查找并核实，重名时依据实际 ID 确认归属；首次创建时执行一次 `tiana web create "应用名称" -m "应用描述" --json`，保存返回的 `data.id`。新 App ID 仅由 MGR 以 9 字节随机值编码为 12 字符 base64url 生成；CLI 不生成或提交 App ID，已有 ID 保持原值；描述为可选元数据（`-m`/`--description`，最多 1024 个 UTF-8 字节），名称仅用于展示，不能用名称推导 ID，不能自行指定 ID。结果未知时保持名称和描述不变，重复同一条 create 命令恢复原请求，不删除待完成记录、不另发创建请求。成功后继续构建、预览或发布时复用该 ID，不重复创建。
-5. 在项目和清单中保存非敏感的 App、数据库 ID；清单的 `web_id` 填写实际返回的 App ID。
+4. 复用项目中已记录、已核实的 Web ID；未记录时先用 `tiana web list --json` 查找并核实，重名时依据实际 ID 确认归属；首次创建时执行一次 `tiana web create "应用名称" -m "应用描述" --json`，保存返回的 `data.id`。新 Web ID 仅由 MGR 以 9 字节随机值编码为 12 字符 base64url 生成；CLI 不生成或提交 Web ID，已有 ID 保持原值；描述为可选元数据（`-m`/`--description`，最多 1024 个 UTF-8 字节），名称仅用于展示，不能用名称推导 ID，不能自行指定 ID。结果未知时保持名称和描述不变，重复同一条 create 命令恢复原请求，不删除待完成记录、不另发创建请求。成功后继续构建、预览或发布时复用该 ID，不重复创建。
+5. 在项目和清单中保存非敏感的 Web、数据库 ID；清单的 `web_id` 填写实际返回的 Web ID。
 
 ## 运行时数据库连接
 
@@ -33,7 +33,7 @@ CLI 本地预览优先复用已保存的 CLI 登录，通过一次性本地启�
 ```json
 {
   "schema_version": 1,
-  "web_id": "ACTUAL_APP_ID",
+  "web_id": "ACTUAL_WEB_ID",
   "name": "我的账单",
   "rendering": "csr",
   "routing": "hash",
@@ -53,11 +53,11 @@ CLI 本地预览优先复用已保存的 CLI 登录，通过一次性本地启�
 
 1. 用户需要本地预览时，构建后执行 `tiana web serve --dir DIST --port 4174`，将输出地址交给用户。六个模板常规交付在构建核对后直接进入托管发布。
 2. 发布前执行 `tiana status`，需要时完成分步登录。
-3. 使用前面已经创建并保存的 App ID，发布新的不可变版本：
+3. 使用前面已经创建并保存的 Web ID，发布新的不可变版本：
 
 ```sh
-tiana web upload APP_ID --version VERSION_ID --dir DIST --json
-tiana web status APP_ID --version VERSION_ID --json
+tiana web upload WEB_ID --version VERSION_ID --dir DIST --json
+tiana web status WEB_ID --version VERSION_ID --json
 ```
 
 上传结果不确定时，仅对完全相同的产物使用同一版本恢复。产物有变化就使用新版本；恢复过程不另建数据库。
@@ -66,6 +66,6 @@ tiana web status APP_ID --version VERSION_ID --json
 
 ## 应用列表与删除
 
-用 `tiana web list --json` 核对当前账号拥有的 Web 应用，优先使用已保存的真实 ID。用户明确要求删除时，执行 `tiana web delete APP_ID --force`；需要等待源站清理完成时加 `--wait --json`。不得把失败恢复、重新发布或清理本地构建目录当作删除云端应用的授权。
+用 `tiana web list --json` 核对当前账号拥有的 Web 应用，优先使用已保存的真实 ID。用户明确要求删除时，执行 `tiana web delete WEB_ID --force`；需要等待源站清理完成时加 `--wait --json`。不得把失败恢复、重新发布或清理本地构建目录当作删除云端应用的授权。
 
-删除会关闭应用入口并清理所有版本和托管文件，关联 SQLite、Git 不随之删除。只收到 `state: deleting` 时报告已受理；收到 `state: deleted` 才报告本次源站清理完成。创建中或任一版本尚未完成上传时直接拒绝删除，应先恢复并完成原操作，不能强制删除。已受理的删除仅可能因分批清理和失败重试延迟完成，不等待上传保护期；公开缓存按缓存策略失效。中断后保留待完成记录，用原 ID 恢复，详情见[CLI 命令](cloud-cli.md)。
+删除会关闭应用入口并清理所有版本和托管文件，关联 SQLite、Git 不随之删除。只收到 `state: deleting` 时报告已受理；收到 `state: deleted` 才报告本次源站清理完成。空应用、上传中和已发布的应用均可删除；本地仍有未完成的 CLI 创建操作时，先按原请求恢复该操作。已受理的删除仅可能因分批清理和失败重试延迟完成，不等待上传保护期；公开缓存按缓存策略失效。中断后保留待完成记录，用原 ID 恢复，详情见[CLI 命令](cloud-cli.md)。

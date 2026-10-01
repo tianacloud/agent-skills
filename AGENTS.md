@@ -75,31 +75,30 @@ web; root CLI help labels web/sqlite/git as Products. Use only those names in
 canonical skills, examples, troubleshooting and auth fixtures; no old aliases.
 Skills still inherit deployment routing from the launcher and must not set it.
 The environment rename does not change saved-origin keys or credentials. The
-command rename does not change MGR API paths, App/release identity or retry
+command rename does not change MGR API paths, Web/release identity or retry
 rules. Existing launch scripts must migrate; no package version is invented and
 no deployment is implied. Keep the provider-only account-auth instructions from
 the previous decision. Validate all six CI checks and canonical archive contents;
 roll back CLI and skill command/routing names together if rollback is requested.
 
 
-## Server-generated App identity (2026-09-28)
+## Web identity and entry routes
 
-The CLI product group remains web. App identity is app_id in create, list,
-detail, release and deletion JSON. MGR alone creates new IDs from 9 random bytes
+Use `tiana web`. MGR creates globally unique Web identities from 9 random bytes
 encoded as 12 unpadded base64url characters. Existing IDs retain their values.
-CLI create sends name, description and request_id; skills save data.app_id in
-source manifests and reuse it for upload/status/delete.
+Create sends name, optional description and request_id; save `data.id` as the
+manifest's `web_id` and reuse it for upload/status/delete. Creation retries retain
+the original request_id and exact name/description.
 
-The management API is /api/v1/apps. Hosted entry is /apps/<app_id> and Console
-detail is /console/apps/<app_id>, both without a trailing slash. Platform-rendered
-index.html replaces the absolute Bootstrap script URL before inserting App JSON.
-App build output contains modules, assets and tiana.app.json.
+Management routes are `/api/v1/web-projects`; hosted entry is `/web/<id>/` and
+Console detail is `/console/web/<id>`. Project, release and deletion JSON use `id`;
+Bootstrap and manifests use `web_id`. The server inserts the absolute Bootstrap
+script URL into fixed index.html. Build output contains modules, assets and
+`tiana.app.json`. MGR uses `mgr_web_projects` and `mgr_web_releases` with `web_id`
+relation columns. Web product errors use `WEB_*`.
 
-Creation retries preserve the original request_id and exact name/description.
-The pending command store and uncertainty recovery remain unchanged. App tables
-are mgr_apps and mgr_app_releases, with app_id as their business identity field.
 Validate returned identity binding, retry recovery, preview routes and canonical
-skill archives together with the matching CLI/MGR/Web changes.
+skill archives with the matching CLI/MGR/Web changes.
 
 
 ## Web listing and deletion work in progress (2026-09-27)
@@ -114,18 +113,19 @@ Validate multi-page output, terminal quit, bad cursors, and identity isolation.
 User subsequently chose A; the approved deletion contract is recorded below.
 
 
-## Approved Web deletion — App lifecycle (2026-09-27)
+## Approved Web deletion — Web lifecycle (2026-09-27)
 
 User approved deleting all Web versions/origin files while retaining SQLite/Git,
-and merging deletion state into mgr_apps. Retain request_id creation
+and merging deletion state into mgr_web_projects. Retain request_id creation
 idempotency. Only add state (active/deleting/deleted), delete_requested_at and
-deleted_at, plus index(state,tenant_id,app_id). Do not add a separate deletion
+deleted_at, plus index(state,tenant_id,web_id). Do not add a separate deletion
 table or delete_storage_namespace/delete_error_code/delete_next_attempt_at fields.
 
-Mark under the App row lock shared with version creation. Reject any unfinished
-upload without side effects; incomplete CLI creation blocks deletion. Active-only
+Mark under the Web row lock shared with version creation. Allow deletion of empty,
+uploading and published Web projects; incomplete local CLI creation stays
+protected by the pending-command lock. Active-only
 reads and publication prevent reusing deleted IDs. Owner-scoped receipts remain
-on App rows; previously accepted create requests cannot resurrect them.
+on Web rows; previously accepted create requests cannot resurrect them.
 
 Every minute, cleanup visits <=10 apps within 20 seconds. An in-memory cursor
 prevents failed rows starving later ones; restart needs only durable deleting
@@ -142,9 +142,9 @@ later pass. No persisted error code, per-row retry schedule, upload grace or dai
 sweep. CLI --wait polls state until completion/cancellation; it cannot present a
 stored cleanup failure. Origin cleanup cannot revoke issued URLs/cached copies.
 
-App lifecycle metadata is stored on mgr_apps; immutable releases are stored in
-mgr_app_releases. Keep creation request identity and descriptions across the
-coordinated App table and field rename.
+Web lifecycle metadata is stored on mgr_web_projects; immutable releases are stored in
+mgr_web_releases. Keep creation request identity and descriptions across the
+coordinated Web table and field rename.
 
 Verify real MySQL migration recovery/drift, state defaults, missing forbidden
 fields/table, upload/delete serialization, worker exclusion/cancellation/restart,
@@ -157,14 +157,14 @@ terminal receipts and CLI recovery. Run full MGR tests/race/vet and skills check
 User requested `web create -m` for application descriptions. Implement optional
 `--description` / `-m`, default empty, max 1024 UTF-8 bytes; preserve whitespace,
 line breaks and tabs, reject invalid UTF-8/other control characters. Store only
-App metadata; do not change ID generation, routing or manifests. Create/list/
+Web metadata; do not change ID generation, routing or manifests. Create/list/
 detail JSON expose description; plain list keeps its existing ID/NAME format.
 
 Creation intent includes the exact description. The same tenant/owner/request ID
 must match name and description; conflicts never overwrite metadata or mint a
 replacement request. Verify the returned description before clearing intent.
 
-MGR persists descriptions on App metadata. Coordinate MGR/CLI/Console behavior;
+MGR persists descriptions on Web metadata. Coordinate MGR/CLI/Console behavior;
 rollback must not discard descriptions. No extra index or Control read is needed.
 
 Test empty/Unicode/multiline/max-byte/invalid inputs, exact receipt validation,

@@ -20,7 +20,7 @@ metadata:
 完成构建、清单与源码关联核对后发布到 Tiana，以 CLI 发布状态确认交付。页面交互和实际使用由用户打开托管链接自行检查；本流程不要求 Agent 安装或调用浏览器自动化工具，也不以浏览器验收作为发布前置步骤。
 
 1. 加载已安装的 `tiana` 和 `tiana-sqlite`。已有可用版本就直接使用，不把重复安装放进用户的创建流程。按 `tiana` 的应用流程完成登录、实例检查和数据库选择。
-2. 将本 Skill 的 `assets/app/` 复制为独立应用源码，将 [gitignore.template](assets/app/gitignore.template) 重命名为 `.gitignore`。按用户要求调整文案和名称，将 `tiana web create NAME --json` 返回的 `data.id`（或已核实的已有 App ID）填入 `public/tiana.app.json`，保留界面层级、视觉 token 与交互。依照 [应用开发与发布](../tiana/references/csr-apps.md) 使用平台固定 HTML 入口。
+2. 将本 Skill 的 `assets/app/` 复制为独立应用源码，将 [gitignore.template](assets/app/gitignore.template) 重命名为 `.gitignore`。按用户要求调整文案和名称，将 `tiana web create NAME --json` 返回的 `data.id`（或已核实的已有 Web ID）填入 `public/tiana.app.json`，保留界面层级、视觉 token 与交互。依照 [应用开发与发布](../tiana/references/csr-apps.md) 使用平台固定 HTML 入口。
 3. 在选定的 Tiana SQLite 实例执行 `schema.sql`。它创建旅程阶段、任务完成记录和留言表，并初始化备孕第一周；每周任务建议从 `src/week-plans.json` 加载。更新 `public/tiana.app.json` 中的真实数据库实例 ID，模板已固定核验过的 `@tianacloud/serverless@0.1.0-beta.1`，直接运行 `npm ci`；需要更换 SDK 时按 [JavaScript 数据库连接](../tiana-sqlite/references/js-sdk.md) 核验实际包并更新锁文件。
 4. 按 [源码发布指引](../tiana/references/source-releases.md) 创建或复用 Tiana Git，保存实际实例 ID 到 `source.json`。提交应用源码、锁文件、SQL、清单与构建配置，再按同一发布指引的“构建时传入源码提交”步骤，在命令工具中核验干净工作树并读取 HEAD，执行 `node scripts/build.mjs <完整提交号>`；[构建脚本](assets/app/scripts/build.mjs)接收该提交号，只向 `dist/tiana.app.json` 写入 Git ID 和完整提交 hash。核对模块、CSS、清单和源码关联字段。验证远端发布引用指向该提交后，再发布对应的托管版本。既有外部仓库按共享流程确认托管范围。
 5. 发布后用 `tiana web status` 核对版本与源码关联字段，交付应用链接、数据库实例、Tiana Git 仓库、发布引用与源码提交，请用户打开应用自行检查。报告“已发布”，不将发布成功表述为交互已验证。
