@@ -28,11 +28,13 @@ try {
   assert.deepEqual(cli.runtime, { type: 'node', version: '22' });
   assert.equal(cli.authWaitForExit, true);
   assert.equal(cli.authUrlDomain, 'console.tianacloud.com');
-  for (const platform of ['darwin', 'linux']) {
-    assert.equal(cli.init[platform], `npm install -g @tianacloud/cli@latest --registry=https://registry.npmjs.org/`);
-    assert.equal(cli.auth[platform], 'tiana login --no-open');
-    assert.equal(cli.status[platform], 'tiana status');
-    assert.equal(cli.unAuth[platform], 'tiana logout');
+  for (const platform of ['darwin', 'linux', 'win32']) {
+    const npm = platform === 'win32' ? 'npm.cmd' : 'npm';
+    const tiana = platform === 'win32' ? 'tiana.cmd' : 'tiana';
+    assert.equal(cli.init[platform], `${npm} install -g @tianacloud/cli@latest --registry=https://registry.npmjs.org/`);
+    assert.equal(cli.auth[platform], `${tiana} login --no-open`);
+    assert.equal(cli.status[platform], `${tiana} status`);
+    assert.equal(cli.unAuth[platform], `${tiana} logout`);
   }
   assert.deepEqual(cli.env, {TIANA_API_ORIGIN: 'https://console.tianacloud.com'});
   const connected = new RegExp(cli.statusMatch);

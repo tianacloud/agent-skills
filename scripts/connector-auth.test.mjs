@@ -59,7 +59,7 @@ test('real CLI auth processes with delayed fixture approval (not WorkBuddy)', { 
   function start(command) {
     // The configured commands have only fixed words; no shell or browser is used.
     const [name, ...args] = command.split(' ');
-    assert.equal(name, 'tiana');
+    assert.equal(name, process.platform === 'win32' ? 'tiana.cmd' : 'tiana');
     const child = spawn(binary, args, { env, stdio: ['ignore', 'pipe', 'pipe'] });
     t.after(() => { if (child.exitCode === null) child.kill('SIGKILL'); });
     const output = { stdout: '', stderr: '' };
