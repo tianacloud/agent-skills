@@ -1,0 +1,20 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "tiana",
+  "version": "1.0.0",
+  "description": "Tiana Cloud account, SQLite, Git and Web application workflows",
+  "author": {
+    "name": "Tiana Cloud",
+    "url": "https://github.com/tianacloud"
+  },
+  "homepage": "https://github.com/tianacloud/agent-skills",
+  "repository": "https://github.com/tianacloud/agent-skills",
+  "license": "MIT",
+  "keywords": [
+    "tiana",
+    "sqlite",
+    "serverless",
+    "database",
+    "agent-skills"
+  ]
+}

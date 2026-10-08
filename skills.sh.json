@@ -1,0 +1,16 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Tiana Cloud",
+      "description": "Accounts, SQLite, Git and Web applications.",
+      "skills": [
+        "tiana",
+        "tiana-sqlite",
+        "tiana-git",
+        "tiana-web"
+      ]
+    }
+  ]
+}

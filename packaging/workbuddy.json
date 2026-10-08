@@ -1,0 +1,29 @@
+{
+  "author": "Tiana Cloud",
+  "skills": {
+    "tiana": {
+      "display_name": "Tiana Cloud",
+      "display_name_en": "Tiana Cloud",
+      "description_zh": "Tiana 通用入口：CLI 安装、账号登录与实例管理。",
+      "description_en": "Tiana CLI installation, account login and instance management."
+    },
+    "tiana-sqlite": {
+      "display_name": "Tiana SQLite",
+      "display_name_en": "Tiana SQLite",
+      "description_zh": "SQLite 表结构、SQL、应用连接和数据库分支管理。",
+      "description_en": "SQLite schemas, SQL, application connections and database branches."
+    },
+    "tiana-git": {
+      "display_name": "Tiana Git",
+      "display_name_en": "Tiana Git",
+      "description_zh": "用户 Git 实例、原生仓库与应用源码版本同步。",
+      "description_en": "User Git instances, native repositories and application source versions."
+    },
+    "tiana-web": {
+      "display_name": "Tiana Web",
+      "display_name_en": "Tiana Web",
+      "description_zh": "按实时目录采用模板或直接开发，创建和发布 Web 应用。",
+      "description_en": "Build and publish Web apps using the current template catalog or direct development."
+    }
+  }
+}

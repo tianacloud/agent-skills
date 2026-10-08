@@ -1,0 +1,64 @@
+{
+  "name": "@tianacloud/agent-skills",
+  "version": "1.0.0",
+  "description": "Tiana Cloud Skills for accounts, SQLite, Git and Web applications",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tianacloud/agent-skills"
+  },
+  "author": {
+    "name": "Tiana Cloud",
+    "url": "https://github.com/tianacloud"
+  },
+  "keywords": [
+    "tiana",
+    "sqlite",
+    "serverless",
+    "database",
+    "agent-skills",
+    "pi-package"
+  ],
+  "files": [
+    "bin/",
+    "skills/",
+    "plugin.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "pi": {
+    "skills": [
+      "./skills"
+    ]
+  },
+  "scripts": {
+    "build:workbuddy": "node scripts/build-workbuddy.mjs",
+    "build:connector": "node scripts/build-workbuddy-connector.mjs",
+    "validate:connector": "node scripts/validate-workbuddy-connector.mjs",
+    "test:connector-auth": "node --test scripts/connector-auth.test.mjs",
+    "validate:skills": "node scripts/validate-skills.mjs",
+    "validate:references": "node scripts/check-skill-references.mjs",
+    "validate:plugin": "node scripts/validate-plugin.mjs",
+    "validate:versions": "node scripts/validate-versions.mjs",
+    "validate:workbuddy": "node scripts/validate-workbuddy.mjs",
+    "validate:ci": "npm run validate:skills && npm run validate:references && npm run validate:plugin && npm run validate:versions && npm run validate:workbuddy && npm run validate:connector",
+    "test:installer": "node --test scripts/installer.test.mjs",
+    "test:release": "node --test scripts/release.test.mjs"
+  },
+  "devDependencies": {
+    "fflate": "0.8.3",
+    "skills-ref": "0.1.5"
+  },
+  "dependencies": {
+    "skills": "1.7.0"
+  },
+  "bin": {
+    "tiana-skills": "bin/tiana-skills.mjs"
+  },
+  "engines": {
+    "node": ">=22.20.0"
+  }
+}

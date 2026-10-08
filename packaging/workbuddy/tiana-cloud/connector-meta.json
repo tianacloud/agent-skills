@@ -1,0 +1,22 @@
+{
+  "name": "Tiana Cloud",
+  "name_zh": "Tiana Cloud",
+  "name_en": "Tiana Cloud",
+  "description": "在聊天中创建账单等 Web 应用，管理 SQLite 数据库与 Git 源码，并发布到 Tiana Cloud。",
+  "description_zh": "在聊天中创建账单等 Web 应用，管理 SQLite 数据库与 Git 源码，并发布到 Tiana Cloud。",
+  "description_en": "Create and publish Web apps, including a billing app, with SQLite data and Git source on Tiana Cloud.",
+  "source": "tiana-cloud",
+  "type": "cli",
+  "version": "1.0.0",
+  "minWorkbuddyVersion": "4.24.0",
+  "examples_zh": [
+    "使用 tiana 创建一个账单应用",
+    "创建一个名为 demo 的 SQLite 实例",
+    "查看 demo 的表结构"
+  ],
+  "examples_en": [
+    "Create a billing app with Tiana",
+    "Create a SQLite instance named demo",
+    "Inspect the schema of demo"
+  ]
+}

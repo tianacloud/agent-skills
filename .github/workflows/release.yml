@@ -1,0 +1,103 @@
+name: Release Skills
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag matching package.json
+        type: string
+        required: true
+      dry_run:
+        description: Verify artifacts without publication
+        type: boolean
+        default: true
+permissions:
+  contents: read
+concurrency:
+  group: skills-release
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - id: version
+        name: Match source tag and package version
+        run: |
+          # JavaScript template literals must reach Node unchanged.
+          # shellcheck disable=SC2016
+          node --input-type=module -e '
+            import {readFileSync,appendFileSync} from "node:fs";
+            const version=JSON.parse(readFileSync("package.json")).version;
+            if(process.env.RELEASE_TAG!==`v${version}`) throw new Error("Tag and package version differ");
+            appendFileSync(process.env.GITHUB_OUTPUT,`version=${version}\n`);'
+      - run: npm ci --ignore-scripts
+      - run: npm run validate:ci
+      - run: npm run test:installer && npm run test:release
+      - run: npm run build:workbuddy && npm run build:connector
+      - run: node scripts/pack-skills.mjs dist/npm-release
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: skills-release
+          path: |
+            dist/npm-release/*
+            dist/workbuddy/*
+          if-no-files-found: error
+          compression-level: 0
+  publish:
+    needs: build
+    if: ${{ github.event_name == 'push' || !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm install --global npm@11.20.0
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: skills-release
+          path: dist/release
+      - run: node scripts/publish-skills.mjs dist/release/npm-release
+  registry-test:
+    needs: [build, publish]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      RELEASE_VERSION: ${{ needs.build.outputs.version }}
+    steps:
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install the published package into a persistent directory
+        shell: bash
+        run: |
+          target="$(mktemp -d "$RUNNER_TEMP/tiana-skills-install.XXXXXX")"
+          npx --yes --cache "$target/npm-cache" --registry=https://registry.npmjs.org/ "@tianacloud/agent-skills@$RELEASE_VERSION" install --dir "$target/skills"
+          for name in tiana tiana-sqlite tiana-git tiana-web; do
+            test -f "$target/skills/$name/SKILL.md"
+            test ! -L "$target/skills/$name"
+            grep -F "version: \"$RELEASE_VERSION\"" "$target/skills/$name/SKILL.md"
+          done
