@@ -7,7 +7,7 @@
   "description_en": "Create and publish Web apps, including a billing app, with SQLite data and Git source on Tiana Cloud.",
   "source": "tiana-cloud",
   "type": "cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "minWorkbuddyVersion": "4.24.0",
   "examples_zh": [
     "使用 tiana 创建一个账单应用",

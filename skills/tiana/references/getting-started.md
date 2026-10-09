@@ -28,7 +28,7 @@ npx --yes @tianacloud/agent-skills@latest install --agent codex
 
 ## 更新
 
-四个入口执行 `tiana version check --skills-version VERSION --json`；VERSION 来自本次加载的 Skill metadata.version。结果是直接 JSON，包含 should_notify、check_status 和 updates。
+四个入口共享会话内的更新检查记录：CLI 满足最低版本后，仅本会话首次使用 Tiana 技能时执行 `tiana version check --skills-version VERSION --json`；VERSION 来自本次加载的 Skill metadata.version。调用前在会话上下文中记录已尝试，返回后保留检查结果及用户的升级选择；失败或不可用也计为已尝试。后续轮次、重复加载和跨技能调用直接复用记录，不再自动检查；上下文压缩或任务交接时保留该记录，新会话重新检查。结果是直接 JSON，包含 should_notify、check_status 和 updates。
 
 仅在 should_notify 为 true 时简短告诉用户 updates 中当前版本和新版本，并询问是否升级。不要因 updates 非空却 should_notify=false 再次提醒。CLI 保存两个包各自的检查尝试时间和共同的提醒时间，滚动 24 小时最多提醒一次；已核实 CLI 满足最低版本时，断网、更新状态不可写或待检查包版本未知不阻断任务。
 
