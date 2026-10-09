@@ -52,7 +52,7 @@ Site 参数来自 MGR 的 web_project：name、description、固定 entry、可�
 
 CLI 将目录打包为 ZIP Store/Deflate 的一个 `.tweb`，根目录是零字节 web.yaml 与 data/。web.yaml 预留 Web server 配置，与 Site 参数无关，目前为空。data/ 前缀不对外暴露，底层只提供 GET/HEAD 精确文件访问，没有目录索引、默认 index.html 或 SPA fallback；底层可托管 HTML，带 entry 的 Site 使用固定 CSR/hash Bootstrap。
 
-归档和原始资源总量各最多 16 MiB、最多 4096 个资源、单路径最多 1024 个 UTF-8 字节；拒绝符号链接、特殊文件和旧清单。publish 上传前检查实际归档含固定 entry。资源 URL 为 `/web/<id>/assets/<relative_file>`，经过 Web→Gateway→Agent→app_web，不生成 OSS 签名直链。channel=0 透传原生 GET/HEAD，channel=1 提供 publish/status 等 HTTP 管控，协议版本保持不变。
+归档和原始资源总量各最多 16 MiB、最多 4096 个资源、单路径最多 1024 个 UTF-8 字节；拒绝符号链接、特殊文件和旧清单。publish 上传前检查实际归档含固定 entry。资源 URL 为 `/web/<id>/assets/<relative_file>`；例如归档内的 `assets/app.js` 对应 `/web/<id>/assets/assets/app.js`，路由前缀与文件目录各保留一层。经过 Web→Gateway→Agent→app_web，不生成 OSS 签名直链。channel=0 透传原生 GET/HEAD，channel=1 提供 publish/status 等 HTTP 管控，协议版本保持不变。
 
 ## 预览与发布
 
@@ -68,9 +68,11 @@ tiana web status WEB_ID --publish-id PUBLISH_ID --json
 tiana web status WEB_ID --json
 ```
 
-`publish` 经 Gateway 的业务管控 channel 上传单个归档。S3 覆盖固定 key，确认上传后返回，随后异步 reload；`uploaded: true` 不等于已激活。保存 `publish_id`、SHA256、Web/实例 ID，再查询到 `ACTIVATED` 并核对 `serving_sha256` 后报告当前内容已生效。CLI 在发送前保存不含凭据的本地回执。
+`publish` 经 Gateway 的业务管控 channel 上传单个归档。S3 覆盖固定 key，确认上传后返回，随后异步 reload；`uploaded: true` 不等于已激活。保存 `publish_id`、SHA256、Web/实例 ID。按同一 ID 查询的是上传回执，`REMOTE_COMMITTED` / `SUCCEEDED` 与 `uploaded: true` 表示归档上传事实；再执行不带 `--publish-id` 的当前内容查询，确认 `state: running`，且 `remote_sha256`、`serving_sha256` 都等于目标归档 SHA256，才报告目标内容正在提供服务。不要等待 `ACTIVATED`，也不能仅凭回执 `SUCCEEDED` 宣称已生效。CLI 在发送前保存不含凭据的本地回执。
 
-结果未知时只查询，禁止自动重放 PUT。回执仅在 App 内存有界保留，重启/过期后的 `404 PUBLISH_NOT_FOUND` 表示原回执未知；检查 `/current` 的远端与服务中校验和，不能据此宣称失败，也不自动重发。再次明确执行 publish 会生成新 ID 并覆盖当前对象。没有 Web 版本列表、版本 URL、版本恢复、显式 reload 命令。
+结果未知时只查询，禁止自动重放 PUT。回执仅在 App 内存有界保留，重启/过期后的 `404 PUBLISH_NOT_FOUND` 表示原回执未知；检查不带 `--publish-id` 的当前内容与保存的目标 SHA256：若应用为 `running` 且两种校验和均匹配，可报告目标内容正在服务，同时保留原上传回执结果未知；不匹配时不能报告目标内容生效，不能据回执丢失宣称失败，也不自动重发。相同归档可被多次发布，摘要匹配不能识别是哪一次上传触发生效。再次明确执行 publish 会生成新 ID 并覆盖当前对象。没有 Web 版本列表、版本 URL、版本恢复、显式 reload 命令。
+
+当前内容查询的 `state` 是应用运行状态；回执查询的 `state` 是上传操作状态。JSON 外层 `status: succeeded` 只表示这次查询成功。当前查询的 `publish` / `publish_id` 为空是合理的，不从摘要推导发布 ID。配套新版 CLI 的 `query_kind: current / receipt` 可区分两类查询；缺少该附加字段时依据是否传入 `--publish-id` 判断。
 
 4. 托管入口使用所属环境 Site origin 的 `/web/<id>/`，Console 详情为 `/console/web/<id>`。报告 Web/实例 ID、publish_id、归档校验和、上传与激活状态，以及可选数据库/Git 关联。环境不具备候选能力时报告具体阻塞并提供本地开发地址；不自行修改部署。
 

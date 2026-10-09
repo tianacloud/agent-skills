@@ -65,3 +65,6 @@ Console/管理 API、用户 Web 地址、数据库 Endpoint 各有用途：全�
 4. 链接失效后再 start。CLI 保存账号会话，不需要读取凭据文件。
 
 普通终端也可执行 `tiana login`。用量接口失败不代表退出登录；命令与恢复见 [CLI 指引](cloud-cli.md)。
+
+
+配套修复后的 CLI 在缺少 pending 时返回 `NO_PENDING_AUTH`、`pending_auth:false`，不据此否定当前登录；用 `tiana status --json` 单独核实。`logged_in` 仅在本次已确认登录成功时为 true，其他登录结果可能省略；省略 `pending_auth` 表示无法确认 pending 是否仍在，保存/网络失败后不能假定授权已丢失。按错误 code/message/next_action 处理目录、锁、过期或拒绝，不机械重复 start。先通过 `--help` 核实当前安装版本的新 JSON 能力。

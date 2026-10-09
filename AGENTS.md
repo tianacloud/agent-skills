@@ -246,3 +246,10 @@ same core Git revision as its manifest; Git tags do not imply crates.io 1.0.0.
 Validate the documented Cargo consumer and package-installed CLI help/version,
 alongside canonical archives and installer checks. Browser serverless-js remains
 an independent dependency. No protocol, credential-store or database changes.
+
+
+## Reviewed publication and CLI guidance (unpublished source corrections)
+
+Use running plus both matching target checksums to confirm serving; upload receipt success and outer query success do not establish activation. An expired receipt remains unknown while matching current content can still be confirmed. No automatic PUT replay or synthesized publish ID. Repeated assets prefix plus entry directory is valid.
+
+Management JSON examples require the matching fixed CLI release and help verification; all matching list pages are collected. Login/pending fields describe only verified facts, local failures preserve resumable state, and previous-platform pending recovery uses an explicit original path without deleting identities. Keep branch creation's no-resume limitation and immutable target/operation receipts. No version bump, registry publication or skill installation is authorized here. Validate fresh-agent publication and CLI reference scenarios plus validate:ci and canonical distributions.
