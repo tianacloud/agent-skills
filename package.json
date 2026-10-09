@@ -1,6 +1,6 @@
 {
   "name": "@tianacloud/agent-skills",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Tiana Cloud Skills for accounts, SQLite, Git and Web applications",
   "license": "MIT",
   "repository": {

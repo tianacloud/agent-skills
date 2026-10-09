@@ -24,7 +24,7 @@ not share exports. Keep this task selection out of persistent startup files,
 skill installation files and app source. CLI account/pending state is origin-scoped.
 
 The installer copies canonical skills; first use installs a missing CLI and then
-continues the user's application task. Require CLI 1.0.0 or a newer stable release;
+continues the user's application task. Require CLI 1.0.1 or a newer stable release;
 existing installations upgrade through the confirmed update flow. Online uses
 system CA trust. Staging trust is bundled and selected by CLI; browser trust is a
 developer prerequisite. WorkBuddy fixes online through its cli.json environment
@@ -239,7 +239,7 @@ account-credentials-never-reach-Gateway guidance.
 
 ## CLI 1.0.0 and Rust SDK reference baseline
 
-Canonical instructions require CLI 1.0.0 or newer stable; minimum-version
+Canonical instructions require CLI 1.0.1 or newer stable; minimum-version
 validation is separate from the daily update reminder. CLI and Skills versions
 remain independently numbered. Rust SQL uses sdk-rust-sqlite Git v1.0.0 with the
 same core Git revision as its manifest; Git tags do not imply crates.io 1.0.0.
@@ -253,3 +253,12 @@ an independent dependency. No protocol, credential-store or database changes.
 Use running plus both matching target checksums to confirm serving; upload receipt success and outer query success do not establish activation. An expired receipt remains unknown while matching current content can still be confirmed. No automatic PUT replay or synthesized publish ID. Repeated assets prefix plus entry directory is valid.
 
 Management JSON examples require the matching fixed CLI release and help verification; all matching list pages are collected. Login/pending fields describe only verified facts, local failures preserve resumable state, and previous-platform pending recovery uses an explicit original path without deleting identities. Keep branch creation's no-resume limitation and immutable target/operation receipts. No version bump, registry publication or skill installation is authorized here. Validate fresh-agent publication and CLI reference scenarios plus validate:ci and canonical distributions.
+
+
+## 1.0.2 release baseline
+
+Skills 1.0.2 requires the matching CLI 1.0.1 stable release for management JSON
+and local-state/login fixes. Keep all four skill metadata/update-check versions,
+package/lock/plugin and Connector metadata aligned. The CLI version floor is
+independent of SDK Git tags and package versions; SDK references are unchanged.
+Verify canonical distribution and fresh registry installation after publication.

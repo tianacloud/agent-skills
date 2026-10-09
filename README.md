@@ -37,7 +37,7 @@ WorkBuddy、豆包按所用版本的目录／ZIP 导入方式加载这四个目�
 
 Web 技能每次任务都实际执行 `tiana web list-template --json`，使用当前 name/description 判断需求。模板 ZIP 原样下载解压到独立项目目录；Agent 按根部 metadata.json 替换变量、先 schema 后 seeds。模板源码和制作规范见 [template-apps](https://github.com/tianacloud/template-apps)，客户安装模板由 CLI 和 MGR 目录完成。
 
-技能安装器只安装技能。Agent 首次执行 Tiana 任务时检查 CLI，缺少时自动执行下面的安装并继续原任务；CLI 要求 1.0.0 或更新正式版，需要 Node.js 20+。
+技能安装器只安装技能。Agent 首次执行 Tiana 任务时检查 CLI，缺少时自动执行下面的安装并继续原任务；CLI 要求 1.0.1 或更新正式版，需要 Node.js 20+。
 
 ```sh
 npm install -g @tianacloud/cli@latest --registry=https://registry.npmjs.org/

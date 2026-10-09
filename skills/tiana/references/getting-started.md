@@ -1,10 +1,10 @@
 # 开始使用
 
-在 Agent 实际执行命令的环境检查 `tiana version`。本技能要求 CLI 1.0.0 或更新正式版，具备分步登录、sqlite、git、web、list-template/init-template 和 version check。CLI 不存在时执行下面的 npm 安装并重新核验；已有版本过低时按更新流程取得用户确认后升级，再执行资源操作。不要仅凭同名命令存在跳过版本核验。
+在 Agent 实际执行命令的环境检查 `tiana version`。本技能要求 CLI 1.0.1 或更新正式版，具备分步登录、sqlite、git、web、list-template/init-template 和 version check。CLI 不存在时执行下面的 npm 安装并重新核验；已有版本过低时按更新流程取得用户确认后升级，再执行资源操作。不要仅凭同名命令存在跳过版本核验。
 
 最低版本核验独立于更新提醒：0.x、预发行版、dev 或无法核实的版本不满足本技能基线。即使 `should_notify=false` 或更新检查不可用，也不能据此跳过最低版本要求；先完成已获授权的升级，尚未获授权时说明需要升级，暂缓依赖新版 CLI 的资源操作。CLI 与 Skills 独立编号，`--skills-version` 仍传实际加载的 Skills 版本。
 
-最低版本升级已获授权但更新检查不可用时，可安装已发布基线 `npm install -g @tianacloud/cli@1.0.0 --registry=https://registry.npmjs.org/`，随后核验 `tiana version`；下载失败则报告实际错误，不继续资源操作。
+最低版本升级已获授权但更新检查不可用时，可安装已发布基线 `npm install -g @tianacloud/cli@1.0.1 --registry=https://registry.npmjs.org/`，随后核验 `tiana version`；下载失败则报告实际错误，不继续资源操作。
 
 ## 安装
 
