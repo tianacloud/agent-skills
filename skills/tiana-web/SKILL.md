@@ -32,3 +32,7 @@ metadata:
 3. 直接开发时，使用 [固定 index.html](references/index.html)、哈希路由、支持动态账号鉴权的 SDK，按实际数据库结构编写应用及构建清单。
 4. **模板和直接开发都由 Agent 处理数据库初始化。** 模板先执行已配置且存在的 schema，再执行已配置且存在的 seeds；两项独立跳过，SQL 失败先核对结果并停止后续发布。
 5. 按用户需求完成交互和定制，安装依赖并从确定源码提交构建。按 [源码版本流程](../tiana-git/references/source-releases.md)完成源码同步，用 `web publish` 发布当前归档，再用 `web status --publish-id` 核对。除非用户仅要求本地开发，交付实际托管地址、资源 ID 和对应源码提交；未验证的阶段如实说明。
+
+## 文件上传、预览与下载
+
+应用需要文件存储时，阅读[WebApp 文件存储](references/files.md)，核对配套候选环境后使用平台提供的 `context.files`。先创建 WebApp 获得 ID 即可本地预览，无需先发布；文件路径相对于该 WebApp 的目录。

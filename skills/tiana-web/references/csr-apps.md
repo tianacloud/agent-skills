@@ -81,3 +81,7 @@ tiana web status WEB_ID --json
 用 `tiana web list --json` 核对当前账号拥有的 Web 应用，优先使用已保存的真实 ID。用户明确要求删除时，执行 `tiana web delete WEB_ID --force`；需要等待源站清理完成时加 `--wait --json`。不得把失败恢复、重新发布或清理本地构建目录当作删除云端应用的授权。
 
 删除会关闭应用入口并通过 Web 实例生命周期清理当前归档，关联 SQLite、Git 不随之删除。只收到 `state: deleting` 时报告已受理；收到 `state: deleted` 才报告本次源站清理完成。空应用、上传中和已发布的应用均可删除；本地仍有未完成的 CLI 创建操作时，先按原请求恢复该操作。已受理的删除等待 Control 确认实例存储删除完成，MGR 不枚举或删除 S3 对象；公开缓存按缓存策略失效。中断后保留待完成记录，用原 ID 恢复，详情见[CLI 命令](../../tiana/references/cloud-cli.md)。
+
+## 应用文件
+
+配套文件存储环境中，`mount` 的第二个参数提供 `files`。先创建 WebApp 取得 ID，再本地预览；文件范围与是否发布无关。上传、下载、图片续期和 CLI 路径见[WebApp 文件存储](files.md)。
