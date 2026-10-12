@@ -1,7 +1,7 @@
 ---
 name: tiana-sqlite
 description: 查询 Tiana SQLite 表结构、执行 SQL、选择数据库分支并连接命令行与 JavaScript 应用。创建实例和登录使用 tiana；Web 应用发布使用 tiana-web。
-license: MIT
+license: Apache-2.0
 metadata:
   author: Tiana Cloud
   version: "1.0.3"

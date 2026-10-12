@@ -63,4 +63,4 @@ WorkBuddy Connector 固定 online，配置和当前使用说明见 [Connector](d
 
 skills/ 是所有格式的规范源。Pi 可使用 `pi install npm:@tianacloud/agent-skills`，支持 Agent Plugins v1 的客户端也可发现 plugin.json。构建、版本对齐、GitHub Actions 自动发布及 npm 初始配置见 [Contributing](CONTRIBUTING.md)。
 
-MIT
+Apache-2.0
