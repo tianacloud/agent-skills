@@ -2,7 +2,7 @@
   "name": "@tianacloud/agent-skills",
   "version": "1.0.2",
   "description": "Tiana Cloud Skills for accounts, SQLite, Git and Web applications",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/tianacloud/agent-skills"

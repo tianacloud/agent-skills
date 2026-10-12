@@ -1,7 +1,7 @@
 ---
 name: tiana-git
 description: 使用 Tiana Git 管理 Git 实例和原生仓库，关联项目远程地址、同步源码分支及应用版本。SQLite 数据库分支使用 tiana-sqlite；托管 Web 构建发布使用 tiana-web。
-license: MIT
+license: Apache-2.0
 metadata:
   author: Tiana Cloud
   version: "1.0.2"

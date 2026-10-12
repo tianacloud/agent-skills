@@ -1,7 +1,7 @@
 ---
 name: tiana-web
 description: 使用 Tiana 创建、修改、预览和发布 Web 应用。用户要求制作账单、笔记、日历或其他 Web app 时使用；根据实时模板目录和需求决定采用模板或直接开发，并连接 SQLite 和 Git。
-license: MIT
+license: Apache-2.0
 metadata:
   author: Tiana Cloud
   version: "1.0.2"

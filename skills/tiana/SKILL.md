@@ -1,7 +1,7 @@
 ---
 name: tiana
 description: 使用 Tiana Cloud 管理实例、安装 CLI、登录和恢复账号会话。通用 Tiana 任务从此技能开始；Web 应用创建发布使用 tiana-web，数据库和分支使用 tiana-sqlite，Git 仓库和源码同步使用 tiana-git。
-license: MIT
+license: Apache-2.0
 metadata:
   author: Tiana Cloud
   version: "1.0.2"
