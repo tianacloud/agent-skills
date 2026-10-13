@@ -1,6 +1,6 @@
-# WebApp 文件存储（配套候选能力）
+# WebApp 文件存储
 
-本页对应 `feat/file-storage` 的 CLI、MGR、Web 与 serverless-js 候选实现，须使用已验收的配套环境；CLI 1.0.1 和 Skills 1.0.2 的版本号本身不代表已包含这项能力。以实际候选 CLI 的 `tiana files --help`、目标环境与 Bootstrap 能力为准，不虚构 npm 已发布版本。
+CLI 文件操作要求 1.0.4 或更新正式版，使用 `tiana file --help` 核验命令入口。WebApp 文件能力还需目标环境提供配套的 MGR、Web 与 serverless-js Bootstrap；使用前核对目标环境能力。
 
 ## 归属和创建顺序
 
@@ -49,11 +49,11 @@ const downloadURL = await files.getUrl(upload.path);
 ## CLI 操作同一目录
 
 ```sh
-tiana files list WEB_ID/images/
-tiana files put ./cover.png WEB_ID/images/cover.png
-tiana files get WEB_ID/images/cover.png ./downloaded-cover.png
-tiana files get-url WEB_ID/images/cover.png
-tiana files delete WEB_ID/images/cover.png
+tiana file list WEB_ID/images/
+tiana file put ./cover.png WEB_ID/images/cover.png
+tiana file get WEB_ID/images/cover.png ./downloaded-cover.png
+tiana file get-url WEB_ID/images/cover.png
+tiana file delete WEB_ID/images/cover.png
 ```
 
 保持本任务选择的 `TIANA_API_ORIGIN`。CLI 操作租户根，所以访问应用文件时显式带真实 Web ID 子目录。`get-url` 的 URL 不是匿名分享链接；CLI 下载会另取并发送文件授权 Header。`put --overwrite` 同样先删除后上传，不能作为不确定结果的自动重试手段。
