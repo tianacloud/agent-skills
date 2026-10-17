@@ -78,13 +78,14 @@ roll back CLI and skill command/routing names together if rollback is requested.
 
 ## Web identity and entry routes
 
-Use `tiana web`. MGR creates globally unique Web identities from 9 random bytes
-encoded as 12 unpadded base64url characters. Existing IDs retain their values.
+Use `tiana web`. MGR creates globally unique 12-character Web identities with
+a lowercase letter first and lowercase letters or digits thereafter.
 Create sends name, optional description and request_id; save `data.id` as the
 manifest's `web_id` and reuse it for upload/status/delete. Creation retries retain
 the original request_id and exact name/description.
 
-Management routes are `/api/v1/web-projects`; hosted entry is `/web/<id>/` and
+Management routes are `/api/v1/web-projects`; hosted entry is
+`https://<id>.<site-host>/web/<id>/` using the returned endpoint, and
 Console detail is `/console/web/<id>`. Project, release and deletion JSON use `id`;
 Bootstrap and manifests use `web_id`. The server inserts the absolute Bootstrap
 script URL into fixed index.html. Build output contains modules, assets and

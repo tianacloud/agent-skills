@@ -8,7 +8,7 @@
 
 哈希深链接在直接打开或刷新后也应恢复当前路由；若页面数据需异步读取，应在读取完成后恢复该路由对应的状态。服务端先检查登录会话和应用访问权限，再返回此 HTML。未登录的托管请求跳转到所属环境的 Console 登录页，经绑定应用和固定站点回跳地址的短时授权码返回站点，站点后端兑换独立的 host-only 会话。回跳保留哈希片段；站点退出只注销站点会话。授权通过后，文档加载当前归档的 JavaScript 和 CSS。
 
-应用与 Console 使用独立 origin；同一环境的多个应用共享站点 origin，路径划分不提供浏览器同源隔离。Bootstrap、session、logout 和 connection 使用站点同源入口。
+每个应用使用独立的 `<web_id>.<site-host>` origin，并与 Console 分开。托管入口保留 `/web/<web_id>/` 路径，Bootstrap、session、logout 和 connection 使用该应用的同源入口。访问地址使用 MGR/CLI 返回的 endpoint；应用资源继续使用相对路径。
 
 模板提供 `<div id="app"></div>`。`entry` 指定的模块按正常方式启动并渲染应用。需要数据库连接时，调用 `window.tiana.connection()` 获取连接元信息，使用 `window.tiana.auth` provider 提供动态凭据；凭据只保存在内存中。加载指示器是临时的，与应用样式隔离。
 
@@ -84,7 +84,7 @@ tiana web status WEB_ID --json
 
 当前内容查询的 `state` 是应用运行状态；回执查询的 `state` 是上传操作状态。JSON 外层 `status: succeeded` 只表示这次查询成功。当前查询的 `publish` / `publish_id` 为空是合理的，不从摘要推导发布 ID。配套新版 CLI 的 `query_kind: current / receipt` 可区分两类查询；缺少该附加字段时依据是否传入 `--publish-id` 判断。
 
-4. 托管入口使用所属环境 Site origin 的 `/web/<id>/`，Console 详情为 `/console/web/<id>`。报告 Web/实例 ID、publish_id、归档校验和、上传与激活状态，以及可选数据库/Git 关联。环境不具备候选能力时报告具体阻塞并提供本地开发地址；不自行修改部署。
+4. 托管入口使用 MGR/CLI 返回的 `endpoint`，形式为 `https://<id>.<site-host>/web/<id>/`；应用主机根地址也会转向该入口。Console 详情为 `/console/web/<id>`。报告 Web/实例 ID、publish_id、归档校验和、上传与激活状态，以及可选数据库/Git 关联。环境不具备候选能力时报告具体阻塞并提供本地开发地址；不自行修改部署。
 
 ## 应用列表与删除
 
