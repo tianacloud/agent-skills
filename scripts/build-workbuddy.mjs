@@ -23,6 +23,7 @@ await fs.mkdir(outputDir, { recursive: true });
 async function archiveEntries(directory, relative = "") {
   const result = {};
   for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
+    if (entry.name === "__pycache__" || /\.py[cod]$/.test(entry.name)) continue;
     const absolute = path.join(directory, entry.name);
     const archivePath = relative ? `${relative}/${entry.name}` : entry.name;
     if (entry.isDirectory()) Object.assign(result, await archiveEntries(absolute, archivePath));

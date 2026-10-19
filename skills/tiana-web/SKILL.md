@@ -1,10 +1,10 @@
 ---
 name: tiana-web
-description: 使用 Tiana 创建、修改、预览和发布 Web 应用。用户要求制作账单、笔记、日历或其他 Web app 时使用；根据实时模板目录和需求决定采用模板或直接开发，并连接 SQLite 和 Git。
+description: 使用 Tiana 创建、修改、预览和发布 Web 应用。用户要求制作账单、笔记、日历或其他 Web app 时使用；根据实时模板目录和需求决定采用模板或直接开发，并连接 SQLite 和 Git。用户要求把已有 Web app 发布为模板、分享可安装应用链接时也使用。
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.5"
+  version: "1.0.6"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-web
 ---
@@ -15,13 +15,17 @@ metadata:
 
 ## 每个会话一次的更新检查
 
-四个 Tiana 技能共享当前会话的更新检查记录。CLI 已满足最低版本要求且本会话尚未尝试检查时，执行 `tiana version check --skills-version 1.0.5 --json`，使用实际加载的 metadata.version。调用前在会话上下文中记为已尝试；后续轮次、重复加载或切换技能均复用该记录，检查失败也不自动重试。上下文压缩或任务交接时保留记录，新会话重新检查。
+四个 Tiana 技能共享当前会话的更新检查记录。CLI 已满足最低版本要求且本会话尚未尝试检查时，执行 `tiana version check --skills-version 1.0.6 --json`，使用实际加载的 metadata.version。调用前在会话上下文中记为已尝试；后续轮次、重复加载或切换技能均复用该记录，检查失败也不自动重试。上下文压缩或任务交接时保留记录，新会话重新检查。
 
 仅在 `should_notify=true` 时简短提醒并询问是否升级；用户选择稍后或检查不可用时继续原任务。CLI 仍管理检查缓存和共同的 24 小时提醒额度。升级及重载见[开始使用](../tiana/references/getting-started.md#更新)。
 
-## 每次任务必须查询当前模板目录
+## 将已有应用发布为模板
 
-**每次创建、修改或发布 Web 应用，都必须实际执行 `tiana web list-template --json`。同一会话之前查过、记得某个模板、用户未提模板，都不能代替这次调用。** 有 `data.next_cursor` 时，以 `--after CURSOR` 继续查询本次需求需要的目录页。检查命令实际成功；当前目录不可用时说明结果并按通用方式继续，不能从旧列表选包。
+用户要求“把某个 Web App 发布为模板”或分享可安装链接时，阅读[用户模板分享](references/share-template.md)，在独立副本中整理源码、结构与个人无关 seed，再打包、上传并交付安装链接。默认包含源码，可让用户选择仅安装；必须制作预览和封面。无法判断 seed 是否涉及个人信息时，先让用户选择。用户提供分享链接要求做同款时，也按该文档取得源码并开始新工程。此分支直接处理指定应用。
+
+## 开发与普通发布：查询当前模板目录
+
+**每次创建、修改或普通发布 Web 应用，都必须实际执行 `tiana web list-template --json`。同一会话之前查过、记得某个模板、用户未提模板，都不能代替这次调用。** 有 `data.next_cursor` 时，以 `--after CURSOR` 继续查询本次需求需要的目录页。检查命令实际成功；当前目录不可用时说明结果并按通用方式继续，不能从旧列表选包。
 
 用户只需描述应用。根据本次返回的 `name`、`description` 判断核心功能、数据模型与可定制范围：合适的模板可加速制作，局部差异在工程中修改；没有合适模板就直接开发。已有工程继续修改自己的工程。以需求为依据决定，不要求用户选择模板，也不硬编码模板名称或模板版本。
 

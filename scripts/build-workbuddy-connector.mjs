@@ -19,6 +19,7 @@ if (metadata.version !== pkg.version) throw new Error('Connector and package ver
 const entries = {};
 async function addDirectory(directory, prefix) {
   for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
+    if (entry.name === '__pycache__' || /\.py[cod]$/.test(entry.name)) continue;
     const name = `${prefix}/${entry.name}`;
     if (entry.isDirectory()) await addDirectory(path.join(directory, entry.name), name);
     if (entry.isFile()) entries[name] = new Uint8Array(await fs.readFile(path.join(directory, entry.name)));
