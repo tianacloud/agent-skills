@@ -4,7 +4,7 @@ description: 使用 Tiana Cloud 管理实例、安装 CLI、登录和恢复账�
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.8"
+  version: "1.0.9"
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana
 ---
 
@@ -17,7 +17,7 @@ metadata:
 **本会话首次使用任一 Tiana 技能时，先完成以下步骤，再开始登录、查询模板或操作应用：**
 
 1. 执行 `tiana version`，按[开始使用](references/getting-started.md)核验最低版本；缺少 CLI 或版本过低时，先完成安装或经用户确认的升级。
-2. CLI 满足最低版本后，**仍须实际执行** `tiana version check --skills-version 1.0.8 --json`；版本号取实际加载的 metadata.version。这一步检查是否有更新版本。
+2. CLI 满足最低版本后，**仍须实际执行** `tiana version check --skills-version 1.0.9 --json`；版本号取实际加载的 metadata.version。这一步检查是否有更新版本。
 3. 实际发起检查命令后，才在会话中记为已尝试，并保留返回结果或执行错误。仅运行 `tiana version` 只完成第 1 步。
 
 四个技能共享这份实际调用记录；后续轮次、重复加载或切换技能复用记录，失败也不自动重试。上下文压缩或任务交接时保留记录，新会话重新检查。

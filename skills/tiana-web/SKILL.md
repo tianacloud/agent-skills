@@ -4,7 +4,7 @@ description: 使用 Tiana 创建、修改、预览和发布 Web 应用。用户�
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.8"
+  version: "1.0.9"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-web
 ---
@@ -18,7 +18,7 @@ metadata:
 **本会话首次使用任一 Tiana 技能时，先完成以下步骤，再开始登录、查询模板或操作应用：**
 
 1. 执行 `tiana version`，按[开始使用](../tiana/references/getting-started.md)核验最低版本；缺少 CLI 或版本过低时，先完成安装或经用户确认的升级。
-2. CLI 满足最低版本后，**仍须实际执行** `tiana version check --skills-version 1.0.8 --json`；版本号取实际加载的 metadata.version。这一步检查是否有更新版本。
+2. CLI 满足最低版本后，**仍须实际执行** `tiana version check --skills-version 1.0.9 --json`；版本号取实际加载的 metadata.version。这一步检查是否有更新版本。
 3. 实际发起检查命令后，才在会话中记为已尝试，并保留返回结果或执行错误。仅运行 `tiana version` 只完成第 1 步。
 
 四个技能共享这份实际调用记录；后续轮次、重复加载或切换技能复用记录，失败也不自动重试。上下文压缩或任务交接时保留记录，新会话重新检查。
@@ -41,7 +41,7 @@ metadata:
 2. 采用模板时，执行 `tiana web init-template NAME --dir PROJECT_DIR --json`。PROJECT_DIR 是用户项目的不存在目录，位于技能安装目录之外。CLI 下载并原样解压；按 [模板初始化](references/template-init.md)读取工程根部 `metadata.json`，由 Agent 完成全部变量替换及 SQLite 数据初始化。
 3. 直接开发时，使用 [固定 index.html](references/index.html)、哈希路由、支持动态账号鉴权的 SDK，按实际数据库结构编写应用及构建清单。
 4. **模板和直接开发都由 Agent 处理数据库初始化。** 模板先执行已配置且存在的 schema，再执行已配置且存在的 seeds；两项独立跳过，SQL 失败先核对结果并停止后续发布。
-5. 构建前准备应用图标：用户明确提供图片时使用它，否则复用源码已有 `icon.png`（包括模板的 `public/icon.png`）；源码缺图时由 Agent 按标题自动生成汉字／字母加固定配色的真实 PNG，保存到源码，并确保产物根目录有 `icon.png`。查看图片并核验干净构建，细节见[应用图标](references/csr-apps.md#应用图标)。
+5. 构建前按[应用图标](references/csr-apps.md#应用图标)准备真实 PNG：使用用户指定图片或已有的合适图标；需要制作时优先调用可用的 AI 生图工具，以应用核心功能设计图形图标。图片保存到源码，查看缩小后的效果，并核验干净构建根目录和发布包中都有该图片。
 6. 按用户需求完成交互和定制，安装依赖并从确定源码提交构建。按 [源码版本流程](../tiana-git/references/source-releases.md)完成源码同步，用 `web publish` 发布当前归档，再用 `web status --publish-id` 核对。除非用户仅要求本地开发，交付实际托管地址、资源 ID 和对应源码提交；未验证的阶段如实说明。
 
 ## 文件上传、预览与下载
