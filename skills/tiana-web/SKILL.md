@@ -37,7 +37,7 @@ metadata:
 
 ## 选择数据访问方式
 
-简单应用可直接访问 SQLite。复杂业务、敏感数据或需要限制用户可见数据时，按 [Tiana Function](../tiana-function/SKILL.md)实现后端，前端调用后端服务接口。后端私有 SQLite 只配置到后端服务参数，Web 不绑定它；浏览器只取得调用后端服务所需的短效凭据。用户要求前后端共仓时，先创建 Git，创建后端服务选择该 Git，后端服务源码放到 `/functions/{function_id}/` 目录。
+简单应用可直接访问 SQLite。复杂业务、敏感数据或需要限制用户可见数据时，按 [Tiana Function](../tiana-function/SKILL.md)实现后端，前端调用后端服务接口。后端私有 SQLite 只配置到后端服务参数，Web 不绑定它；浏览器只取得调用后端服务所需的短效凭据。用户要求前后端共仓时，先创建 Git，创建后端服务选择该 Git，创建时选择合适的 source_dir（默认 `/functions/<名称>/`），使用该目录自己的 go.mod；后续从服务元信息读取目录，保持同仓前端与其他服务文件。
 
 ## 创建、初始化和发布
 

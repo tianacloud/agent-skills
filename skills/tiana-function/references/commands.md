@@ -5,7 +5,7 @@
 ```sh
 tiana function list --page 1 --json
 tiana function show FUNCTION_ID --json
-tiana function create "订单后端" -m "订单业务接口" --git-instance-id GIT_ID --wait --json
+tiana function create "订单后端" -m "订单业务接口" --git-instance-id GIT_ID --source-dir /services/orders --wait --json
 ```
 
 不传 `--git-instance-id` 则创建独立源码 Git。列表每次读取一页，按需要用 `--page` 继续，不为查找已知 ID 遍历整个租户。
@@ -86,4 +86,6 @@ tiana web serve WEB_ID --dir dist
 
 set 替换完整后端服务列表，多个后端重复 `--function-id`；不传 ID 则清空。revision 使用 get 的回执，冲突后重新读取再决定。前端通过 `context.functions.fetch(FUNCTION_ID, "/orders", {method:"GET"})` 调用，本地预览也支持。预览使用开发者账号，不能代替跨账号 Site 分享验收。
 
-复制 Web、后端服务及数据库为模板时按[后端服务模板](../../tiana-web/references/function-templates.md)处理共享 Git、新后端服务目录和数据库参数映射。
+复制 Web、后端服务及数据库为模板时按[后端服务模板](../../tiana-web/references/function-templates.md)处理共享 Git、保留 source_dir 和数据库参数映射。
+
+源码目录支持根目录 `/`，创建后固定。服务改名不改路径，保存提交信息为 `Save source of <当前服务名称>`。每个目录使用自身 go.mod；同仓同目录可被多个服务共享。

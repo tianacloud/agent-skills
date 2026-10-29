@@ -39,10 +39,10 @@ class SharedTemplatePackTest(unittest.TestCase):
             variable = {"name": "FUNCTION_ID:api", "placeholder": "__API__", "description": "Backend", "files": ["app.js"]}
             metadata = {"name": "backend", "database_required": True, "private_database": True,
                         "web_repository": "app", "repositories": [{"key": "app", "path": "repositories/app", "variables": [variable]}],
-                        "functions": [{"key": "api", "name": "API", "repository": "app", "source_directory": "functions/fn-old", "database": {"endpoint_parameter": "SQLITE_ENDPOINT", "token_parameter": "SQLITE_TOKEN"}}],
+                        "functions": [{"key": "api", "name": "API", "repository": "app", "source_dir": "/functions/fn-old", "database": {"endpoint_parameter": "SQLITE_ENDPOINT", "token_parameter": "SQLITE_TOKEN"}}],
                         "site_variables": [variable]}
             source = root / "source.zip"
-            source.write_bytes(pack.archive({"metadata.json": json.dumps(metadata).encode(), "showcase/preview.html": b"preview", "showcase/cover.webp": b"cover", "showcase/prompt.md": b"prompt", "repositories/app/app.js": b"call('__API__')", "repositories/app/functions/fn-old/main.go": b"package main"}))
+            source.write_bytes(pack.archive({"metadata.json": json.dumps(metadata).encode(), "showcase/preview.html": b"preview", "showcase/cover.webp": b"cover", "showcase/prompt.md": b"prompt", "repositories/app/app.js": b"call('__API__')", "repositories/app/functions/fn-old/go.mod": b"module service\n\ngo 1.26\n", "repositories/app/functions/fn-old/main.go": b"package main"}))
             dist = root / "dist"
             dist.mkdir()
             (dist / "app.js").write_text("call('__API__')")
