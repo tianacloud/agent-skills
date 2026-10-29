@@ -13,6 +13,18 @@ under `skills/` are the canonical source for every distribution format.
   WorkBuddy packaging metadata aligned.
 - Run `npm run validate:ci` before submitting changes.
 
+Template file installation format 2 is a coordinated source candidate until the
+target service is deployed and its file capability enabled. File seeds come from
+the reviewed source archive, are emitted as independent installation materials,
+and keep source.zip for server byte comparison. An installer's direct mode is
+independent of a publisher omitting source; --without-source remains available
+for no-file legacy packages. Preserve the shared raw UTF-8 digest vector, 16 MiB/
+256-file limits, safe paths, clean-build exclusion and root platform-icon exception.
+Ordinary source initialization explicitly prepares the new Web's file directory
+once; Web updates never reseed modified/deleted files. Validate packaging and
+canonical distributions without treating local checks as cloud acceptance. This
+work does not bump package versions, install skills globally or publish npm.
+
 
 ## Management origin and public installation
 

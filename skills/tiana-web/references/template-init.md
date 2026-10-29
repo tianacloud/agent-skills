@@ -1,6 +1,6 @@
 # 使用模板工程
 
-模板目录来自本次 `tiana web list-template --json` 实际返回的数据。每页 `data.items` 含 name、display_name、description、status 和变量摘要；CLI 的 `--after` 查询下一页。选择符合用户核心功能与数据结构的工程；没有匹配项时按通用 Web 方法制作。
+模板目录来自本次 `tiana web list-template --json` 实际返回的数据。每页 `data.items` 含 name、display_name、description、status 和变量摘要；CLI 的 `--after` 查询下一页。即使 items 为空，存在 next_cursor 时仍继续需要的页。选择符合用户核心功能与数据结构的工程；没有匹配项时按通用 Web 方法制作。
 
 新应用默认由 Agent 创建所需的 SQLite 和 Git，按当前应用命名并保存 CLI 返回的实际实例 ID；用户明确指定已有实例时核实后复用。保存资源回执后执行：
 
@@ -19,6 +19,7 @@ tiana web init-template NAME --dir PROJECT_DIR --json
   "name": "notes",
   "display_name": "记事本",
   "description": "个人笔记、文件夹、全文搜索和自动保存。",
+  "database_required": true,
   "variables": [
     {
       "name": "SQLITE_INSTANCE_ID",
@@ -54,6 +55,14 @@ JSON 中要正确转义字符串，SQL 中按实际语法处理，源码中保�
 两项独立判断：schema 缺文件不阻止执行存在的 seeds。用户提供已有库时先查看相应表结构和数据，保证初始化符合当前任务，不把重复灌数当作恢复方法。指定分支时，两次调用都加相同 `--branch NAME`。
 
 SQL 返回失败、断线或未知结果时停止后续发布，用独立只读查询核对已完成的结构与数据，不自动重放写入。初始化成功后进行应用定制、依赖安装、源码同步、构建及发布；工程 README 中的步骤与实际帮助一起核对。
+
+## 预置素材
+
+按[数据与素材存储](storage-and-assets.md)检查声明及现有实现。`file_seeds` 为
+`template-files` 时，按[模板素材文件](template-files.md)核对源字节、相对路径、
+当前 Web ID 的首次文件准备和干净构建。CLI 解压成功不会自动上传素材，普通
+`web publish` 也不会灌入文件。没有素材声明时沿用原流程；已有应用不因再次发布
+而恢复被用户修改或删除的初始文件。
 
 ## 模板图标
 
