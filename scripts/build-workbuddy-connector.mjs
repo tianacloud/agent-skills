@@ -28,7 +28,7 @@ async function addDirectory(directory, prefix) {
 for (const name of ['connector-meta.json', 'cli.json', 'icon.png']) {
   entries[name] = new Uint8Array(await fs.readFile(path.join(template, name)));
 }
-for (const name of ['tiana', 'tiana-sqlite', 'tiana-git', 'tiana-web']) {
+for (const name of ['tiana', 'tiana-sqlite', 'tiana-git', 'tiana-web', 'tiana-function']) {
   await addDirectory(path.join(root, 'skills', name), `skills/${name}`);
   const entry = `skills/${name}/SKILL.md`;
   entries[entry] = Buffer.from(addWorkBuddyFrontmatter(Buffer.from(entries[entry]).toString('utf8'), localized.skills[name], pkg.version, localized.author));

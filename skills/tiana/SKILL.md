@@ -1,6 +1,6 @@
 ---
 name: tiana
-description: 使用 Tiana Cloud 管理实例、安装 CLI、登录和恢复账号会话。通用 Tiana 任务从此技能开始；Web 应用创建发布使用 tiana-web，数据库和分支使用 tiana-sqlite，Git 仓库和源码同步使用 tiana-git。
+description: 使用 Tiana Cloud 管理实例、安装 CLI、登录和恢复账号会话。通用 Tiana 任务从此技能开始；Web 应用创建发布使用 tiana-web，数据库和分支使用 tiana-sqlite，Git 仓库和源码同步使用 tiana-git，函数与数据库后端使用 tiana-function。
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
@@ -20,7 +20,7 @@ metadata:
 2. CLI 满足最低版本后，**仍须实际执行** `tiana version check --skills-version 1.0.10 --json`；版本号取实际加载的 metadata.version。这一步检查是否有更新版本。
 3. 实际发起检查命令后，才在会话中记为已尝试，并保留返回结果或执行错误。仅运行 `tiana version` 只完成第 1 步。
 
-四个技能共享这份实际调用记录；后续轮次、重复加载或切换技能复用记录，失败也不自动重试。上下文压缩或任务交接时保留记录，新会话重新检查。
+五个技能共享这份实际调用记录；后续轮次、重复加载或切换技能复用记录，失败也不自动重试。上下文压缩或任务交接时保留记录，新会话重新检查。
 
 仅在 `should_notify=true` 时简短提醒并询问是否升级；用户选择稍后或检查不可用时继续原任务。CLI 仍管理检查缓存和共同的 24 小时提醒额度。升级及重载见[开始使用](references/getting-started.md#更新)。
 
@@ -30,6 +30,7 @@ metadata:
 | --- | --- |
 | 创建、修改、预览、发布 Web 应用 | [tiana-web](../tiana-web/SKILL.md) |
 | SQLite 查询、连接、建表及数据库分支 | [tiana-sqlite](../tiana-sqlite/SKILL.md) |
+| Go 函数源码、编译发布、参数及 CORS | [tiana-function](../tiana-function/SKILL.md) |
 | Git 实例、仓库、源码版本同步 | [tiana-git](../tiana-git/SKILL.md) |
 | 登录、账号、额度、通用实例管理 | 本技能 |
 

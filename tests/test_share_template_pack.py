@@ -33,6 +33,32 @@ class SharedTemplatePackTest(unittest.TestCase):
                     self.assertIn("site.tweb", archive.namelist())
                 self.assertEqual(result["has_source"], not without_source)
 
+    def test_backend_shared_repository_and_compiled_reference(self):
+        with tempfile.TemporaryDirectory() as root:
+            root = Path(root)
+            variable = {"name": "FUNCTION_ID:api", "placeholder": "__API__", "description": "Backend", "files": ["app.js"]}
+            metadata = {"name": "backend", "database_required": True, "private_database": True,
+                        "web_repository": "app", "repositories": [{"key": "app", "path": "repositories/app", "variables": [variable]}],
+                        "functions": [{"key": "api", "name": "API", "repository": "app", "source_directory": "functions/fn-old", "database": {"endpoint_parameter": "SQLITE_ENDPOINT", "token_parameter": "SQLITE_TOKEN"}}],
+                        "site_variables": [variable]}
+            source = root / "source.zip"
+            source.write_bytes(pack.archive({"metadata.json": json.dumps(metadata).encode(), "showcase/preview.html": b"preview", "showcase/cover.webp": b"cover", "showcase/prompt.md": b"prompt", "repositories/app/app.js": b"call('__API__')", "repositories/app/functions/fn-old/main.go": b"package main"}))
+            dist = root / "dist"
+            dist.mkdir()
+            (dist / "app.js").write_text("call('__API__')")
+            target = root / "install.zip"
+            pack.pack(source, dist, "app.js", target)
+            with zipfile.ZipFile(target) as archive:
+                manifest = json.loads(archive.read("install.json"))
+                for key in ("private_database", "web_repository", "repositories", "functions", "site_variables"):
+                    self.assertEqual(manifest[key], metadata[key])
+                self.assertEqual(archive.read("source.zip"), source.read_bytes())
+            with self.assertRaisesRegex(ValueError, "require source"):
+                pack.pack(source, dist, "app.js", target, True)
+            (dist / "app.js").write_text("call('old-real-function-id')")
+            with self.assertRaisesRegex(ValueError, "placeholder missing"):
+                pack.pack(source, dist, "app.js", target)
+
     def test_source_rejects_traversal_and_expansion_bomb(self):
         for name, data in (("../secret", b"private"), (".git/config", b"credential"), ("large", b"a" * (pack.MAX_FILE + 1))):
             with self.subTest(name=name), self.assertRaises(ValueError):

@@ -12,6 +12,10 @@
 
 模板提供 `<div id="app"></div>`。`entry` 指定的模块按正常方式启动并渲染应用。需要数据库连接时，调用 `window.tiana.connection()` 获取连接元信息，使用 `window.tiana.auth` provider 提供动态凭据；凭据只保存在内存中。加载指示器是临时的，与应用样式隔离。
 
+## 选择后端与确认资源
+
+先区分数据访问方式：简单应用可以采用下文的浏览器直连 SQLite；复杂或敏感应用按 [Tiana Function](../../tiana-function/SKILL.md)实现后端。后端模式创建 Web 时省略 `--database-instance-id`，将所需函数加入 Web 的函数绑定，数据库 Endpoint 和 Token 仅保存在函数参数。下文的 `window.tiana.connection()` 与数据库绑定步骤只适用于直连模式。
+
 ## 确认账号与数据库
 
 已确认 CLI 具备本流程命令时直接使用。命令缺失时按[开始使用](../../tiana/references/getting-started.md)安装匹配版本。
