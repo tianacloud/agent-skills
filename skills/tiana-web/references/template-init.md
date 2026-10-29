@@ -10,7 +10,7 @@ tiana web init-template NAME --dir PROJECT_DIR --json
 
 成功结果的 `data.directory` 是工程根目录，`data.metadata_path` 是元信息文件。CLI 负责下载校验和解压，工程仍保留占位符、SQL 和原始文件。下载失败先核对实际结果，再重新运行；不用链接地址当作创建成功依据。
 
-metadata.json 包含 `repositories` 或 `functions` 时，按[函数模板的源码开发步骤](function-templates.md#下载源码后继续开发)保留资源关系；后端私有数据库不绑定给 Web。以下单仓库、Web 直连 SQLite 的步骤适用于相应模板。
+metadata.json 包含 `repositories` 或 `functions` 时，按[后端服务模板的源码开发步骤](function-templates.md#下载源码后继续开发)保留资源关系；后端私有数据库不绑定给 Web。以下单仓库、Web 直连 SQLite 的步骤适用于相应模板。
 
 ## metadata.json 和变量
 

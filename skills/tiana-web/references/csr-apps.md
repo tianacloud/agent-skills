@@ -14,7 +14,7 @@
 
 ## 选择后端与确认资源
 
-先区分数据访问方式：简单应用可以采用下文的浏览器直连 SQLite；复杂或敏感应用按 [Tiana Function](../../tiana-function/SKILL.md)实现后端。后端模式创建 Web 时省略 `--database-instance-id`，将所需函数加入 Web 的函数绑定，数据库 Endpoint 和 Token 仅保存在函数参数。下文的 `window.tiana.connection()` 与数据库绑定步骤只适用于直连模式。
+先区分数据访问方式：简单应用可以采用下文的浏览器直连 SQLite；复杂或敏感应用按 [Tiana Function](../../tiana-function/SKILL.md)实现后端。后端模式创建 Web 时省略 `--database-instance-id`，将所需后端服务加入 Web 的后端服务绑定，数据库 Endpoint 和 Token 仅保存在后端服务参数。下文的 `window.tiana.connection()` 与数据库绑定步骤只适用于直连模式。
 
 ## 确认账号与数据库
 

@@ -1,6 +1,6 @@
 ---
 name: tiana-function
-description: 使用 Tiana 创建和管理 Go 函数，读取及保存 Git 源码、编译发布、修改参数与 CORS；为 Web 应用开发访问 SQLite 的函数后端时使用。前端页面开发配合 tiana-web。
+description: 使用 Tiana 创建和管理 Go 后端服务，读取及保存 Git 源码、编译发布、修改参数与 CORS；为 Web 应用开发访问 SQLite 的后端服务时使用。前端页面开发配合 tiana-web。
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
@@ -15,20 +15,20 @@ metadata:
 
 ## 创建与修改
 
-按 [函数命令](references/commands.md)操作。先确认目标函数及其源码 Git，再读取源码。只编辑所需文件，保存得到 Git commit 后显式编译发布。保存源码不会自动编译；发布完成也不会中断正在处理请求的旧进程。需要立即采用新版本时用 `function switch`，等待当前请求完成后休眠，下次请求使用新版本。
+按 [后端服务命令](references/commands.md)操作。先确认目标后端服务及其源码 Git，再读取源码。只编辑所需文件，保存得到 Git commit 后显式编译发布。保存源码不会自动编译；发布完成也不会中断正在处理请求的旧进程。需要立即采用新版本时用 `function switch`，等待当前请求完成后休眠，下次请求使用新版本。
 
-新函数不自动写入示例。未指定 Git 时由平台创建源码仓库；用户要求与 Web 或其他函数共仓时传 `--git-instance-id GIT_ID`。两种方式均在 `/functions/{function_id}/` 保存、读取和编译源码。首次保存创建该目录；构建时目录缺失会报错。不要把前端文件或其他函数的目录当作本函数源码覆盖。
+新后端服务不自动写入示例。未指定 Git 时由平台创建源码仓库；用户要求与 Web 或其他后端服务共仓时传 `--git-instance-id GIT_ID`。两种方式均在 `/functions/{function_id}/` 保存、读取和编译源码。首次保存创建该目录；构建时目录缺失会报错。不要把前端文件或其他后端服务的目录当作本后端服务源码覆盖。
 
 命令回执中的 commit 是仓库主分支提交。并发保存冲突后先保留本地编辑，重读并合并实际变化，再用新 commit 保存；不强推主分支。多文件或二进制资源也可按 [Tiana Git](../tiana-git/SKILL.md)用原生 Git 管理。
 
 ## 参数与数据库后端
 
-参数通过 `function parameters` 管理，由 Go SDK 的 `function.ReadConfig()` 读取，使用 `params.Get("参数名")` 获取值及是否存在。示例和运行约定见 [Go 函数开发](references/go-backend.md)。参数与 CORS 保存后无需重新编译。
+参数通过 `function parameters` 管理，由 Go SDK 的 `function.ReadConfig()` 读取，使用 `params.Get("参数名")` 获取值及是否存在。示例和运行约定见 [Go 后端服务开发](references/go-backend.md)。参数与 CORS 保存后无需重新编译。
 
-简单应用可以直接连接 SQLite。业务规则复杂、包含敏感数据或需要按用户限制数据范围时，用函数处理业务和数据库操作，前端只调用函数。将数据库 Endpoint 与 Token 保存在函数参数中，Web 不绑定这个私有数据库；不把数据库 Token 放入前端源码、响应或日志。Web 页面与分享流程配合 [Tiana Web](../tiana-web/SKILL.md)。配置 Web 的函数列表后使用 `context.functions.fetch`；复制成模板时读取[函数模板](../tiana-web/references/function-templates.md)。
+简单应用可以直接连接 SQLite。业务规则复杂、包含敏感数据或需要按用户限制数据范围时，用后端服务处理业务和数据库操作，前端只调用后端服务。将数据库 Endpoint 与 Token 保存在后端服务参数中，Web 不绑定这个私有数据库；不把数据库 Token 放入前端源码、响应或日志。Web 页面与分享流程配合 [Tiana Web](../tiana-web/SKILL.md)。配置 Web 的后端服务列表后使用 `context.functions.fetch`；复制成模板时读取[后端服务模板](../tiana-web/references/function-templates.md)。
 
 调用方身份通过 SDK 从请求上下文读取，业务需要区分用户数据时使用该身份，不能相信请求体中自报的用户 ID。分享验收应使用另一个账号的 Site 登录，确认业务成功且浏览器无法取得私有数据库连接。
 
 ## 结果与恢复
 
-`accepted` 表示已受理，`publish --wait` 成功才表示发布完成。构建失败后读取 `builds` 和 `logs`，修正源码、额度或配置后重试。响应不确定时沿用原 request ID 和 commit 查询或恢复；不要把再次发起构建当作状态查询。删除函数会删除其制品，CLI 保留关联 Git。
+`accepted` 表示已受理，`publish --wait` 成功才表示发布完成。构建失败后读取 `builds` 和 `logs`，修正源码、额度或配置后重试。响应不确定时沿用原 request ID 和 commit 查询或恢复；不要把再次发起构建当作状态查询。删除后端服务会删除其制品，CLI 保留关联 Git。

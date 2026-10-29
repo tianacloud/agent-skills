@@ -1,6 +1,6 @@
-# Go 函数开发
+# Go 后端服务开发
 
-函数是监听 `PORT` 环境变量指定端口的 Go HTTP 程序。平台固定 Go 1.26 工具链。源码包含实际 go.mod/go.sum；依赖由构建流程下载。使用 SDK 时选择包含 function 包的已发布版本，记录在 go.mod 中，具体版本以当前配套 SDK 发布为准。
+后端服务是监听 `PORT` 环境变量指定端口的 Go HTTP 程序。平台固定 Go 1.26 工具链。源码包含实际 go.mod/go.sum；依赖由构建流程下载。使用 SDK 时选择包含 function 包的已发布版本，记录在 go.mod 中，具体版本以当前配套 SDK 发布为准。
 
 最小程序返回 JSON：
 
@@ -26,7 +26,7 @@ func main() {
 
 ## 读取业务参数
 
-例如希望返回可修改的欢迎语：在函数参数中新增名为 `MESSAGE` 的参数，值填写 `欢迎使用订单服务` 并保存。`MESSAGE` 只是示例业务参数名，可以换成业务自己的名称。
+例如希望返回可修改的欢迎语：在后端服务参数中新增名为 `MESSAGE` 的参数，值填写 `欢迎使用订单服务` 并保存。`MESSAGE` 只是示例业务参数名，可以换成业务自己的名称。
 
 在 handler 内读取配置，使之后的请求能读取更新的值：
 
@@ -47,7 +47,7 @@ if !ok {
 
 ## 访问 SQLite
 
-先用 [Tiana SQLite](../../tiana-sqlite/SKILL.md)核实数据库实例、表结构及初始化 SQL。数据库 Endpoint 和实例 Token 分别保存为函数参数 `SQLITE_ENDPOINT`、`SQLITE_TOKEN`，Token 在该数据库的连接管理中创建。只在函数内读取并传给 SDK：
+先用 [Tiana SQLite](../../tiana-sqlite/SKILL.md)核实数据库实例、表结构及初始化 SQL。数据库 Endpoint 和实例 Token 分别保存为后端服务参数 `SQLITE_ENDPOINT`、`SQLITE_TOKEN`，Token 在该数据库的连接管理中创建。只在后端服务内读取并传给 SDK：
 
 ```go
 endpoint, endpointOK := params.Get("SQLITE_ENDPOINT")

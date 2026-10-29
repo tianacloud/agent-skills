@@ -1,4 +1,4 @@
-# 函数命令
+# 后端服务命令
 
 沿用本会话已选择的 CLI 环境与登录。示例中的 `FUNCTION_ID`、`GIT_ID`、commit 和构建 ID 均替换为实际回执，名称有歧义时使用 ID。
 
@@ -18,7 +18,7 @@ tiana function source read FUNCTION_ID main.go --commit COMMIT > main.go
 tiana function source list FUNCTION_ID handlers --commit COMMIT --offset 0 --json
 ```
 
-目录结果含 `commit`、`root`、`entries`、`next_offset`。路径相对于该函数的源码根，子目录翻页使用原 commit 与 next_offset。`needs_initial_source=true` 表示还需要保存初始代码。`read` 默认输出原始文件，`--json` 输出包含路径、commit 和 UTF-8 内容的结构。
+目录结果含 `commit`、`root`、`entries`、`next_offset`。路径相对于该后端服务的源码根，子目录翻页使用原 commit 与 next_offset。`needs_initial_source=true` 表示还需要保存初始代码。`read` 默认输出原始文件，`--json` 输出包含路径、commit 和 UTF-8 内容的结构。
 
 编辑本地文件后，只列出需要保存的文件：
 
@@ -26,7 +26,7 @@ tiana function source list FUNCTION_ID handlers --commit COMMIT --offset 0 --jso
 tiana function source save FUNCTION_ID --base-commit COMMIT --file main.go=./main.go --file go.mod=./go.mod --json
 ```
 
-完全空的 Git 首次保存用 `--base-commit empty`。已有前端提交的共享仓库使用 `source list` 返回的 commit，不用 empty；命令会将文件写到新函数目录，保留其他文件。保存返回新的 commit。二进制文件、删除文件、仓库根部共享模块及跨目录整理用原生 Git。
+完全空的 Git 首次保存用 `--base-commit empty`。已有前端提交的共享仓库使用 `source list` 返回的 commit，不用 empty；命令会将文件写到新后端服务目录，保留其他文件。保存返回新的 commit。二进制文件、删除文件、仓库根部共享模块及跨目录整理用原生 Git。
 
 ## 构建和发布
 
@@ -74,7 +74,7 @@ tiana function enable FUNCTION_ID --json
 tiana function delete FUNCTION_ID --force --wait --json
 ```
 
-停用阻止访问；删除清理函数和制品，源码 Git 保留。删除必须是用户要求的操作；非交互命令用 --force 跳过已完成的人工确认。结果未知时保留回执，使用原实例 ID 和 `--request-id` 恢复。
+停用阻止访问；删除清理后端服务和制品，源码 Git 保留。删除必须是用户要求的操作；非交互命令用 --force 跳过已完成的人工确认。结果未知时保留回执，使用原实例 ID 和 `--request-id` 恢复。
 
 ## Web 绑定与预览
 
@@ -84,6 +84,6 @@ tiana web functions set WEB_ID --function-id FUNCTION_ID --expected-revision REV
 tiana web serve WEB_ID --dir dist
 ```
 
-set 替换完整函数列表，多个后端重复 `--function-id`；不传 ID 则清空。revision 使用 get 的回执，冲突后重新读取再决定。前端通过 `context.functions.fetch(FUNCTION_ID, "/orders", {method:"GET"})` 调用，本地预览也支持。预览使用开发者账号，不能代替跨账号 Site 分享验收。
+set 替换完整后端服务列表，多个后端重复 `--function-id`；不传 ID 则清空。revision 使用 get 的回执，冲突后重新读取再决定。前端通过 `context.functions.fetch(FUNCTION_ID, "/orders", {method:"GET"})` 调用，本地预览也支持。预览使用开发者账号，不能代替跨账号 Site 分享验收。
 
-复制 Web、函数及数据库为模板时按[函数模板](../../tiana-web/references/function-templates.md)处理共享 Git、新函数目录和数据库参数映射。
+复制 Web、后端服务及数据库为模板时按[后端服务模板](../../tiana-web/references/function-templates.md)处理共享 Git、新后端服务目录和数据库参数映射。

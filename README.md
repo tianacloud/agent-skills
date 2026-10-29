@@ -1,6 +1,6 @@
 # Tiana Agent Skills
 
-五个基础技能覆盖 Tiana 账号与实例、SQLite、Git、函数和 Web 应用。应用模板由在线目录提供，用户描述需求后，Agent 根据实时目录决定使用模板还是直接开发。
+五个基础技能覆盖 Tiana 账号与实例、SQLite、Git、后端服务和 Web 应用。应用模板由在线目录提供，用户描述需求后，Agent 根据实时目录决定使用模板还是直接开发。
 
 ## 从 npm 安装
 
@@ -33,7 +33,7 @@ WorkBuddy、豆包按所用版本的目录／ZIP 导入方式加载这五个目�
 | [tiana](skills/tiana/SKILL.md) | CLI 安装、登录、账号额度和通用实例管理 |
 | [tiana-sqlite](skills/tiana-sqlite/SKILL.md) | SQL、表结构、SDK 连接和数据库分支 |
 | [tiana-git](skills/tiana-git/SKILL.md) | Git 实例、原生仓库操作和源码版本同步 |
-| [tiana-function](skills/tiana-function/SKILL.md) | Go 函数源码、构建发布、参数/CORS 与数据库后端 |
+| [tiana-function](skills/tiana-function/SKILL.md) | Go 后端服务源码、构建发布、参数/CORS 与数据库后端 |
 | [tiana-web](skills/tiana-web/SKILL.md) | 实时模板选择、工程与数据初始化、通用开发、构建发布 |
 
 Web 技能每次任务都实际执行 `tiana web list-template --json`，使用当前 name/description 判断需求。模板 ZIP 原样下载解压到独立项目目录；Agent 按根部 metadata.json 替换变量、先 schema 后 seeds。模板源码和制作规范见 [template-apps](https://github.com/tianacloud/template-apps)，客户安装模板由 CLI 和 MGR 目录完成。

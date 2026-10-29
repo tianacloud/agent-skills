@@ -2,13 +2,13 @@
 
 分享的是可独立安装的材料。发布流程在工作副本中准备材料，最后更新源 Web 的稳定分享链接。
 
-带函数后端时先读[函数模板](function-templates.md)，核对 Web → Function → SQLite 和共享 Git 关系，再按以下公开材料流程准备。
+带后端服务时先读[后端服务模板](function-templates.md)，核对 Web → Function → SQLite 和共享 Git 关系，再按以下公开材料流程准备。
 
 ## 1. 核实应用与交付范围
 
 读取 `tiana web publish-share-template --help` 和 `tiana web status-share-template --help`，确认当前 CLI 支持这组命令。读取目标 Web 详情，记录当前租户、真实 Web ID、固定入口、SQLite/Git 绑定和可构建源码位置。取得对应源码，在技能目录之外建立独立工作副本，保留用户原工程和数据。
 
-函数后端的安装需要源码编译，应包含经过公开检查的函数源码。纯前端或直接访问 SQLite 的应用默认分享源码；根据工程情况可让用户选择「包含源码，允许安装和做同款」或「仅安装，不分享源码」。仅安装仍需准备同份经过公开检查的构建、安装说明、预览和封面。明确 `database_required`：运行需要 SQLite 就填 `true`，纯前端且没有 SQLite 调用就填 `false`；是否有 schema.sql 不能代替这个判断。
+后端服务的安装需要源码编译，应包含经过公开检查的后端服务源码。纯前端或直接访问 SQLite 的应用默认分享源码；根据工程情况可让用户选择「包含源码，允许安装和做同款」或「仅安装，不分享源码」。仅安装仍需准备同份经过公开检查的构建、安装说明、预览和封面。明确 `database_required`：运行需要 SQLite 就填 `true`，纯前端且没有 SQLite 调用就填 `false`；是否有 schema.sql 不能代替这个判断。
 
 完成条件：应用身份、源码选择、SQLite 依赖、真实入口和构建方法都有依据。
 
