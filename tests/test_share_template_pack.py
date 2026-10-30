@@ -42,7 +42,7 @@ class SharedTemplatePackTest(unittest.TestCase):
                         "functions": [{"key": "api", "name": "API", "repository": "app", "source_dir": "/functions/fn-old", "database": {"endpoint_parameter": "SQLITE_ENDPOINT", "token_parameter": "SQLITE_TOKEN"}}],
                         "site_variables": [variable]}
             source = root / "source.zip"
-            source.write_bytes(pack.archive({"metadata.json": json.dumps(metadata).encode(), "showcase/preview.html": b"preview", "showcase/cover.webp": b"cover", "showcase/prompt.md": b"prompt", "repositories/app/app.js": b"call('__API__')", "repositories/app/functions/fn-old/go.mod": b"module service\n\ngo 1.26\n", "repositories/app/functions/fn-old/main.go": b"package main"}))
+            source.write_bytes(pack.archive({"metadata.json": json.dumps(metadata).encode(), "showcase/preview.html": b"preview", "showcase/cover.webp": b"cover", "showcase/prompt.md": b"prompt", "repositories/app/app.js": b"call('__API__')", "repositories/app/go.mod": b"module service\n\ngo 1.26\n", "repositories/app/functions/fn-old/main.go": b"package main"}))
             dist = root / "dist"
             dist.mkdir()
             (dist / "app.js").write_text("call('__API__')")

@@ -101,8 +101,6 @@ def validate_backend_materials(metadata, snapshot, site):
         if fn.get("source_dir") != "/" and (not directory.startswith("/") or any(part in ("", ".", "..") for part in directory[1:].split("/")) or "\\" in directory or "\0" in directory):
             raise ValueError("Function source_dir must be a repository path starting with /")
         prefix += directory[1:] + "/" if directory else ""
-        if prefix + "go.mod" not in snapshot:
-            raise ValueError(f"Function source_dir requires its own go.mod: {fn['key']}")
         if not any(name.startswith(prefix) and "/" not in name[len(prefix):] and name.endswith(".go") for name in snapshot):
             raise ValueError(f"Function entry Go source missing: {fn['key']}")
     for variable in metadata.get("site_variables", []):

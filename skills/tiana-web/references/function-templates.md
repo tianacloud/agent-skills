@@ -52,7 +52,7 @@
 
 - `private_database: true` 创建并初始化 SQLite，但不把它绑定到 Web 的浏览器连接。后端服务通过参数访问数据库。
 - `repositories` 的 key 标识逻辑仓库，path 选择 source.zip 内的快照子树。每个后端服务引用一个 repository；Web 引用 web_repository。共享关系在安装后保持。
-`source_dir` 填写服务元信息中保存的仓库内目录，支持 `/` 根目录；每个目录含自身 go.mod。安装保留仓库目录结构，为新服务 ID 关联同一个 source_dir，不改名源码目录。同仓同目录允许多个服务引用。源码 variables 的文件路径相对于原仓库，资源 ID 引用仍按声明替换；数据库 Token 只写入运行参数。
+`source_dir` 填写服务元信息中保存的仓库内目录，支持 `/` 根目录；入口目录包含 package main 的 Go 文件，所属 go.mod 可位于入口目录或仓库内上级目录；多个入口可共享同一模块。安装保留仓库目录结构，为新服务 ID 关联同一个 source_dir，不改名源码目录。同仓同目录允许多个服务引用。源码 variables 的文件路径相对于原仓库，资源 ID 引用仍按声明替换；数据库 Token 只写入运行参数。
 - `parameters` 只放公开业务初值，`database` 指定接收新数据库 Endpoint/Token 的参数名。可选 `cors` 使用后端服务 CORS 配置对象。
 - 仓库 variables 的 files 相对于该仓库，保持原路径；site_variables 的 files 相对于前端 dist。必须检查构建后的真实文件名及占位符仍然存在，不能照抄 `app.js`。
 - `FUNCTION_ID:<key>`、`GIT_INSTANCE_ID:<key>` 引用新资源，WEB_ID、SQLITE_INSTANCE_ID 沿用本次安装值。目录结构与相对模块引用保留，Token 不作为替换变量。
