@@ -29,8 +29,8 @@ metadata:
 | 任务 | 技能 |
 | --- | --- |
 | 创建、修改、预览、发布 Web 应用 | [tiana-web](../tiana-web/SKILL.md) |
+| Go 后端服务、源码、参数及编译发布 | [tiana-function](../tiana-function/SKILL.md) |
 | SQLite 查询、连接、建表及数据库分支 | [tiana-sqlite](../tiana-sqlite/SKILL.md) |
-| Go 后端服务源码、编译发布、参数及 CORS | [tiana-function](../tiana-function/SKILL.md) |
 | Git 实例、仓库、源码版本同步 | [tiana-git](../tiana-git/SKILL.md) |
 | 登录、账号、额度、通用实例管理 | 本技能 |
 

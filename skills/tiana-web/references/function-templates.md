@@ -10,6 +10,8 @@
 
 沿用[分享模板](share-template.md)对结构、seed 和公开内容的筛选。后端服务参数只导出明确可公开的业务初值；数据库 Endpoint/Token 在安装时生成。源码、JSON、SQL、前端 bundle、source map 和展示材料均检查凭据和私有数据。
 
+第三方 API Key 等不能作为公开参数初值分发；在模板说明中列出参数名与用途，由安装者按 [Tiana Function 参数配置](../../tiana-function/references/commands.md#参数配置与生效)填写自己的值并验证。数据库参数映射不代替第三方密钥配置；尚未配置的功能明确标为待配置。
+
 ## 组织 metadata.json
 
 将各仓库快照放在一个公开工作副本的 `repositories/<key>/` 下，根部放 metadata.json、showcase 和数据库初始化 SQL。同仓前后端保持原有目录布局。例如：

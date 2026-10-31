@@ -36,4 +36,4 @@ metadata:
 
 阅读 [源码与版本](references/source-releases.md)，确认项目托管选择和实际推送范围。全新 Tiana 应用创建自己的 Tiana Git；已有外部仓库首次同步时确认用户选择。提交源码与锁文件，排除凭据，普通推送并核验远端对应版本引用。
 
-Web 发布时从干净、确定的源码提交构建，给产物清单同时写实际 `git_instance_id` 和完整 `source_commit`；提交号只生成到忽略的构建目录。推送失败停止关联的 Web 发布，结果不明先读取远端状态。Web 构建和上传见 [Tiana Web](../tiana-web/SKILL.md)。
+Web 发布时从干净、确定的源码提交构建，在交付记录中保存实际 `git_instance_id`、完整源码提交号和对应发布回执。推送失败停止关联的 Web 发布，结果不明先读取远端状态。Web 构建和上传见 [Tiana Web](../tiana-web/SKILL.md)。

@@ -37,7 +37,15 @@ metadata:
 
 ## 选择数据访问方式
 
-简单应用可直接访问 SQLite。复杂业务、敏感数据或需要限制用户可见数据时，按 [Tiana Function](../tiana-function/SKILL.md)实现后端，前端调用后端服务接口。后端私有 SQLite 只配置到后端服务参数，Web 不绑定它；浏览器只取得调用后端服务所需的短效凭据。用户要求前后端共仓时，先创建 Git，创建后端服务选择该 Git，创建时选择合适的 source_dir（默认 `/functions/<名称>/`），使用该目录自己的 go.mod；后续从服务元信息读取目录，保持同仓前端与其他服务文件。
+简单应用优先直接访问 SQLite。复杂业务、敏感数据或配置、需要限制用户可见数据时，采用后端服务，必须阅读[带后端服务的 Web 开发流程](references/backend-apps.md)。默认复用 Web 的 Git，后端私有数据库不绑定 Web。
+
+本 skill 负责选择访问方式、前端开发、Web 资源绑定、预览、发布与分享验收。后端的创建、源码、参数配置与读取、数据库访问和编译发布由 [Tiana Function](../tiana-function/SKILL.md)负责；取得后端发布结果后回到本流程完成前端接入。
+
+## 展示当前用户
+
+应用需要展示登录用户、昵称或区分用户与应用所属租户时，阅读[当前用户信息](references/csr-apps.md#当前用户信息)，使用同源会话接口取得实际字段。
+
+需要 App 作者专属界面或初始权限管理时，用会话的 `is_app_owner` 判断当前用户是否为该 Web 的创建者，具体见[App 作者判断](references/csr-apps.md#app-作者判断)。后端权限校验交由 Tiana Function 的 `caller.IsAppOwner()`，前端只控制展示。
 
 ## 创建、初始化和发布
 
@@ -46,7 +54,7 @@ metadata:
 3. 直接开发时，使用 [固定 index.html](references/index.html)、哈希路由、支持动态账号鉴权的 SDK，按实际数据库结构编写应用及构建清单。
 4. **模板和直接开发都由 Agent 处理数据库初始化。** 模板先执行已配置且存在的 schema，再执行已配置且存在的 seeds；两项独立跳过，SQL 失败先核对结果并停止后续发布。
 5. 构建前按[应用图标](references/csr-apps.md#应用图标)准备真实 PNG：使用用户指定图片或已有的合适图标；需要制作时优先调用可用的 AI 生图工具，以应用核心功能设计图形图标。图片保存到源码，查看缩小后的效果，并核验干净构建根目录和发布包中都有该图片。
-6. 按用户需求完成交互和定制，安装依赖并从确定源码提交构建。按 [源码版本流程](../tiana-git/references/source-releases.md)完成源码同步，用 `web publish` 发布当前归档，再用 `web status --publish-id` 核对。除非用户仅要求本地开发，交付实际托管地址、资源 ID 和对应源码提交；未验证的阶段如实说明。
+6. 按用户需求完成交互和定制。采用后端服务时，先完成[后端交接与接入验证](references/backend-apps.md)，再交付可用前端。安装依赖并从确定源码提交构建；按 [源码版本流程](../tiana-git/references/source-releases.md)完成源码同步，用 `web publish` 发布当前归档，再用 `web status --publish-id` 核对。除非用户仅要求本地开发，交付实际托管地址、资源 ID 和对应源码提交；未验证的阶段如实说明。
 
 ## 文件上传、预览与下载
 

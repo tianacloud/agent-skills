@@ -12,11 +12,59 @@
 
 模板提供 `<div id="app"></div>`。`entry` 指定的模块按正常方式启动并渲染应用。需要数据库连接时，调用 `window.tiana.connection()` 获取连接元信息，使用 `window.tiana.auth` provider 提供动态凭据；凭据只保存在内存中。加载指示器是临时的，与应用样式隔离。
 
+## 当前用户信息
+
+托管 Web App 使用 `GET ./_tiana/session` 读取当前登录用户，路径相对于应用入口 `/web/<web_id>/`，请求携带同源 Cookie。成功响应的关键字段如下：
+
+| 字段 | 用途 |
+| --- | --- |
+| `status` | 登录有效时为 `SESSION_ACTIVE`。 |
+| `user.user_id` | 稳定的用户 ID，用于关联应用内的用户资料。 |
+| `user.username` | 账号用户名。 |
+| `user.display_name` | 显示昵称；展示时优先用它，空值时使用 username。 |
+| `tenant_id` | 当前访问用户的租户 ID。 |
+| `app_tenant_id` | Web App 所属租户 ID；跨租户分享时可与 tenant_id 不同。 |
+| `role` | 用户在其当前租户中的角色。 |
+| `is_app_owner` | 当前用户是否为这个 Web App 的创建者；布尔值，与租户 role 独立。 |
+| `membership_revision` | 当前租户成员关系的版本。 |
+| `session.client`、`session.expires_at` | 会话类型（`web`）和到期时间。 |
+
+例如在入口中显示当前用户的昵称：
+
+```js
+export async function mount(root) {
+  const response = await fetch('./_tiana/session', {
+    credentials: 'same-origin',
+    cache: 'no-store',
+  });
+  if (!response.ok) throw new Error('无法读取当前用户，请重新登录。');
+  const session = await response.json();
+  const nickname = session.user.display_name || session.user.username;
+  const greeting = document.createElement('p');
+  greeting.textContent = `你好，${nickname}`;
+  root.append(greeting);
+}
+```
+
+只需身份 ID 时，托管运行时也提供 `window.tiana.user.id`、`window.tiana.user.tenantId` 和 `window.tiana.appTenantId`，或从 mount 的第二个参数 context 读取相同属性；context.user 当前只有 id 与 tenantId，昵称使用上述会话接口读取。
+
+当前 Site 会话接口不返回头像。需要应用内头像或自定义昵称时，以 user.user_id 关联应用自己的资料记录。会话失效时停止使用旧资料并提示重新登录；身份和资料只作为运行时数据，不固化到前端发布产物。
+
+### App 作者判断
+
+需要只向 App 作者展示初始化、成员或权限管理入口时，读取上面的同源会话后使用：
+
+```js
+const canManageApp = session.is_app_owner === true;
+```
+
+App 作者是当前 Web 的创建者，`role` 的 `tenant_owner` 表示访问者自己所选租户的所有者，不能用来判断 App 作者。模板安装产生的新 Web 以新创建者为作者。前端判断用于展示；敏感操作交给 [Tiana Function](../../tiana-function/references/go-backend.md#app-作者与初始权限)在后端通过 `caller.IsAppOwner()` 校验。初始化数据和权限管理接口在每次请求中检查，不能仅隐藏按钮。配套 CLI Web 本地预览也返回 `is_app_owner`，正式分享仍需用作者与其他账号分别验收。
+
 ## 选择后端与确认资源
 
-先区分数据访问方式：简单应用可以采用下文的浏览器直连 SQLite；复杂或敏感应用按 [Tiana Function](../../tiana-function/SKILL.md)实现后端。后端模式创建 Web 时省略 `--database-instance-id`，将所需后端服务加入 Web 的后端服务绑定，数据库 Endpoint 和 Token 仅保存在后端服务参数。下文的 `window.tiana.connection()` 与数据库绑定步骤只适用于直连模式。
+简单应用优先采用下文的浏览器直连 SQLite；复杂或敏感应用必须按[带后端服务的 Web 开发流程](backend-apps.md)完成后端交接和前端接入。下面两个直连章节只适用于浏览器访问数据库的部分；后端模式完成该流程后继续本文件的体验、图标与发布步骤。
 
-## 确认账号与数据库
+## 直连 SQLite：确认账号与数据库
 
 已确认 CLI 具备本流程命令时直接使用。命令缺失时按[开始使用](../../tiana/references/getting-started.md)安装匹配版本。
 
@@ -24,9 +72,9 @@
 2. 项目已记录且已核实可用的数据库实例 ID 可直接复用，无需列举实例。否则用 `tiana sqlite list/show` 查找；确实没有可用数据库时执行一次 `tiana sqlite create NAME --wait`，保存完整实例 ID。中断后核实原请求和实例，不重复创建。
 3. 复用已提供的实际表结构；缺少时执行 `tiana sqlite shell INSTANCE -e "SELECT name, sql FROM sqlite_schema WHERE type='table' ORDER BY name LIMIT 100" --format json`。将表结构和迁移文件保存在项目中。对已核对的 SQL 文件执行 `tiana sqlite shell INSTANCE -f schema.sql --format json`。`-e` 接受一条语句，多语句使用 `-f`。动态数据按 [JavaScript 数据库连接](../../tiana-sqlite/references/js-sdk.md)使用参数化 SQL。
 4. 复用项目中已记录、已核实的 Web ID；未记录时先用 `tiana web list --json` 查找并核实，重名时依据实际 ID 确认归属；首次创建时执行一次 `tiana web create "应用名称" -m "应用描述" --entry assets/app.js --database-instance-id DATABASE_ID --json`，保存返回的 `data.id`。Web ID 仅由 MGR 生成；CLI 不生成或提交 Web ID；描述为可选元数据（`-m`/`--description`，最多 1024 个 UTF-8 字节），名称仅用于展示，不能用名称推导 ID，不能自行指定 ID。结果未知时保持名称、描述和所有创建参数不变，重复同一条 create 命令恢复原请求，不删除待完成记录、不另发创建请求。成功后继续构建、预览或发布时复用该 ID，不重复创建。
-5. 将非敏感 Web ID 和数据库 ID 保存在项目交付记录中。entry 仅能在 create 指定，包括省略后的纯文件托管类型；创建后不可修改，publish/serve/update 都不能覆盖。数据库、Git、名称、描述可用带 expected_revision 的 web update 修改。
+5. 将非敏感 Web ID 和数据库 ID 保存在项目交付记录中。entry 仅能在 create 指定，包括省略后的纯文件托管类型；创建后不可修改，publish/serve 都不能覆盖。数据库和 Git 绑定在创建时确定；名称、备注在 Console 实例基础信息编辑。
 
-## 运行时数据库连接
+## 直连 SQLite：运行时数据库连接
 
 SDK、参数化 SQL 和结果解析按 [JavaScript 数据库连接](../../tiana-sqlite/references/js-sdk.md)处理。应用必须使用支持 `auth` 的 SDK 和 `window.tiana.auth` provider；`window.tiana.connection()` 用于获取连接元信息。共享 provider 和 adapter，不读取 Token 快照，不保留旧 SDK、旧 Bootstrap 或实例 Token 回退路径。
 
@@ -52,7 +100,7 @@ CLI 本地预览优先复用已保存的 CLI 登录，通过一次性本地启�
 
 输出浏览器可直接执行的 ES 模块、CSS 和资源，引用使用相对路径。Vite 库模式在顶层配置 `define: { 'process.env.NODE_ENV': JSON.stringify('production') }`，并验证产物无残留引用。入口与资源路径以实际工程的构建配置为准；入口模块自行加载 CSS。不要生成或读取 tiana.app.json，不提交 style、rendering、routing 参数。
 
-Site 参数来自 MGR 的 web_project：name、description、固定 entry、可选 database_instance_id、git_instance_id、source_commit。实例只保存通用 Serverless 属性。首次创建可传 `--entry assets/app.js --database-instance-id DATABASE_ID --git-instance-id GIT_ID`；Git commit 可以稍后用 `web update ID --expected-revision REV --source-commit FULL_COMMIT` 录入，完整小写 40/64 位 commit 要求已有 Git 绑定。MGR 验证关联实例属于当前租户、产品正确且可用。源码构建和远端引用核验见[源码发布](../../tiana-git/references/source-releases.md)，参数更新与归档发布是分开的操作，不假称两者跨服务原子提交。
+Site 参数来自 MGR 的 web_project：name、description、固定 entry、可选 database_instance_id 和 git_instance_id。首次创建可传 `--entry assets/app.js --database-instance-id DATABASE_ID --git-instance-id GIT_ID`，后端模式省略数据库绑定。已有项目沿用创建时的固定关联，名称、备注在 Console 实例基础信息编辑；后端绑定使用 `web functions get/set`。源码提交记录与远程引用核验见[源码发布](../../tiana-git/references/source-releases.md)，从确定提交构建并保存对应发布回执。
 
 CLI 将目录打包为 ZIP Store/Deflate 的一个 `.tweb`，根目录是零字节 web.yaml 与 data/。web.yaml 预留 Web server 配置，与 Site 参数无关，目前为空。data/ 前缀不对外暴露，底层只提供 GET/HEAD 精确文件访问，没有目录索引、默认 index.html 或 SPA fallback；底层可托管 HTML，带 entry 的 Site 使用固定 CSR/hash Bootstrap。
 
