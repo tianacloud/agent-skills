@@ -21,7 +21,7 @@ metadata:
 2. CLI 满足最低版本后，**仍须实际执行** `tiana version check --skills-version 1.0.10 --json`；版本号取实际加载的 metadata.version。这一步检查是否有更新版本。
 3. 实际发起检查命令后，才在会话中记为已尝试，并保留返回结果或执行错误。仅运行 `tiana version` 只完成第 1 步。
 
-四个技能共享这份实际调用记录；后续轮次、重复加载或切换技能复用记录，失败也不自动重试。上下文压缩或任务交接时保留记录，新会话重新检查。
+五个技能共享这份实际调用记录；后续轮次、重复加载或切换技能复用记录，失败也不自动重试。上下文压缩或任务交接时保留记录，新会话重新检查。
 
 仅在 `should_notify=true` 时简短提醒并询问是否升级；用户选择稍后或检查不可用时继续原任务。CLI 仍管理检查缓存和共同的 24 小时提醒额度。升级及重载见[开始使用](../tiana/references/getting-started.md#更新)。
 
@@ -36,4 +36,4 @@ metadata:
 
 阅读 [源码与版本](references/source-releases.md)，确认项目托管选择和实际推送范围。全新 Tiana 应用创建自己的 Tiana Git；已有外部仓库首次同步时确认用户选择。提交源码与锁文件，排除凭据，普通推送并核验远端对应版本引用。
 
-Web 发布时从干净、确定的源码提交构建，给产物清单同时写实际 `git_instance_id` 和完整 `source_commit`；提交号只生成到忽略的构建目录。推送失败停止关联的 Web 发布，结果不明先读取远端状态。Web 构建和上传见 [Tiana Web](../tiana-web/SKILL.md)。
+Web 发布时从干净、确定的源码提交构建，在交付记录中保存实际 `git_instance_id`、完整源码提交号和对应发布回执。推送失败停止关联的 Web 发布，结果不明先读取远端状态。Web 构建和上传见 [Tiana Web](../tiana-web/SKILL.md)。

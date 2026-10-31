@@ -24,6 +24,12 @@
       "display_name_en": "Tiana Web",
       "description_zh": "按实时目录采用模板或直接开发，创建和发布 Web 应用。",
       "description_en": "Build and publish Web apps using the current template catalog or direct development."
+    },
+    "tiana-function": {
+      "display_name": "Tiana Function",
+      "display_name_en": "Tiana Function",
+      "description_zh": "Go 后端服务源码、构建发布、参数配置和 Web 数据库后端。",
+      "description_en": "Go function source, builds, configuration and Web database backends."
     }
   }
 }

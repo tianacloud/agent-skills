@@ -68,7 +68,7 @@ try {
       }
     }
   }
-  for (const skill of ['tiana', 'tiana-sqlite', 'tiana-git', 'tiana-web']) await compareCanonical(path.join(root, 'skills', skill), `skills/${skill}`);
+  for (const skill of ['tiana', 'tiana-sqlite', 'tiana-git', 'tiana-web', 'tiana-function']) await compareCanonical(path.join(root, 'skills', skill), `skills/${skill}`);
   assert.deepEqual(Object.keys(zip).sort(), expected.sort(), 'Unexpected or missing Connector files');
   const sha = createHash('sha256').update(archive).digest('hex');
   assert.equal(await fs.readFile(path.join(temporary, `${name}.sha256`), 'utf8'), `${sha}  ${name}\n`);

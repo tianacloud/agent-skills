@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const names = ['tiana', 'tiana-git', 'tiana-sqlite', 'tiana-web'];
+const names = ['tiana', 'tiana-git', 'tiana-sqlite', 'tiana-web', 'tiana-function'];
 const run = (bin, args, cwd, env = {}) => spawnSync(process.execPath, [bin, ...args], { cwd, env: { ...process.env, DISABLE_TELEMETRY: '1', ...env }, encoding: 'utf8' });
 
 async function assertInstalled(directory) {
@@ -17,7 +17,7 @@ async function assertInstalled(directory) {
   }
 }
 
-test('explicit directory installs from another cwd, updates four skills and preserves unrelated skills', async () => {
+test('explicit directory installs from another cwd, updates five skills and preserves unrelated skills', async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), 'tiana skills installer '));
   try {
     const target = path.join(temporary, 'client skills');

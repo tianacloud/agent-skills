@@ -4,12 +4,13 @@
   "groupings": [
     {
       "title": "Tiana Cloud",
-      "description": "Accounts, SQLite, Git and Web applications.",
+      "description": "Accounts, SQLite, Git, Functions and Web applications.",
       "skills": [
         "tiana",
         "tiana-sqlite",
         "tiana-git",
-        "tiana-web"
+        "tiana-web",
+        "tiana-function"
       ]
     }
   ]

@@ -6,7 +6,7 @@ import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const names = ['tiana', 'tiana-sqlite', 'tiana-git', 'tiana-web'];
+const names = ['tiana', 'tiana-sqlite', 'tiana-git', 'tiana-web', 'tiana-function'];
 const usage = 'tiana-skills install [--agent NAME | --dir PATH]';
 try {
   const args = process.argv.slice(2);

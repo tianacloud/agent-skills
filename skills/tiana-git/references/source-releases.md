@@ -42,10 +42,10 @@ git remote add tiana 'tiana://HOST:PORT/repo.git'
 ## 发布对应源码的当前内容
 
 1. 提交应用源码、构建配置、锁文件、SQL 和迁移。生成物只包含模块与资源，不含 tiana.app.json。应用源码提交和推送仍须在用户授权范围内；验证远端分支/标签确实指向将要构建的提交，不改写已分配的源码引用。
-2. 从干净、已确认的源码提交按工程 README 构建。用实际 Git ID 和完整小写 40/64 位提交号更新项目参数；若构建脚本输出 `TIANA_PROJECT_PARAMS`，核对其值与真实源码及远端提交一致。项目参数不写进 dist。不得只修改参数冒充重新构建。
-3. 新建项目：`tiana web create NAME --entry assets/app.js --database-instance-id DB_ID --git-instance-id GIT_ID --source-commit FULL_HASH --json`。既有项目先读取最新 project_revision，再用 `tiana web update WEB_ID --expected-revision REV --git-instance-id GIT_ID --source-commit FULL_HASH --json`。Git ID 可先绑定、commit 可暂缺；commit 非空时必须有 Git。entry 创建后不可修改，没有 styles/rendering/routing 字段。
-4. 发布该提交产物：`tiana web publish WEB_ID --dir DIST --json`，保存 publish_id 和归档 SHA256，随后 `tiana web status WEB_ID --publish-id PUBLISH_ID --json` 确认 ACTIVATED 和 serving_sha256。项目参数和归档分别更新，MGR 不管理发布。参数更新成功但文件发布失败时报告部分完成；不伪称源码、项目参数、S3 对象原子一致。
-5. 保存 Web/实例 ID、Git ID、远端引用、源码 commit、publish_id、校验和及托管链接。没有 Web 版本列表或恢复接口；Git 源码历史由 Git 管理。发布结果未知时只查询，禁止自动重放 PUT。用户不采用 Tiana Git 时保留原托管平台，不填写虚构关联。
+2. 从干净、已确认且已推送的 Git 提交按工程 README 构建。记录 Git ID 和完整源码提交号，核对远程引用；提交号作为本次构建和交付证据，不作为 Web 项目参数。构建期间保持源码不变。
+3. 新建项目：`tiana web create NAME --entry assets/app.js --database-instance-id DB_ID --git-instance-id GIT_ID --json`。后端服务访问数据库的应用省略数据库绑定。已有项目沿用创建时固定的数据库、Git 和 entry；名称、备注在 Console 实例基础信息编辑。
+4. 发布该提交产物：`tiana web publish WEB_ID --dir DIST --json`，保存 publish_id 和归档 SHA256，随后 `tiana web status WEB_ID --publish-id PUBLISH_ID --json` 确认 ACTIVATED 和 serving_sha256。Web 创建受理后先核对实例就绪，再发布；结果未知时先查询，不重建资源。
+5. 保存 Web/实例 ID、Git ID、远端引用、源码 commit、publish_id、校验和及托管链接。Git 源码历史由 Git 管理。发布结果未知时只查询，禁止自动重放 PUT。用户不采用 Tiana Git 时保留原托管平台，不填写虚构关联。
 
 ## 构建时传入源码提交
 
@@ -80,7 +80,7 @@ if ($LASTEXITCODE -ne 0) { throw '读取构建后的 Git 提交失败' }
 if ($buildStatus -or $buildCommit -ne $sourceCommit) { throw '构建期间源码变化，请从确认的提交重新构建' }
 ```
 
-以上命令在同一次工具调用中执行；构建期间保持源码不变。核对构建输出参数的 `source_commit` 与本次 `$sourceCommit`、远程版本引用一致后再上传。脚本只检查提交号格式，不证明源码归属；调用方的 Git 核验是发布流程的一部分。
+以上命令在同一次工具调用中执行；构建期间保持源码不变。核对本次 `$sourceCommit` 与远程版本引用一致，并从该提交构建后再上传。脚本只检查提交号格式，不证明源码归属；调用方的 Git 核验是发布流程的一部分。
 
 ### 遇到子进程启动失败
 

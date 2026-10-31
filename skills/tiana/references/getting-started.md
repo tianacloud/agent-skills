@@ -22,7 +22,7 @@ npm install -g @tianacloud/cli@latest --registry=https://registry.npmjs.org/
 npx --yes @tianacloud/agent-skills@latest install --agent codex
 ```
 
-其他客户端按自己的安装目录使用 `install --dir PATH`，或不传目标运行客户端选择流程。四个 Skills 来自 npm 包内目录，安装后是持久文件副本。导入 Skill 与安装 CLI 是两步。
+其他客户端按自己的安装目录使用 `install --dir PATH`，或不传目标运行客户端选择流程。五个 Skills 来自 npm 包内目录，安装后是持久文件副本。导入 Skill 与安装 CLI 是两步。
 
 核验安装后，先完成入口 SKILL.md 中的会话更新检查，再执行 `tiana status`，按实际结果继续任务或恢复登录。用户同时要求创建应用时，完成安装和登录后继续原始需求。当前会话可以读取新安装的 SKILL.md 及其引用文件；宿主必须重载才可使用时，明确提示重载，并保留应用需求及本次环境选择。安装失败时报告实际阶段；没有执行过的登录、资源创建或发布仍然未知。
 
@@ -34,7 +34,7 @@ npx --yes @tianacloud/agent-skills@latest install --agent codex
 
 当前 CLI 已满足最低版本时，用户选择稍后升级仍继续原任务；确认后才安装所选包的实际更新版本：CLI 使用 `npm install -g @tianacloud/cli@VERSION --registry=https://registry.npmjs.org/`；Skills 使用 `npx --yes @tianacloud/agent-skills@VERSION install --agent CLIENT`，或复用原来的 `--dir PATH`。VERSION 从检查结果取得，CLIENT/目录对应当前宿主的实际安装目标。
 
-CLI 升级后核验 `tiana version` 和所需帮助；Skills 安装后检查四份 SKILL.md 的 metadata.version，并让宿主重载或开始新会话。当前会话已经加载的旧指令仍按旧版本处理，不把磁盘替换当作已重载。升级失败保留实际错误，不中途改动应用资源或凭据来修复。
+CLI 升级后核验 `tiana version` 和所需帮助；Skills 安装后检查五份 SKILL.md 的 metadata.version，并让宿主重载或开始新会话。当前会话已经加载的旧指令仍按旧版本处理，不把磁盘替换当作已重载。升级失败保留实际错误，不中途改动应用资源或凭据来修复。
 
 ## 环境与地址
 

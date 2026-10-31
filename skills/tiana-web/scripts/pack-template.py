@@ -169,6 +169,33 @@ def unique_json_object(pairs):
     return result
 
 
+def validate_backend_materials(metadata, snapshot, site):
+    repositories = {r["key"]: r for r in metadata.get("repositories", [])}
+    for repo in repositories.values():
+        prefix = "" if repo["path"] == "." else repo["path"] + "/"
+        if not any(name.startswith(prefix) for name in snapshot):
+            raise ValueError(f"Repository source missing: {repo['key']}")
+        for variable in repo.get("variables", []):
+            for name in variable["files"]:
+                if variable["placeholder"].encode() not in snapshot.get(prefix + name, b""):
+                    raise ValueError(f"Source placeholder missing: {repo['key']}/{name}")
+    for fn in metadata.get("functions", []):
+        repo = repositories.get(fn["repository"])
+        if repo is None:
+            raise ValueError(f"Function repository missing: {fn['key']}")
+        prefix = "" if repo["path"] == "." else repo["path"] + "/"
+        directory = fn.get("source_dir", "").rstrip("/")
+        if fn.get("source_dir") != "/" and (not directory.startswith("/") or any(part in ("", ".", "..") for part in directory[1:].split("/")) or "\\" in directory or "\0" in directory):
+            raise ValueError("Function source_dir must be a repository path starting with /")
+        prefix += directory[1:] + "/" if directory else ""
+        if not any(name.startswith(prefix) and "/" not in name[len(prefix):] and name.endswith(".go") for name in snapshot):
+            raise ValueError(f"Function entry Go source missing: {fn['key']}")
+    for variable in metadata.get("site_variables", []):
+        for name in variable["files"]:
+            if variable["placeholder"].encode() not in site.get("data/" + name, b""):
+                raise ValueError(f"Built site placeholder missing: {name}")
+
+
 def pack(source_zip, dist, entry, output, without_source=False):
     source = read_file(Path(source_zip))
     snapshot, source_size, source_count = source_files(source)
@@ -180,6 +207,8 @@ def pack(source_zip, dist, entry, output, without_source=False):
         raise ValueError("metadata.json must be an object")
     if type(metadata.get("database_required")) is not bool:
         raise ValueError("metadata.json requires an explicit database_required boolean")
+    if without_source and metadata.get("functions"):
+        raise ValueError("Function templates require source.zip to compile their backends")
     seeds = template_file_materials(snapshot, metadata)
     if seeds is not None and without_source:
         raise ValueError("File templates require source.zip for server byte verification; --without-source is only available for templates without file_seeds")
@@ -219,6 +248,7 @@ def pack(source_zip, dist, entry, output, without_source=False):
             raise ValueError(f"Build contains a nonregular entry: {relative}")
     if not entry or "data/" + entry not in site:
         raise ValueError("Build is missing its fixed entry")
+    validate_backend_materials(metadata, snapshot, site)
     compiled = archive(site)
     if len(compiled) > MAX_FILE:
         raise ValueError("site.tweb exceeds 16 MiB")
@@ -235,6 +265,9 @@ def pack(source_zip, dist, entry, output, without_source=False):
         files["icon.png"] = site["data/icon.png"]
     files["site.tweb"] = compiled
     manifest = {"metadata": metadata, "entry": entry, "database_required": metadata["database_required"], "variables": variables}
+    for field in ("private_database", "web_repository", "repositories", "functions", "site_variables"):
+        if field in metadata:
+            manifest[field] = metadata[field]
     files["install.json"], file_manifest_digest = encode_install_manifest(manifest, seeds)
     if len(files["install.json"]) > MIB:
         raise ValueError("install.json exceeds 1 MiB")
