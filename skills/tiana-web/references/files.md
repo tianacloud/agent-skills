@@ -2,6 +2,10 @@
 
 CLI 文件操作要求 1.0.4 或更新正式版，使用 `tiana file --help` 核验命令入口。WebApp 文件能力还需目标环境提供配套的 MGR、Web 与 serverless-js Bootstrap；使用前核对目标环境能力。
 
+存储分工及静态小图片的 16 KiB 上限见[数据与素材存储](storage-and-assets.md)。
+外置预置素材按[模板素材文件](template-files.md)使用 `template-assets/` 相对路径，
+业务记录和文件关联信息使用数据库，文件二进制不放入 SQL 或 Web 包。
+
 ## 归属和创建顺序
 
 文件归当前租户，租户成员共享，用量与数据库共用存储配额。Console 和 CLI 展示整个租户文件目录；WebApp 使用其中的 `<WebApp ID>/` 子目录。应用只传相对路径，服务端确定 tenant 和 WebApp 根，不能从 JavaScript 修改授权范围。

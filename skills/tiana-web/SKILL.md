@@ -25,6 +25,10 @@ metadata:
 
 仅在 `should_notify=true` 时简短提醒并询问是否升级；用户选择稍后或检查不可用时继续原任务。CLI 仍管理检查缓存和共同的 24 小时提醒额度。升级及重载见[开始使用](../tiana/references/getting-started.md#更新)。
 
+## 数据与素材存储
+
+创建、修改应用或制作模板前，按[数据与素材存储](references/storage-and-assets.md)核对现有实现与干净构建。程序随 Web 打包；优化后、编码前不超过 16 KiB 的静态小图片内嵌 JS；其他外置素材与用户文件使用文件存储，持久业务记录使用数据库。含预置素材时读取[模板素材文件](references/template-files.md)，准备本次应用目录或格式 2 安装材料，并核验目标环境能力。
+
 ## 将已有应用发布为模板
 
 用户要求“把某个 Web App 发布为模板”或分享可安装链接时，阅读[用户模板分享](references/share-template.md)，在独立副本中整理源码、结构与个人无关 seed，再打包、上传并交付安装链接。默认包含源码，可让用户选择仅安装；必须制作预览和封面，并按[预览的响应式展示与验收](references/share-template.md#预览的响应式展示与验收)完成 PC 和手机适配。无法判断 seed 是否涉及个人信息时，先让用户选择。用户提供分享链接要求做同款时，也按该文档取得源码并开始新工程。此分支直接处理指定应用。
@@ -52,10 +56,10 @@ metadata:
 1. 阅读 [Web 开发与发布](references/csr-apps.md)；前端直连模式再读 [JavaScript 连接](../tiana-sqlite/references/js-sdk.md)。新应用默认为本次需求创建所需的 SQLite 和 Git 实例，并等待就绪、保存实际 ID；仅在用户明确指定已有实例时核实后复用。修改已有工程时沿用其已确认绑定。实例名称按当前应用命名，模板变量使用 CLI 回执中的 ID。先确定最终入口路径；创建 Web 时用 `--entry` 固定入口，按所选访问方式配置数据库或后端服务绑定，并配置 Git 绑定，并等就绪。Web ID 取 `web create` 返回的 `data.id`。
 2. 采用模板时，执行 `tiana web init-template NAME --dir PROJECT_DIR --json`。PROJECT_DIR 是用户项目的不存在目录，位于技能安装目录之外。CLI 下载并原样解压；按 [模板初始化](references/template-init.md)读取工程根部 `metadata.json`，由 Agent 完成全部变量替换及 SQLite 数据初始化。
 3. 直接开发时，使用 [固定 index.html](references/index.html)、哈希路由、支持动态账号鉴权的 SDK，按实际数据库结构编写应用及构建清单。
-4. **模板和直接开发都由 Agent 处理数据库初始化。** 模板先执行已配置且存在的 schema，再执行已配置且存在的 seeds；两项独立跳过，SQL 失败先核对结果并停止后续发布。
+4. **模板和直接开发都由 Agent 处理数据库初始化。** 模板先执行已配置且存在的 schema，再执行已配置且存在的 seeds；两项独立跳过，SQL 失败先核对结果并停止后续发布。普通源码开发还须按[模板素材文件](references/template-files.md)准备新 Web ID 的预置素材；`web publish` 只发布程序包。
 5. 构建前按[应用图标](references/csr-apps.md#应用图标)准备真实 PNG：使用用户指定图片或已有的合适图标；需要制作时优先调用可用的 AI 生图工具，以应用核心功能设计图形图标。图片保存到源码，查看缩小后的效果，并核验干净构建根目录和发布包中都有该图片。
 6. 按用户需求完成交互和定制。采用后端服务时，先完成[后端交接与接入验证](references/backend-apps.md)，再交付可用前端。安装依赖并从确定源码提交构建；按 [源码版本流程](../tiana-git/references/source-releases.md)完成源码同步，用 `web publish` 发布当前归档，再用 `web status --publish-id` 核对。除非用户仅要求本地开发，交付实际托管地址、资源 ID 和对应源码提交；未验证的阶段如实说明。
 
-## 文件上传、预览与下载
+## 素材、文件上传、预览与下载
 
-应用需要文件存储时，阅读[WebApp 文件存储](references/files.md)，核对配套候选环境后使用平台提供的 `context.files`。先创建 WebApp 获得 ID 即可本地预览，无需先发布；文件路径相对于该 WebApp 的目录。
+应用有外置素材或用户文件时，阅读[WebApp 文件存储](references/files.md)，核对配套目标环境后使用平台提供的 `context.files`。先创建 WebApp 获得 ID 即可本地预览，无需先发布；文件路径相对于该 WebApp 的目录。没有上传 UI 的应用也须核对预置素材，不能依赖作者的文件链接。
