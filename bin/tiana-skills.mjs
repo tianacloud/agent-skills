@@ -1,12 +1,11 @@
 #!/usr/bin/env node
-import { cp, mkdir, rm, realpath, readFile, mkdtemp, rename } from 'node:fs/promises';
+import { cp, mkdir, rm, realpath, readFile, readdir, mkdtemp, rename } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const names = ['tiana', 'tiana-sqlite', 'tiana-git', 'tiana-web', 'tiana-function'];
 const usage = 'tiana-skills install [--agent NAME | --dir PATH]';
 try {
   const args = process.argv.slice(2);
@@ -24,6 +23,8 @@ try {
     }
     if (agent && directory) throw new Error('Choose --agent or --dir.');
     const source = path.join(root, 'skills');
+    const names = (await readdir(source, { withFileTypes: true }))
+      .filter(entry => entry.isDirectory()).map(entry => entry.name).sort();
     const pkg = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
     if (directory) {
       const target = path.resolve(directory);

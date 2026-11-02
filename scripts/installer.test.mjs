@@ -5,9 +5,11 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import { createServer } from 'node:net';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const names = ['tiana', 'tiana-git', 'tiana-sqlite', 'tiana-web', 'tiana-function'];
+const names = (await readdir(path.join(root, 'skills'), { withFileTypes: true }))
+  .filter(entry => entry.isDirectory()).map(entry => entry.name).sort();
 const run = (bin, args, cwd, env = {}) => spawnSync(process.execPath, [bin, ...args], { cwd, env: { ...process.env, DISABLE_TELEMETRY: '1', ...env }, encoding: 'utf8' });
 
 async function assertInstalled(directory) {
@@ -17,7 +19,7 @@ async function assertInstalled(directory) {
   }
 }
 
-test('explicit directory installs from another cwd, updates five skills and preserves unrelated skills', async () => {
+test('explicit directory installs from another cwd, updates bundled skills and preserves unrelated skills', async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), 'tiana skills installer '));
   try {
     const target = path.join(temporary, 'client skills');
@@ -35,10 +37,47 @@ test('explicit directory installs from another cwd, updates five skills and pres
   } finally { await rm(temporary, { recursive: true, force: true }); }
 });
 
+test('upgrading a Skills package installs newly added skills alongside updated skills', async () => {
+  const temporary = await mkdtemp(path.join(os.tmpdir(), 'tiana-new-skills-'));
+  try {
+    const downloaded = path.join(temporary, 'downloaded');
+    const target = path.join(temporary, 'installed');
+    await mkdir(path.join(downloaded, 'bin'), { recursive: true });
+    await cp(path.join(root, 'bin/tiana-skills.mjs'), path.join(downloaded, 'bin/tiana-skills.mjs'));
+    await cp(path.join(root, 'skills'), path.join(downloaded, 'skills'), { recursive: true });
+    await writeFile(path.join(downloaded, 'package.json'), JSON.stringify({ version: '1.0.0' }));
+    let result = run(path.join(downloaded, 'bin/tiana-skills.mjs'), ['install', '--dir', target], temporary);
+    assert.equal(result.status, 0, result.stderr);
+    await mkdir(path.join(target, 'other-skill'));
+    await writeFile(path.join(target, 'other-skill/SKILL.md'), 'unrelated');
+    const added = 'tiana-future';
+    const content = `---\nname: ${added}\ndescription: A newly bundled skill\n---\nNew capability\n`;
+    await mkdir(path.join(downloaded, 'skills', added));
+    await writeFile(path.join(downloaded, 'skills', added, 'SKILL.md'), content);
+    await writeFile(path.join(downloaded, 'package.json'), JSON.stringify({ version: '1.1.0' }));
+    await writeFile(path.join(downloaded, 'skills/tiana/new-reference.md'), 'updated package');
+    result = run(path.join(downloaded, 'bin/tiana-skills.mjs'), ['install', '--dir', target], temporary);
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(await readFile(path.join(target, added, 'SKILL.md'), 'utf8'), content);
+    assert.equal(await readFile(path.join(target, 'tiana/new-reference.md'), 'utf8'), 'updated package');
+    assert.equal(await readFile(path.join(target, 'other-skill/SKILL.md'), 'utf8'), 'unrelated');
+    assert.match(result.stdout, /Installed Tiana Skills 1\.1\.0/);
+    for (const name of names) assert.equal(await readFile(path.join(target, name, 'SKILL.md'), 'utf8'), await readFile(path.join(downloaded, 'skills', name, 'SKILL.md'), 'utf8'));
+  } finally { await rm(temporary, { recursive: true, force: true }); }
+});
+
 test('packed npm installer installs Codex copies that survive deletion of the downloaded package', async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), 'tiana packed skills '));
   try {
-    const packed = spawnSync('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', temporary], { cwd: root, encoding: 'utf8' });
+    const sourcePackage = path.join(temporary, 'source');
+    await mkdir(sourcePackage);
+    for (const name of ['bin', 'skills', 'package.json', 'plugin.json', 'README.md', 'LICENSE']) {
+      await cp(path.join(root, name), path.join(sourcePackage, name), { recursive: true });
+    }
+    await mkdir(path.join(sourcePackage, 'skills/tiana-future'));
+    const added = '---\nname: tiana-future\ndescription: A newly bundled skill\n---\nNew capability\n';
+    await writeFile(path.join(sourcePackage, 'skills/tiana-future/SKILL.md'), added);
+    const packed = spawnSync('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', temporary], { cwd: sourcePackage, encoding: 'utf8' });
     assert.equal(packed.status, 0, packed.stderr);
     const tarball = path.join(temporary, JSON.parse(packed.stdout)[0].filename);
     const unpacked = path.join(temporary, 'unpacked');
@@ -55,6 +94,7 @@ test('packed npm installer installs Codex copies that survive deletion of the do
     assert.equal(result.status, 0, result.stderr + result.stdout);
     await rm(unpacked, { recursive: true, force: true });
     await assertInstalled(path.join(homeDirectory, '.agents/skills'));
+    assert.equal(await readFile(path.join(homeDirectory, '.agents/skills/tiana-future/SKILL.md'), 'utf8'), added);
     const content = await readFile(path.join(homeDirectory, '.agents/skills/tiana-web/references/template-init.md'), 'utf8');
     assert.ok(content.length > 0);
   } finally { await rm(temporary, { recursive: true, force: true }); }
@@ -72,8 +112,9 @@ test('write failure is reported and mutually exclusive install targets fail', as
   } finally { await rm(temporary, { recursive: true, force: true }); }
 });
 
-test('failed source preparation retains the installed skill and reports partial completion', async () => {
+test('failed source preparation retains the installed skill and reports partial completion', { skip: process.platform === 'win32' }, async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), 'tiana-partial-install-'));
+  const socket = createServer();
   try {
     const downloaded=path.join(temporary,'downloaded');
     await mkdir(path.join(downloaded,'bin'),{recursive:true});
@@ -81,14 +122,22 @@ test('failed source preparation retains the installed skill and reports partial 
     await writeFile(path.join(downloaded,'package.json'),JSON.stringify({version:'fixture'}));
     await mkdir(path.join(downloaded,'skills'),{recursive:true});
     await cp(path.join(root,'skills/tiana'),path.join(downloaded,'skills/tiana'),{recursive:true});
+    await mkdir(path.join(downloaded,'skills/tiana-sqlite'));
+    await new Promise((resolve, reject) => {
+      socket.once('error', reject);
+      socket.listen(path.join(downloaded,'skills/tiana-sqlite/socket'), resolve);
+    });
     const target=path.join(temporary,'installed');
     await mkdir(path.join(target,'tiana-sqlite'),{recursive:true});
     await writeFile(path.join(target,'tiana-sqlite/SKILL.md'),'previous installed skill');
     const result=run(path.join(downloaded,'bin/tiana-skills.mjs'),['install','--dir',target],temporary);
     assert.notEqual(result.status,0);
     assert.match(result.stderr,/Completed: tiana/);
-    assert.match(result.stderr,/Not installed: tiana-sqlite, tiana-git, tiana-web/);
+    assert.match(result.stderr,/Not installed: tiana-sqlite/);
     assert.equal(await readFile(path.join(target,'tiana-sqlite/SKILL.md'),'utf8'),'previous installed skill');
     assert.ok((await readdir(target)).every(name=>!name.startsWith('.tiana-skills-')));
-  } finally {await rm(temporary,{recursive:true,force:true});}
+  } finally {
+    if (socket.listening) await new Promise(resolve => socket.close(resolve));
+    await rm(temporary,{recursive:true,force:true});
+  }
 });

@@ -10,7 +10,7 @@
 npx --yes @tianacloud/agent-skills@latest install --agent codex
 ```
 
-安装器调用精确依赖的 skills 工具，把 npm 包中的五个技能复制到客户端的持久目录；Codex 当前工具使用 `~/.agents/skills/`。不传目标时选择客户端：
+安装器调用精确依赖的 skills 工具，把 npm 包中的全部技能复制到客户端的持久目录；Codex 当前工具使用 `~/.agents/skills/`。不传目标时选择客户端：
 
 ```sh
 npx --yes @tianacloud/agent-skills@latest install
@@ -22,7 +22,7 @@ npx --yes @tianacloud/agent-skills@latest install
 npx --yes @tianacloud/agent-skills@latest install --dir /path/to/client/skills
 ```
 
-Windows PowerShell 使用 `npx.cmd`。目录可以含空格，用引号包住。重复安装会更新这五个技能目录，其他技能保留。安装完成后让客户端重载技能或开始新会话。
+Windows PowerShell 使用 `npx.cmd`。目录可以含空格，用引号包住。重复安装会更新包内全部技能并补齐新版新增技能，其他技能保留。安装完成后让客户端重载技能或开始新会话。
 
 WorkBuddy、豆包按所用版本的目录／ZIP 导入方式加载这五个目录，保留 SKILL.md 和 references。若要求 ZIP，可将每个技能目录的内容打包，SKILL.md 位于包根部。WorkBuddy 专用本地化 ZIP 由维护者构建流程提供；本仓验证 ZIP 格式和内容，不声称已验收这些客户端的运行行为。
 
@@ -38,7 +38,7 @@ WorkBuddy、豆包按所用版本的目录／ZIP 导入方式加载这五个目�
 
 Web 技能每次任务都实际执行 `tiana web list-template --json`，使用当前 name/description 判断需求。模板 ZIP 原样下载解压到独立项目目录；Agent 按根部 metadata.json 替换变量、先 schema 后 seeds。模板源码和制作规范见 [template-apps](https://github.com/tianacloud/template-apps)，客户安装模板由 CLI 和 MGR 目录完成。
 
-技能安装器只安装技能。Agent 首次执行 Tiana 任务时检查 CLI，缺少时自动执行下面的安装并继续原任务；CLI 要求 1.0.1 或更新正式版，需要 Node.js 20+。
+技能安装器只安装技能。Agent 首次执行 Tiana 任务时检查 CLI，缺少时自动执行下面的安装并继续原任务；CLI 要求 1.0.4 或更新正式版，需要 Node.js 20+。
 
 ```sh
 npm install -g @tianacloud/cli@latest --registry=https://registry.npmjs.org/
@@ -56,9 +56,9 @@ WorkBuddy Connector 固定 online，配置和当前使用说明见 [Connector](d
 
 ## 检查与更新
 
-五个技能调用 CLI 检查 npm latest，CLI 普通终端调用也使用同一本地状态。两个包各自最多每 24 小时尝试检查一次，CLI 与 Skills 共用每 24 小时一次提醒。已满足最低 CLI 版本时，断网不阻断任务；升级需要用户确认。
+各 Tiana 技能调用 CLI 检查两个 npm 包的 latest。两个包各自最多每 24 小时尝试检查一次，CLI 普通终端与 Skills 共用每 24 小时一次提醒。Agent 发现 CLI 或 Skills 新正式版后自动安装并核验，无需再次询问；should_notify 不限制自动更新。每个会话首次检查后简短报告检查、两个包的更新结果及新增技能。
 
-确认升级后重新安装检查返回的实际版本，并核验 `tiana version`、技能 metadata.version 和宿主重载结果。已加载的会话不会因磁盘替换而自动更换指令。详情见 [开始使用](skills/tiana/references/getting-started.md)。
+CLI 在当前实际使用的安装位置升级并核验版本和所需命令；Skills 安装新版包中的全部技能，覆盖已有技能并补齐新增技能，核验 metadata.version 与宿主加载结果。Connector 只分发初始版本，后续两个包独立更新，无需等待 Connector 发版。已加载的会话不会因磁盘替换而自动更换指令；需要重载时明确提示。具体步骤及失败后的继续条件见 [开始使用](skills/tiana/references/getting-started.md#更新)，各宿主安装位置及加载核验见[连接器与宿主中的自动更新](skills/tiana/references/connector-updates.md)。
 
 ## 维护与其他分发格式
 

@@ -87,6 +87,10 @@ jobs:
     env:
       RELEASE_VERSION: ${{ needs.build.outputs.version }}
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          persist-credentials: false
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: '24'
@@ -96,7 +100,9 @@ jobs:
         run: |
           target="$(mktemp -d "$RUNNER_TEMP/tiana-skills-install.XXXXXX")"
           npx --yes --cache "$target/npm-cache" --registry=https://registry.npmjs.org/ "@tianacloud/agent-skills@$RELEASE_VERSION" install --dir "$target/skills"
-          for name in tiana tiana-sqlite tiana-git tiana-web; do
+          for source in skills/*; do
+            test -d "$source" || continue
+            name="${source##*/}"
             test -f "$target/skills/$name/SKILL.md"
             test ! -L "$target/skills/$name"
             grep -F "version: \"$RELEASE_VERSION\"" "$target/skills/$name/SKILL.md"

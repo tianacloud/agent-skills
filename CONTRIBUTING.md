@@ -1,8 +1,14 @@
 # Contributing
 
-Edit the canonical four directories under skills/. npm, portable plugins,
+Edit the canonical skill directories under skills/. npm, portable plugins,
 WorkBuddy ZIPs and the Connector use these same instructions. App source and
 its build/persistence/browser tests belong to tianacloud/template-apps.
+
+Every new Tiana skill must participate in the shared first-use update flow in
+[the Tiana entrypoint](skills/tiana/SKILL.md#每个会话一次的更新检查). CLI and
+Skills updates are independent of Connector releases. The installer discovers
+all bundled skill directories; keep distribution metadata aligned with them so
+new skills ship in npm and Connector archives and are installed during updates.
 
 ## Verify locally
 
@@ -32,7 +38,7 @@ id-token: write, Node.js 24 and npm 11.20.0. See
 [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/).
 
 Choose the release version, align package.json/lockfile, plugin.json, Connector
-metadata and all four SKILL.md metadata and check-command versions. Validation
+metadata and all SKILL.md metadata versions. Validation
 checks distribution alignment. Push the immutable vVERSION source tag after
 review. GitHub Actions validates and tests, packs one npm tarball, retains it
 with its integrity descriptor and WorkBuddy archives, then publishes that exact

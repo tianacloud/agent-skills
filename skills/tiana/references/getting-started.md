@@ -1,10 +1,10 @@
 # 开始使用
 
-在 Agent 实际执行命令的环境检查 `tiana version`。本技能要求 CLI 1.0.4 或更新正式版，具备分步登录、sqlite、git、web、file、list-template/init-template 和 version check。CLI 不存在时执行下面的 npm 安装并重新核验；已有版本过低时按更新流程取得用户确认后升级，再执行资源操作。不要仅凭同名命令存在跳过版本核验。
+在 Agent 实际执行命令的环境检查 `tiana version`。本技能要求 CLI 1.0.4 或更新正式版，具备分步登录、sqlite、git、web、file、list-template/init-template 和 version check。CLI 不存在、版本过低或无法核实时，直接执行下面的 npm latest 安装并重新核验，无需再次询问；核验通过后再执行资源操作。
 
-最低版本核验独立于更新提醒：0.x、预发行版、dev 或无法核实的版本不满足本技能基线。即使 `should_notify=false` 或更新检查不可用，也不能据此跳过最低版本要求；先完成已获授权的升级，尚未获授权时说明需要升级，暂缓依赖新版 CLI 的资源操作。CLI 与 Skills 独立编号，`--skills-version` 仍传实际加载的 Skills 版本。
+连接器环境中，安装或更新前先按[宿主说明](connector-updates.md)定位实际 Node/npm、CLI 安装 prefix 和技能根目录，沿用宿主运行环境。
 
-最低版本升级已获授权但更新检查不可用时，可安装已发布基线 `npm install -g @tianacloud/cli@1.0.4 --registry=https://registry.npmjs.org/`，随后核验 `tiana version`；下载失败则报告实际错误，不继续资源操作。
+最低版本是可用性基线；通过后仍须检查并自动安装已发现的新正式版。0.x、预发行版、dev 或无法核实的版本不满足基线。CLI 与 Skills 独立编号，`--skills-version` 传实际加载的 Skills 版本。
 
 ## 安装
 
@@ -16,25 +16,55 @@ npm install -g @tianacloud/cli@latest --registry=https://registry.npmjs.org/
 
 该包提供 `tiana` 和 `git-remote-tiana`，npm optionalDependencies 选择当前平台原生包；保持 optional 依赖启用，`--ignore-scripts` 也可以正常安装。缺少平台包时按实际错误修复安装，不能只凭命令入口存在宣称成功。Windows PowerShell 使用 `npm.cmd`，详情见 [Windows 安装](windows-install.md)和 [Git helper 排查](windows-git-helper.md)。
 
-安装 Skills 使用 Node.js 22.20+：
+安装 Skills 使用 Node.js 22.20+；CLIENT 取实际受支持的客户端标识：
 
 ```sh
-npx --yes @tianacloud/agent-skills@latest install --agent codex
+npx --yes @tianacloud/agent-skills@latest install --agent CLIENT
 ```
 
-其他客户端按自己的安装目录使用 `install --dir PATH`，或不传目标运行客户端选择流程。五个 Skills 来自 npm 包内目录，安装后是持久文件副本。导入 Skill 与安装 CLI 是两步。
+其他客户端按自己的安装目录使用 `install --dir PATH`，或不传目标运行客户端选择流程。Skills 来自 npm 包内全部技能目录，安装后是持久文件副本。导入 Skill 与安装 CLI 是两步。
 
 核验安装后，先完成入口 SKILL.md 中的会话更新检查，再执行 `tiana status`，按实际结果继续任务或恢复登录。用户同时要求创建应用时，完成安装和登录后继续原始需求。当前会话可以读取新安装的 SKILL.md 及其引用文件；宿主必须重载才可使用时，明确提示重载，并保留应用需求及本次环境选择。安装失败时报告实际阶段；没有执行过的登录、资源创建或发布仍然未知。
 
 ## 更新
 
-会话检查顺序和记录规则见入口 [SKILL.md](../SKILL.md#每个会话一次的更新检查)。最低版本核验通过后，继续执行更新检查；实际发起检查命令后才记录已尝试，并保留返回结果或执行错误及用户的升级选择。结果是直接 JSON，包含 should_notify、check_status 和 updates。
+CLI 与 Skills 独立编号，分别与自身 npm latest 比较。版本检查和 npm 安装访问公共包仓库，不要求 Tiana 登录，也不查询或修改 Tiana 云端资源；“暂不登录／不操作云端资源”不影响这一步。用户明确要求离线、禁止联网或禁止安装时遵从其限制。
 
-仅在 should_notify 为 true 时简短告诉用户 updates 中当前版本和新版本，并询问是否升级。不要因 updates 非空却 should_notify=false 再次提醒。CLI 保存两个包各自的检查尝试时间和共同的提醒时间，滚动 24 小时最多提醒一次；已核实 CLI 满足最低版本时，断网、更新状态不可写或待检查包版本未知不阻断任务。
+会话检查顺序和记录规则见入口 [SKILL.md](../SKILL.md#每个会话一次的更新检查)。最低版本核验通过后，从本会话实际加载的 SKILL.md 的 metadata.version 读取 SKILLS_VERSION，在同一次 shell 调用中赋值后执行 `tiana version check --skills-version "$SKILLS_VERSION" --json`。结果是直接 JSON，包含 should_notify、check_status 和 updates。逐项处理 package 为 `@tianacloud/cli` 或 `@tianacloud/agent-skills` 的新正式版，直接安装对应 latest_version，无需再次询问。should_notify 只控制提醒，值为 false 或 check_status=cached 时也处理已返回的更新项。
 
-当前 CLI 已满足最低版本时，用户选择稍后升级仍继续原任务；确认后才安装所选包的实际更新版本：CLI 使用 `npm install -g @tianacloud/cli@VERSION --registry=https://registry.npmjs.org/`；Skills 使用 `npx --yes @tianacloud/agent-skills@VERSION install --agent CLIENT`，或复用原来的 `--dir PATH`。VERSION 从检查结果取得，CLIENT/目录对应当前宿主的实际安装目标。
+保留本会话实际检查结果、执行错误及两个包的安装与核验结果；每个包最多自动尝试安装一次。首次检查和更新结束后，在对话中简短报告实际 CLI/Skills 版本、检查状态与各包结果、新增技能及重载要求。检查不可用时说明未能确认是否有新版；后续复用本会话记录时无需重复报告。
 
-CLI 升级后核验 `tiana version` 和所需帮助；Skills 安装后检查五份 SKILL.md 的 metadata.version，并让宿主重载或开始新会话。当前会话已经加载的旧指令仍按旧版本处理，不把磁盘替换当作已重载。升级失败保留实际错误，不中途改动应用资源或凭据来修复。
+### CLI 自动更新
+
+```sh
+npm install -g @tianacloud/cli@VERSION --registry=https://registry.npmjs.org/
+```
+
+VERSION 取 CLI 更新项的 latest_version。Windows PowerShell 使用 `npm.cmd`。升级使用 Agent 实际调用的 CLI 所属 Node/npm 和安装 prefix；保留宿主注入的运行环境。连接器的实际安装位置与运行环境按[连接器与宿主中的自动更新](connector-updates.md)核验。
+
+安装后核验实际 `tiana version` 与目标版本一致，以及本任务所需命令的 `--help`。npm 安装成功但仍运行旧版本时，按 [PATH 与 helper 排查](windows-git-helper.md)核对命令位置，完成前报告为尚未生效。
+
+### Skills 自动更新与新增技能
+
+VERSION 取 Skills 更新项的 latest_version。原来通过受支持客户端安装的，使用同一 CLIENT：
+
+```sh
+npx --yes @tianacloud/agent-skills@VERSION install --agent CLIENT
+```
+
+目录安装或连接器内置技能使用已核实的实际技能根目录（其中直接包含各技能目录），安装整个新版包：
+
+```sh
+npx --yes @tianacloud/agent-skills@VERSION install --dir "SKILLS_DIR"
+```
+
+Windows PowerShell 使用 `npx.cmd`。从当前加载的 SKILL.md 实际路径确认安装目标；重用原安装方式，各连接器均按[宿主说明](connector-updates.md)操作。安装器枚举新版包 skills/ 下的全部技能目录，覆盖对应已安装目录并安装新增目录，保留其他技能。Connector 版本只决定初始分发内容，后续 CLI/Skills 独立跟踪 npm 正式版；各连接器使用同一更新流程，无需等待 Connector 发版。
+
+检查安装器返回的版本、技能名单及目录，逐份核验已安装 SKILL.md 的 metadata.version 与目标一致；名单以新版包为准。读取本任务所需的新 SKILL.md 和引用，按新指令继续；需要宿主重载才能启用时提示重载或开始新会话，保留原任务、环境选择和检查记录。文件安装成功与宿主加载成功分别报告，新增技能需确认出现在宿主技能列表并可加载后才算启用。
+
+### 失败后继续
+
+检查不可用且没有可用更新项时，或安装失败时，保留并简短报告实际错误，分别记录两个包的结果。核实 CLI 仍满足基线且具备所需命令、所需技能可加载后，可继续原任务；否则报告具体阻塞。部分安装失败时按安装器返回的已完成/未安装名单核对现状。安装缺失 CLI 或提升过低版本失败后，同样须核验通过才能继续资源操作。
 
 ## 环境与地址
 
@@ -52,8 +82,6 @@ tiana status
 后续 `git push` 也在其所在的工具调用中设置相同变量，让 `git-remote-tiana` 继承。PowerShell 使用 `$env:TIANA_API_ORIGIN`，同样需在每次独立调用中传递。
 
 staging CLI 自动加载内置公共根证书，无需另设 CA 文件；开发者须已接入 staging VPN/DNS，并为浏览器一次性安装 staging CA。证书来源、指纹和安装步骤见 [CLI staging 信任说明](https://github.com/tianacloud/cli/blob/main/docs/staging-ca.md)。证书故障按实际提示处理，不能关闭验证或切到另一个环境。
-
-WorkBuddy Connector 由自身命令环境固定 online，其安装、登录及业务命令沿用该环境。
 
 Console/管理 API、用户 Web 地址、数据库 Endpoint 各有用途：全部取实际 CLI/服务回执，不猜域名或把管理地址作为数据库连接地址。应用地址使用回执中的 application_url，Git URL 使用用户 Git 实例的 Endpoint。
 

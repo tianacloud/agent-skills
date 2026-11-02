@@ -1,7 +1,7 @@
 # WorkBuddy Connector
 
 The current Connector is built from `packaging/workbuddy/tiana-cloud` and the
-four canonical Skills. It connects to online:
+canonical Skills. It connects to online:
 `https://console.tianacloud.com`.
 
 `cli.json` injects that origin through `env`, installs the latest public
@@ -15,9 +15,13 @@ dependencies enabled. Tiana Git operations additionally require native Git.
 The declared minimum WorkBuddy version (4.24.0) covers these fields and localized
 metadata; their meanings are documented by [WorkBuddy](https://open.workbuddy.cn/docs/connector).
 
-Use CLI 1.0.0 or later. Existing installations must be checked with `tiana version`
-and updated through the normal installation flow when necessary. Skills also
-check their minimum CLI version before resource operations.
+Use CLI 1.0.4 or a newer stable release. On first use in a session, Skills check
+the installed CLI and npm updates, then automatically install newer stable CLI
+and Skills packages, regardless of should_notify. The Connector's initial
+version does not cap either package. CLI upgrades must use the active managed
+Node/npm installation and prefix. A full Skills installation updates existing
+skills and adds every skill shipped in the new package; verify host loading
+after reload. See [Connector and host automatic updates](../skills/tiana/references/connector-updates.md).
 
 Status uses the existing account and quota command. A successful result contains
 `Quota period:`; a login, network or quota-query failure makes the status check

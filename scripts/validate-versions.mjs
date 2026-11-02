@@ -29,9 +29,6 @@ for (const name of skillNames) {
   if (!body.includes(`version: "${pkg.version}"`)) {
     errors.push(`${name} metadata version does not match package.json`);
   }
-  if (!body.includes(`tiana version check --skills-version ${pkg.version} --json`)) {
-    errors.push(`${name} update-check version does not match package.json`);
-  }
 }
 
 const catalog = JSON.parse(await fs.readFile(path.join(root, "skills.sh.json"), "utf8"));

@@ -15,4 +15,4 @@ npm 通过 os/cpu 选择 cli-win32-x64 或 cli-win32-arm64；二进制直接在�
 
 成功后核验 `tiana.cmd version`、`tiana.cmd login --help`、`tiana.cmd web list-template --help`、`tiana.cmd web init-template --help`。需要 Git 时安装 Git for Windows，按 [helper 与 PATH 排查](windows-git-helper.md)确认命令位置。npm 安装成功但 PATH 不可见时先检查 prefix 和 Agent 实际环境。
 
-[开始使用](getting-started.md)说明登录、更新检查及用户确认升级。命令尚未执行时如实说明，不把安装阶段的问题当成服务登录或发布故障。
+[开始使用](getting-started.md)说明登录、CLI 与 Skills 自动更新及新增技能安装。命令尚未执行时如实说明，不把安装阶段的问题当成服务登录或发布故障。

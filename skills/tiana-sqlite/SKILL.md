@@ -4,7 +4,7 @@ description: 查询 Tiana SQLite 表结构、执行 SQL、选择数据库分支�
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.11"
+  version: "1.0.12"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-sqlite
 ---
@@ -17,13 +17,16 @@ metadata:
 
 **本会话首次使用任一 Tiana 技能时，先完成以下步骤，再开始登录、查询模板或操作应用：**
 
-1. 执行 `tiana version`，按[开始使用](../tiana/references/getting-started.md)核验最低版本；缺少 CLI 或版本过低时，先完成安装或经用户确认的升级。
-2. CLI 满足最低版本后，**仍须实际执行** `tiana version check --skills-version 1.0.11 --json`；版本号取实际加载的 metadata.version。这一步检查是否有更新版本。
-3. 实际发起检查命令后，才在会话中记为已尝试，并保留返回结果或执行错误。仅运行 `tiana version` 只完成第 1 步。
+CLI 与 Skills 各自独立比较本包的 npm 最新正式版。下面的版本检查与安装只访问公共包仓库，不需要 Tiana 登录，不操作 Tiana 云端资源；用户要求暂不登录或不操作云端资源时仍执行。用户明确要求离线、禁止联网或禁止安装时遵从该限制。
 
-五个技能共享这份实际调用记录；后续轮次、重复加载或切换技能复用记录，失败也不自动重试。上下文压缩或任务交接时保留记录，新会话重新检查。
+1. 执行 `tiana version`，按[开始使用](../tiana/references/getting-started.md)核验最低版本；缺少 CLI 或版本过低时，自动安装 npm latest 正式版并重新核验。
+2. CLI 满足最低版本后，从本会话实际加载的 SKILL.md 的 `metadata.version` 取得 `SKILLS_VERSION`，在同一次 shell 调用中赋值并**实际执行** `tiana version check --skills-version "$SKILLS_VERSION" --json`。这一步检查是否有更新版本。
+3. `updates` 中 CLI 或 Skills 有新正式版时，**自动安装各项实际返回的 `latest_version`，无需再次询问**；`should_notify=false` 也执行。Skills 按新版包完整安装，覆盖已有技能并补齐新增技能。各连接器初始版本仅用于分发，后续更新独立于连接器发版；安装目标及重载按[更新流程](../tiana/references/getting-started.md#更新)，连接器内使用时再读其中链接的宿主说明。
+4. 在对话中简短报告实际 CLI/Skills 版本、检查状态与更新结果（包括新增技能及是否需要重载）；检查不可用时明确说明未能确认是否有新版，更新失败时说明实际错误。
 
-仅在 `should_notify=true` 时简短提醒并询问是否升级；用户选择稍后或检查不可用时继续原任务。CLI 仍管理检查缓存和共同的 24 小时提醒额度。升级及重载见[开始使用](../tiana/references/getting-started.md#更新)。
+实际发起检查命令后才记录已尝试，保留检查结果或执行错误，以及两个包的安装与核验结果。各 Tiana 技能共享这份记录；后续轮次、重复加载或切换技能复用记录，每个包失败后本会话不自动重试。上下文压缩或任务交接时保留记录，新会话重新检查。仅运行 `tiana version` 只完成第 1 步。
+
+CLI 仍管理检查缓存和共同的 24 小时提醒额度；该额度不限制自动更新或本会话首次结果报告。更新核验完成后继续原任务；失败时按更新流程判断可否继续。
 
 ## 查询与命令行
 
