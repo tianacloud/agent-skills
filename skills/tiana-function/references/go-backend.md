@@ -1,6 +1,10 @@
 # Go 后端服务开发
 
-后端服务是监听 `PORT` 环境变量指定端口的 Go HTTP 程序。平台固定 Go 1.26 工具链。source_dir 包含 package main，所属 go.mod 可在该目录或仓库内上级目录，多个入口可共享模块；依赖由构建流程下载。使用 SDK 时选择包含 function 包的已发布版本，记录在 go.mod 中，具体版本以当前配套 SDK 发布为准。
+后端服务是监听 `PORT` 环境变量指定端口的 Go HTTP 程序。平台固定 Go 1.26 工具链。source_dir 包含 package main，所属 go.mod 可在该目录或仓库内上级目录，多个入口可共享模块；依赖由构建流程下载。本页的 Get(value, error) 与密钥引用示例使用下列配套 SDK；将解析后的 go.mod、go.sum 一起保存到源码仓库。
+
+```sh
+go get github.com/tianacloud/sdk-go@v1.1.0-function.4.0.20261102183840-52d162f75066
+```
 
 最小程序返回 JSON：
 
