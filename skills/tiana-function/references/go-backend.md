@@ -36,14 +36,14 @@ if err != nil {
     http.Error(w, "读取参数失败", http.StatusInternalServerError)
     return
 }
-message, ok := params.Get("MESSAGE")
-if !ok {
+message, err := params.Get("MESSAGE")
+if err != nil {
     http.Error(w, "尚未配置欢迎语", http.StatusInternalServerError)
     return
 }
 ```
 
-导入 `github.com/tianacloud/sdk-go/function`。SDK 使用平台提供的 `FUNCTION_CONFIG_FILE` 读取配置，不自行拼接宿主路径。Get 返回字符串和是否存在；已配置空字符串也会返回 true，必需且非空的业务凭据还需检查空值。不要返回整个参数对象，其中可能有数据库凭据。
+导入 `github.com/tianacloud/sdk-go/function`。SDK 使用平台提供的 `FUNCTION_CONFIG_FILE` 读取配置，不自行拼接宿主路径。Get 返回字符串和 error；不存在时返回 function.ErrNotExist，已配置空字符串返回 ("", nil)，必需且非空的业务凭据还需检查空值。不要返回整个参数对象，其中可能有数据库凭据。
 
 ## 使用敏感配置
 
@@ -52,24 +52,24 @@ if !ok {
 例如 `PAYMENT_API_KEY` 是业务自定义的第三方密钥参数名，req 是业务已创建的上游 HTTP 请求：
 
 ```go
-apiKey, ok := params.Get("PAYMENT_API_KEY")
-if !ok || apiKey == "" {
+apiKey, err := params.Get("PAYMENT_API_KEY")
+if err != nil || apiKey == "" {
     http.Error(w, "支付服务尚未配置", http.StatusServiceUnavailable)
     return
 }
 req.Header.Set("Authorization", "Bearer "+apiKey)
 ```
 
-按上游真实协议设置凭据，并检查调用结果。密钥仅用于后端向上游发请求；响应只返回业务需要的结果，不返回密钥或原始请求头。配置热更新时每次请求读取；如果复用依赖密钥的客户端，须在参数变化后更新客户端，不能一直使用启动时的旧凭据。
+按上游真实协议设置凭据，并检查调用结果。密钥仅用于后端向上游发请求；响应只返回业务需要的结果，不返回密钥或原始请求头。明文参数按配置更新；密钥参数首次读取成功后在本次执行内缓存，后续密钥变化需要新的冷启动才能读取当前值。
 
 ## 访问 SQLite
 
 先用 [Tiana SQLite](../../tiana-sqlite/SKILL.md)核实数据库实例、表结构及初始化 SQL。数据库 Endpoint 和实例 Token 分别保存为后端服务参数 `SQLITE_ENDPOINT`、`SQLITE_TOKEN`，Token 在该数据库的连接管理中创建。只在后端服务内读取并传给 SDK：
 
 ```go
-endpoint, endpointOK := params.Get("SQLITE_ENDPOINT")
-secret, tokenOK := params.Get("SQLITE_TOKEN")
-if !endpointOK || !tokenOK || endpoint == "" || secret == "" {
+endpoint, endpointErr := params.Get("SQLITE_ENDPOINT")
+secret, tokenErr := params.Get("SQLITE_TOKEN")
+if endpointErr != nil || tokenErr != nil || endpoint == "" || secret == "" {
     http.Error(w, "数据库参数未配置", http.StatusInternalServerError)
     return
 }
@@ -96,7 +96,7 @@ defer db.Close()
 
 ## App 作者与初始权限
 
-在需要作者权限的 HTTP handler 内使用 Go SDK `v1.1.0-function.4` 或包含 IsAppOwner 的后续配套版本，并将实际依赖固定到 go.mod：
+在需要作者权限的 HTTP handler 内使用 Go SDK `v1.1.0-function.4.0.20261102183840-52d162f75066`（包含参数 Get 错误语义和密钥引用），并将实际依赖固定到 go.mod：
 
 ```go
 caller, present := function.CallerFromRequest(r)

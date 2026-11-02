@@ -60,9 +60,11 @@ set 替换整个参数对象。get 的 JSON 回执从 `data.parameters` 取出�
 {
   "MESSAGE": {"kind": "plain", "value": "欢迎使用订单服务"},
   "SQLITE_ENDPOINT": {"kind": "plain", "value": "<实际数据库 Endpoint>"},
-  "SQLITE_TOKEN": {"kind": "plain", "value": "<实际数据库实例 Token>"}
+  "SQLITE_TOKEN": {"kind": "secret", "value": "production/database/token"}
 }
 ```
+
+先通过 [Tiana Secrets](../../tiana-secrets/SKILL.md) 写入敏感值，再将其 key 配为 secret；plain 保存明文，secret 只保存引用名称。
 
 含凭据的文件放在 Git 和前端构建目录之外，使用仅当前用户可读写的临时文件，用完删除。get 和 set 回执都可能包含参数值，同样写入受限临时文件处理，不打印到对话或交付日志。仅报告参数名称与生效状态。
 
@@ -74,7 +76,7 @@ set 替换整个参数对象。get 的 JSON 回执从 `data.parameters` 取出�
 | `next_start` | 配置已保存，下次启动使用；调用已发布的服务完成唤醒并验证。 |
 | `pending` | 已保存但当前执行尚未确认收到。可在 Console 点击「重试下发」，再核对结果；不能报告已生效。 |
 
-更新参数无需重新编译。Go 读取与使用按[Go 后端服务开发](go-backend.md)；验证数据库连接或上游调用是否成功，不通过回显密钥来验证。参数读取、必需值缺失和下游拒绝都要有明确业务错误。轮换凭据后再验证新请求，避免代码启动时缓存旧值造成“配置改了仍失败”。
+更新参数无需重新编译。Go 读取与使用按[Go 后端服务开发](go-backend.md)；验证数据库连接或上游调用是否成功，不通过回显密钥来验证。参数读取、必需值缺失和下游拒绝都要有明确业务错误。密钥引用变化在下次冷启动生效；当前执行首次读取成功后缓存值，验证轮换时需要新的冷启动。
 
 ## CORS
 
