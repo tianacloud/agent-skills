@@ -99,7 +99,10 @@ jobs:
         shell: bash
         run: |
           target="$(mktemp -d "$RUNNER_TEMP/tiana-skills-install.XXXXXX")"
-          npx --yes --cache "$target/npm-cache" --registry=https://registry.npmjs.org/ "@tianacloud/agent-skills@$RELEASE_VERSION" install --dir "$target/skills"
+          (
+            cd "$target"
+            npx --yes --cache "$target/npm-cache" --registry=https://registry.npmjs.org/ "@tianacloud/agent-skills@$RELEASE_VERSION" install --dir "$target/skills"
+          )
           for source in skills/*; do
             test -d "$source" || continue
             name="${source##*/}"
