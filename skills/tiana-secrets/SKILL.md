@@ -4,7 +4,7 @@ description: 管理 Tiana 用户密钥库：初始化、列出密钥名称和当
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.12"
+  version: "1.0.13"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-secrets
 ---
