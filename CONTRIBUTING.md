@@ -19,6 +19,7 @@ npm run test:installer
 npm run test:release
 npm run build:workbuddy
 npm run build:connector
+npm run build:doubao -- --source /path/to/npm-packs --output dist/doubao --cli-version 1.0.10 --skills-version 1.0.13
 node scripts/pack-skills.mjs dist/npm-release
 ```
 
@@ -28,6 +29,9 @@ paths, repeat installation and preservation of other skills. Connector validatio
 checks the archive and existing configuration; it is not a WorkBuddy runtime test.
 Process-level Connector auth fixtures remain available via test:connector-auth
 with TIANA_TEST_CLI_BINARY pointing at the corresponding local CLI.
+The [Doubao CLI configuration](packaging/doubao/README.md) has a separate
+`test:doubao-auth` fixture using the same local binary. It leaves canonical
+Skills and the WorkBuddy connector configuration unchanged.
 
 ## npm initial setup and Actions release
 
