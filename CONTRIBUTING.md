@@ -19,7 +19,7 @@ npm run test:installer
 npm run test:release
 npm run build:workbuddy
 npm run build:connector
-npm run build:doubao -- --source /path/to/npm-packs --output dist/doubao --cli-version 1.0.10 --skills-version 1.0.13
+npm run build:doubao -- --source /path/to/npm-packs --output dist/doubao --cli-version 1.0.11 --skills-version 1.0.13
 node scripts/pack-skills.mjs dist/npm-release
 ```
 
