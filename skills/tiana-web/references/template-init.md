@@ -1,6 +1,6 @@
 # 使用模板工程
 
-模板目录来自本次 `tiana web list-template --json` 实际返回的数据。每页 `data.items` 含 name、display_name、description、status 和变量摘要；CLI 的 `--after` 查询下一页。即使 items 为空，存在 next_cursor 时仍继续需要的页。选择符合用户核心功能与数据结构的工程；没有匹配项时按通用 Web 方法制作。
+模板目录来自本次 `tiana web list-template --json` 实际返回的数据。每页 `data.items` 含 name、display_name、description；CLI 的 `--after` 查询下一页。即使 items 为空，存在 next_cursor 时仍继续需要的页。选择符合用户核心功能与数据结构的工程；没有匹配项时按通用 Web 方法制作。
 
 新应用默认由 Agent 创建所需的 SQLite 和 Git，按当前应用命名并保存 CLI 返回的实际实例 ID；用户明确指定已有实例时核实后复用。保存资源回执后执行：
 
