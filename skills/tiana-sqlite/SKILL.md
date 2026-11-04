@@ -4,14 +4,14 @@ description: 查询 Tiana SQLite 表结构、执行 SQL、选择数据库分支�
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.13"
+  version: "1.0.14"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-sqlite
 ---
 
 # Tiana SQLite
 
-执行 SQL 前阅读 [SQL 命令](references/sql.md)；JavaScript 应用直接阅读下方应用连接指引。实例创建与登录使用 [Tiana](../tiana/SKILL.md)，应用发布使用 [Tiana Web](../tiana-web/SKILL.md)。相对路径以本 `SKILL.md` 所在目录为基准；客户端分开存放技能时，从已安装技能目录表定位同名依赖，不向上遍历仓库寻找安装或 Connector 文档。
+执行 SQL 前阅读 [SQL 命令](references/sql.md)；JavaScript 应用直接阅读下方应用连接指引。实例创建与登录使用 `tiana` 技能，应用发布使用 `tiana-web` 技能。需要其他技能时按技能名加载，传递已确认的实例 ID、分支和任务；完成后继续当前 SQL 或连接操作。
 
 ## 每个会话一次的更新检查
 
@@ -19,9 +19,9 @@ metadata:
 
 CLI 与 Skills 各自独立比较本包的 npm 最新正式版。下面的版本检查与安装只访问公共包仓库，不需要 Tiana 登录，不操作 Tiana 云端资源；用户要求暂不登录或不操作云端资源时仍执行。用户明确要求离线、禁止联网或禁止安装时遵从该限制。
 
-1. 执行 `tiana version`，按[开始使用](../tiana/references/getting-started.md)核验最低版本；缺少 CLI 或版本过低时，自动安装 npm latest 正式版并重新核验。
+1. 执行 `tiana version`，按 `tiana` 技能的“开始使用”指引核验最低版本；缺少 CLI 或版本过低时，自动安装 npm latest 正式版并重新核验。
 2. CLI 满足最低版本后，从本会话实际加载的 SKILL.md 的 `metadata.version` 取得 `SKILLS_VERSION`，在同一次 shell 调用中赋值并**实际执行** `tiana version check --skills-version "$SKILLS_VERSION" --json`。这一步检查是否有更新版本。
-3. `updates` 中 CLI 或 Skills 有新正式版时，**自动安装各项实际返回的 `latest_version`，无需再次询问**；`should_notify=false` 也执行。Skills 按新版包完整安装，覆盖已有技能并补齐新增技能。各连接器初始版本仅用于分发，后续更新独立于连接器发版；安装目标及重载按[更新流程](../tiana/references/getting-started.md#更新)，连接器内使用时再读其中链接的宿主说明。
+3. `updates` 中 CLI 或 Skills 有新正式版时，**自动安装各项实际返回的 `latest_version`，无需再次询问**；`should_notify=false` 也执行。Skills 按新版包完整安装，覆盖已有技能并补齐新增技能。各连接器初始版本仅用于分发，后续更新独立于连接器发版；安装目标及重载按 `tiana` 技能的“更新”指引，连接器内使用时再读其中链接的宿主说明。
 4. 在对话中简短报告实际 CLI/Skills 版本、检查状态与更新结果（包括新增技能及是否需要重载）；检查不可用时明确说明未能确认是否有新版，更新失败时说明实际错误。
 
 实际发起检查命令后才记录已尝试，保留检查结果或执行错误，以及两个包的安装与核验结果。各 Tiana 技能共享这份记录；后续轮次、重复加载或切换技能复用记录，每个包失败后本会话不自动重试。上下文压缩或任务交接时保留记录，新会话重新检查。仅运行 `tiana version` 只完成第 1 步。
@@ -48,4 +48,4 @@ JavaScript 应用阅读 [JS SDK 与 SQL 协议](references/js-sdk.md)，使用�
 
 ## 数据库分支
 
-通过 `tiana sqlite branch list/create/delete` 操作。阅读 [分支 CLI](references/branches-cli.md)及 [分支身份与结果](references/branches-lifecycle.md)，核对完整实例 ID、精确名称、来源和历史时间；默认分支固定 ID 为 `main`。创建和删除默认只报告受理，`--wait` 成功后才能使用结果。创建中断先查原实例下的分支，不重新 create；不能套用实例创建的本地恢复规则。Git 源码分支见 [Tiana Git](../tiana-git/SKILL.md)。
+通过 `tiana sqlite branch list/create/delete` 操作。阅读 [分支 CLI](references/branches-cli.md)及 [分支身份与结果](references/branches-lifecycle.md)，核对完整实例 ID、精确名称、来源和历史时间；默认分支固定 ID 为 `main`。创建和删除默认只报告受理，`--wait` 成功后才能使用结果。创建中断先查原实例下的分支，不重新 create；不能套用实例创建的本地恢复规则。Git 源码分支见 `tiana-git` 技能。

@@ -23,8 +23,11 @@ function localTarget(link, fromFile, skillDir) {
     return null;
   }
   const target = path.resolve(path.dirname(fromFile), clean);
-  const relative = path.relative(skillsRoot, target);
-  if (relative.startsWith("..") || path.isAbsolute(relative)) return null;
+  const relative = path.relative(skillDir, target);
+  if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+    problems.push(`${path.basename(skillDir)}: reference outside skill directory ${link} in ${path.relative(skillDir, fromFile)}`);
+    return null;
+  }
   return target;
 }
 

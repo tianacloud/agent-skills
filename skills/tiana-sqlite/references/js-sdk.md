@@ -26,7 +26,7 @@
 
 `window.tiana.connection()` 提供 `origin`、`sql_api`、实例 ID 等连接信息；应用使用共享的 `window.tiana.auth` 获取动态 access token。不要读取或缓存 `connection.tianaToken`，不要向 adapter 传入静态 `tianaToken`，也不要同时传入两种鉴权参数。
 
-access token 具有账号/租户级数据权限，不能把应用目标实例 ID 当作凭据的权限边界。refresh token 留在可信的 CLI/运行时代理中，不进入浏览器。完整权限边界见 [实例与凭据](../../tiana/references/instances-and-tokens.md)。
+access token 具有账号/租户级数据权限，不能把应用目标实例 ID 当作凭据的权限边界。refresh token 留在可信的 CLI/运行时代理中，不进入浏览器。完整权限边界见 `tiana` 技能的“实例与凭据”指引。
 
 `sql_api: "hrana-v3"` 使用 SDK 默认原生通道，省略 `protocol`。每次操作发送参数化 execute + close pipeline：
 

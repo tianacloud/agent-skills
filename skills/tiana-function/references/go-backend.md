@@ -68,7 +68,7 @@ req.Header.Set("Authorization", "Bearer "+apiKey)
 
 ## 访问 SQLite
 
-先用 [Tiana SQLite](../../tiana-sqlite/SKILL.md)核实数据库实例、表结构及初始化 SQL。数据库 Endpoint 和实例 Token 分别保存为后端服务参数 `SQLITE_ENDPOINT`、`SQLITE_TOKEN`，Token 在该数据库的连接管理中创建。只在后端服务内读取并传给 SDK：
+先用 `tiana-sqlite` 技能核实数据库实例、表结构及初始化 SQL。数据库 Endpoint 和实例 Token 分别保存为后端服务参数 `SQLITE_ENDPOINT`、`SQLITE_TOKEN`，Token 在该数据库的连接管理中创建。只在后端服务内读取并传给 SDK：
 
 ```go
 endpoint, endpointErr := params.Get("SQLITE_ENDPOINT")

@@ -4,14 +4,14 @@ description: 使用 Tiana 创建、修改、预览和发布 Web 应用。用户�
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.13"
+  version: "1.0.14"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-web
 ---
 
 # Tiana Web
 
-安装、登录和通用实例管理见 [Tiana](../tiana/SKILL.md)，SQL 与连接见 [Tiana SQLite](../tiana-sqlite/SKILL.md)，后端服务见 [Tiana Function](../tiana-function/SKILL.md)，源码见 [Tiana Git](../tiana-git/SKILL.md)。
+安装、登录和通用实例管理见 `tiana` 技能，SQL 与连接见 `tiana-sqlite` 技能，后端服务见 `tiana-function` 技能，源码见 `tiana-git` 技能。
 
 ## 每个会话一次的更新检查
 
@@ -19,9 +19,9 @@ metadata:
 
 CLI 与 Skills 各自独立比较本包的 npm 最新正式版。下面的版本检查与安装只访问公共包仓库，不需要 Tiana 登录，不操作 Tiana 云端资源；用户要求暂不登录或不操作云端资源时仍执行。用户明确要求离线、禁止联网或禁止安装时遵从该限制。
 
-1. 执行 `tiana version`，按[开始使用](../tiana/references/getting-started.md)核验最低版本；缺少 CLI 或版本过低时，自动安装 npm latest 正式版并重新核验。
+1. 执行 `tiana version`，按 `tiana` 技能的“开始使用”指引核验最低版本；缺少 CLI 或版本过低时，自动安装 npm latest 正式版并重新核验。
 2. CLI 满足最低版本后，从本会话实际加载的 SKILL.md 的 `metadata.version` 取得 `SKILLS_VERSION`，在同一次 shell 调用中赋值并**实际执行** `tiana version check --skills-version "$SKILLS_VERSION" --json`。这一步检查是否有更新版本。
-3. `updates` 中 CLI 或 Skills 有新正式版时，**自动安装各项实际返回的 `latest_version`，无需再次询问**；`should_notify=false` 也执行。Skills 按新版包完整安装，覆盖已有技能并补齐新增技能。各连接器初始版本仅用于分发，后续更新独立于连接器发版；安装目标及重载按[更新流程](../tiana/references/getting-started.md#更新)，连接器内使用时再读其中链接的宿主说明。
+3. `updates` 中 CLI 或 Skills 有新正式版时，**自动安装各项实际返回的 `latest_version`，无需再次询问**；`should_notify=false` 也执行。Skills 按新版包完整安装，覆盖已有技能并补齐新增技能。各连接器初始版本仅用于分发，后续更新独立于连接器发版；安装目标及重载按 `tiana` 技能的“更新”指引，连接器内使用时再读其中链接的宿主说明。
 4. 在对话中简短报告实际 CLI/Skills 版本、检查状态与更新结果（包括新增技能及是否需要重载）；检查不可用时明确说明未能确认是否有新版，更新失败时说明实际错误。
 
 实际发起检查命令后才记录已尝试，保留检查结果或执行错误，以及两个包的安装与核验结果。各 Tiana 技能共享这份记录；后续轮次、重复加载或切换技能复用记录，每个包失败后本会话不自动重试。上下文压缩或任务交接时保留记录，新会话重新检查。仅运行 `tiana version` 只完成第 1 步。
@@ -46,7 +46,7 @@ CLI 仍管理检查缓存和共同的 24 小时提醒额度；该额度不限制
 
 简单应用优先直接访问 SQLite。复杂业务、敏感数据或配置、需要限制用户可见数据时，采用后端服务，必须阅读[带后端服务的 Web 开发流程](references/backend-apps.md)。默认复用 Web 的 Git，后端私有数据库不绑定 Web。
 
-本 skill 负责选择访问方式、前端开发、Web 资源绑定、预览、发布与分享验收。后端的创建、源码、参数配置与读取、数据库访问和编译发布由 [Tiana Function](../tiana-function/SKILL.md)负责；取得后端发布结果后回到本流程完成前端接入。
+本 skill 负责选择访问方式、前端开发、Web 资源绑定、预览、发布与分享验收。后端的创建、源码、参数配置与读取、数据库访问和编译发布由 `tiana-function` 技能负责；取得后端发布结果后回到本流程完成前端接入。
 
 ## 展示当前用户
 
@@ -56,12 +56,12 @@ CLI 仍管理检查缓存和共同的 24 小时提醒额度；该额度不限制
 
 ## 创建、初始化和发布
 
-1. 阅读 [Web 开发与发布](references/csr-apps.md)；前端直连模式再读 [JavaScript 连接](../tiana-sqlite/references/js-sdk.md)。新应用默认为本次需求创建所需的 SQLite 和 Git 实例，并等待就绪、保存实际 ID；仅在用户明确指定已有实例时核实后复用。修改已有工程时沿用其已确认绑定。实例名称按当前应用命名，模板变量使用 CLI 回执中的 ID。先确定最终入口路径；创建 Web 时用 `--entry` 固定入口，按所选访问方式配置数据库或后端服务绑定，并配置 Git 绑定，并等就绪。Web ID 取 `web create` 返回的 `data.id`。
+1. 阅读 [Web 开发与发布](references/csr-apps.md)；前端直连模式转 `tiana-sqlite` 技能，按其“JavaScript 数据库连接”指引确认目标实例、分支、SDK 与连接方式，再回到本流程接入前端。新应用默认为本次需求创建所需的 SQLite 和 Git 实例，并等待就绪、保存实际 ID；仅在用户明确指定已有实例时核实后复用。修改已有工程时沿用其已确认绑定。实例名称按当前应用命名，模板变量使用 CLI 回执中的 ID。先确定最终入口路径；创建 Web 时用 `--entry` 固定入口，按所选访问方式配置数据库或后端服务绑定，并配置 Git 绑定，并等就绪。Web ID 取 `web create` 返回的 `data.id`。
 2. 采用模板时，执行 `tiana web init-template NAME --dir PROJECT_DIR --json`。PROJECT_DIR 是用户项目的不存在目录，位于技能安装目录之外。CLI 下载并原样解压；按 [模板初始化](references/template-init.md)读取工程根部 `metadata.json`，由 Agent 完成全部变量替换及 SQLite 数据初始化。
 3. 直接开发时，使用 [固定 index.html](references/index.html)、哈希路由、支持动态账号鉴权的 SDK，按实际数据库结构编写应用及构建清单。
 4. **模板和直接开发都由 Agent 处理数据库初始化。** 模板先执行已配置且存在的 schema，再执行已配置且存在的 seeds；两项独立跳过，SQL 失败先核对结果并停止后续发布。普通源码开发还须按[模板素材文件](references/template-files.md)准备新 Web ID 的预置素材；`web publish` 只发布程序包。
 5. 构建前按[应用图标](references/csr-apps.md#应用图标)准备真实 PNG：使用用户指定图片或已有的合适图标；需要制作时优先调用可用的 AI 生图工具，以应用核心功能设计图形图标。图片保存到源码，查看缩小后的效果，并核验干净构建根目录和发布包中都有该图片。
-6. 按用户需求完成交互和定制。采用后端服务时，先完成[后端交接与接入验证](references/backend-apps.md)，再交付可用前端。安装依赖并从确定源码提交构建；按 [源码版本流程](../tiana-git/references/source-releases.md)完成源码同步，用 `web publish` 发布当前归档，再用 `web status --publish-id` 核对。除非用户仅要求本地开发，交付实际托管地址、资源 ID 和对应源码提交；未验证的阶段如实说明。
+6. 按用户需求完成交互和定制。采用后端服务时，先完成[后端交接与接入验证](references/backend-apps.md)，再交付可用前端。安装依赖并从确定源码提交构建；转 `tiana-git` 技能完成源码同步，带回 Git 实例 ID、完整提交号和远端同步结果后，用 `web publish` 发布当前归档，再用 `web status --publish-id` 核对。除非用户仅要求本地开发，交付实际托管地址、资源 ID 和对应源码提交；未验证的阶段如实说明。
 
 ## 素材、文件上传、预览与下载
 

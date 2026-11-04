@@ -2,14 +2,14 @@
 
 按[完整接入指南](https://bytedance.larkoffice.com/docx/J5o2dZK8hoJItxxNQyocHgRzncb)第 4.2 节的 CLI 专项人工接入流程，交付问卷字段、五个平台 ZIP 和配套 Skills。问卷与命令配置维护在 [manual.md](manual.md)。
 
-平台 ZIP 根目录只有一个执行文件：Linux/macOS 为 tiana，Windows 为 tiana.exe；文件名与接入配置入口一致。配套 Skills ZIP 的每个顶层技能目录包含 SKILL.md、资料和 512×512 图标。
+平台 ZIP 根目录只有一个执行文件：Linux/macOS 为 tiana，Windows 为 tiana.exe；文件名与接入配置入口一致。配套 Skills ZIP 的每个顶层技能目录包含 SKILL.md、资料和 512×512 图标。技能之间按名称衔接任务及结果，文件链接只引用当前技能目录内的资料。
 
 ## 构建
 
 需要 Python 3，以及用 npm pack --json 取得的五个平台包和 agent-skills 包。把 npm pack 的 JSON 数组保存为同目录 npm-pack.json；构建检查 SHA512、版本和平台信息。CLI 与 Skills 版本必须为明确的固定正式版本。
 
 ```sh
-npm run build:doubao -- --source /path/to/npm-packs --output dist/doubao --cli-version 1.0.11 --skills-version 1.0.13
+npm run build:doubao -- --source /path/to/npm-packs --output dist/doubao --cli-version 1.0.12 --skills-version 1.0.14
 ```
 
 业务技能取固定 npm 发行版，豆包副本补充展示元数据、原生安装、固定版本和 Git helper 指引。通用 skills/ 和 WorkBuddy 的 cli.json 保持各自行为。展示元数据和安装模板只在生成豆包副本时生效。

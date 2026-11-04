@@ -4,7 +4,7 @@
 
 ## 准备 Git 客户端
 
-在 Agent 实际执行命令的环境中检查 `git --version`、`tiana version` 及 `git-remote-tiana` 的命令路径。macOS/Linux 使用 `command -v git-remote-tiana`；Windows 按 [Windows 安装与 Git helper 排查](../../tiana/references/windows-git-helper.md)检查 npm 生成的入口与 PATH。缺少 CLI 或 helper 时，按[开始使用](../../tiana/references/getting-started.md)安装同一个 `@tianacloud/cli` 包，安装成功并核验后再继续。
+在 Agent 实际执行命令的环境中检查 `git --version`、`tiana version` 及 `git-remote-tiana` 的命令路径。macOS/Linux 使用 `command -v git-remote-tiana`；Windows 按 `tiana` 技能的“Windows 安装与 Git helper 排查”指引检查 npm 生成的入口与 PATH。缺少 CLI 或 helper 时，按 `tiana` 技能的“开始使用”指引安装同一个 `@tianacloud/cli` 包，安装成功并核验后再继续。
 
 ## 确定源码托管方式
 

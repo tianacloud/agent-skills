@@ -12,6 +12,6 @@ CLI 本地预览优先复用已有 CLI 登录，通过一次性本地启动链�
 
 托管应用使用动态账号鉴权 provider。以目标环境实际返回的能力判断就绪状态；能力缺失时报告具体结果，SDK 或 CLI 安装成功不能代替托管运行时核验。
 
-SDK 要求、调用示例和失败恢复见 [JavaScript 数据库连接](../../tiana-sqlite/references/js-sdk.md)。skills 不读取或保存 refresh token，不自行调用刷新接口，也不从 CLI 凭据文件向浏览器复制凭据。登录与刷新由 CLI/SDK 或可信运行时代理负责。
+SDK 要求、调用示例和失败恢复见 `tiana-sqlite` 技能的“JavaScript 数据库连接”指引。skills 不读取或保存 refresh token，不自行调用刷新接口，也不从 CLI 凭据文件向浏览器复制凭据。登录与刷新由 CLI/SDK 或可信运行时代理负责。
 
 浏览器注销、关闭本地预览会话不应被视为已交付 access token 立即撤销的证明。凭据的失效、撤销由服务端机制决定。

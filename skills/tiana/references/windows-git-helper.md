@@ -39,6 +39,6 @@ where.exe git-remote-tiana
 
 这个修改只作用于当前进程及其子进程；Agent 的下一次工具调用可能启动另一个 Shell。持久修复由外围启动环境完成。
 
-Git 处理 `tiana://` 地址时自动调用 helper，由它执行 `tiana git remote-helper`。`--version` 不是 helper 的独立用户命令；CLI 版本用 `tiana.cmd version` 检查。入口恢复后，再按[应用源码与版本发布](../../tiana-git/references/source-releases.md)进行已授权的 Git 操作。认证错误与命令找不到是不同阶段，前者按[开始使用](getting-started.md)恢复登录。
+Git 处理 `tiana://` 地址时自动调用 helper，由它执行 `tiana git remote-helper`。`--version` 不是 helper 的独立用户命令；CLI 版本用 `tiana.cmd version` 检查。入口恢复后，再按 `tiana-git` 技能的“应用源码与版本发布”指引进行已授权的 Git 操作。认证错误与命令找不到是不同阶段，前者按[开始使用](getting-started.md)恢复登录。
 
 依据：[npm 全局目录规则](https://docs.npmjs.com/cli/v11/configuring-npm/folders/)、[npm Windows 命令入口实现](https://github.com/npm/cmd-shim/blob/main/lib/index.js)、[Git remote helper 协议](https://git-scm.com/docs/gitremote-helpers)。

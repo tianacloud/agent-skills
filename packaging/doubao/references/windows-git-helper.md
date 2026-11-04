@@ -32,4 +32,4 @@ git --version
 
 只在当前任务的 Git 调用环境中传递 helper 目录和豆包 CLI 目录的 PATH；新工具调用不一定继承上一次的环境，需显式携带。让 Git 子进程继承同一 `TIANA_API_ORIGIN`。不要求修改全局 Git 配置或用户启动文件。
 
-核验 helper 能力时，用 `capabilities` 后接空行作为标准输入调用该 helper，预期输出 `connect` 后接空行、退出 0；这只证明入口与协议协商正常，不代表远程读写成功。随后按 [源码流程](../../tiana-git/references/source-releases.md)进行用户授权的 Git 操作。
+核验 helper 能力时，用 `capabilities` 后接空行作为标准输入调用该 helper，预期输出 `connect` 后接空行、退出 0；这只证明入口与协议协商正常，不代表远程读写成功。随后按 `tiana-git` 技能的“应用源码与版本发布”指引进行用户授权的 Git 操作。

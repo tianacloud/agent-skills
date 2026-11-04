@@ -103,11 +103,11 @@ for name, raw in list(entries.items()):
         text = re.sub(r'## 每个会话一次的更新检查\n.*?(?=\n## )', fixed_check.rstrip() + '\n', text, flags=re.S)
         if skill == 'tiana-function':
             text = re.sub(r'安装、账号与环境选择按 .*?(?=\n\n## 创建与修改)',
-                          f'安装、账号与环境选择按 [Tiana](../tiana/SKILL.md)。先完成该入口的固定版本核验：CLI {CLI}、Skills {SKILLS}。执行前确认 `tiana function --help` 可用；缺少命令时报告实际版本与安装路径，修复豆包平台包安装后再继续。', text, flags=re.S)
+                          f'安装、账号与环境选择按 `tiana` 技能。先完成该入口的固定版本核验：CLI {CLI}、Skills {SKILLS}。执行前确认 `tiana function --help` 可用；缺少命令时报告实际版本与安装路径，修复豆包平台包安装后再继续。', text, flags=re.S)
         text = text.replace('本技能使用 `@tianacloud/cli`，包内提供 `tiana` 和 `git-remote-tiana`。',
                             '本技能使用豆包分平台包提供的原生 `tiana`。需要原生 Git 时，按 [Git helper 准备](references/windows-git-helper.md)建立入口。')
         text = text.replace('使用原生 Git 和包内的 `git-remote-tiana`。',
-                            '使用原生 Git，并按 [Git helper 准备](../tiana/references/windows-git-helper.md)建立 `git-remote-tiana` 入口。')
+                            '使用原生 Git，并按 `tiana` 技能的“Windows 安装与 Git helper 排查”指引建立 `git-remote-tiana` 入口。')
     entries[name] = text.encode()
 
 
@@ -119,7 +119,7 @@ for template in (ROOT / 'packaging/doubao/references').glob('*.md'):
 source_path = 'skills/tiana-git/references/source-releases.md'
 text = entries[source_path].decode()
 text = re.sub(r'在 Agent 实际执行命令的环境中检查 .*?(?=\n\n)',
-              '在 Agent 实际执行命令的环境中检查 `git --version`、`tiana version` 及 `git-remote-tiana` 的命令路径。CLI 使用豆包分平台包提供的原生文件；按 [Git helper 准备](../../tiana/references/windows-git-helper.md)建立并核验入口，随后继续源码操作。', text, count=1, flags=re.S)
+              '在 Agent 实际执行命令的环境中检查 `git --version`、`tiana version` 及 `git-remote-tiana` 的命令路径。CLI 使用豆包分平台包提供的原生文件；按 `tiana` 技能的“Windows 安装与 Git helper 排查”指引建立并核验入口，随后继续源码操作。', text, count=1, flags=re.S)
 entries[source_path] = text.encode()
 name = 'skills/tiana/references/cloud-cli.md'
 text = entries[name].decode()
@@ -139,7 +139,9 @@ for name, raw in entries.items():
     for link in re.findall(r'\]\(([^)]+)\)', text):
         target = link.split('#')[0]
         if target and '://' not in target:
-            assert posixpath.normpath(posixpath.join(posixpath.dirname(name), target)) in entries, (name, target)
+            resolved = posixpath.normpath(posixpath.join(posixpath.dirname(name), target))
+            assert resolved.startswith(name.split('/')[0] + '/'), (name, target, 'outside skill directory')
+            assert resolved in entries, (name, target)
     if name.endswith('/SKILL.md'):
         assert f'version: "{SKILLS}"' in text
         for key in ['display_name:', 'display_description:', 'icon:']:

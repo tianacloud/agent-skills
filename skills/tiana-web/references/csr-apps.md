@@ -58,7 +58,7 @@ export async function mount(root) {
 const canManageApp = session.is_app_owner === true;
 ```
 
-App 作者是当前 Web 的创建者，`role` 的 `tenant_owner` 表示访问者自己所选租户的所有者，不能用来判断 App 作者。模板安装产生的新 Web 以新创建者为作者。前端判断用于展示；敏感操作交给 [Tiana Function](../../tiana-function/references/go-backend.md#app-作者与初始权限)在后端通过 `caller.IsAppOwner()` 校验。初始化数据和权限管理接口在每次请求中检查，不能仅隐藏按钮。配套 CLI Web 本地预览也返回 `is_app_owner`，正式分享仍需用作者与其他账号分别验收。
+App 作者是当前 Web 的创建者，`role` 的 `tenant_owner` 表示访问者自己所选租户的所有者，不能用来判断 App 作者。模板安装产生的新 Web 以新创建者为作者。前端判断用于展示；敏感操作交给 `tiana-function` 技能的“App 作者与初始权限”指引在后端通过 `caller.IsAppOwner()` 校验。初始化数据和权限管理接口在每次请求中检查，不能仅隐藏按钮。配套 CLI Web 本地预览也返回 `is_app_owner`，正式分享仍需用作者与其他账号分别验收。
 
 ## 选择后端与确认资源
 
@@ -66,19 +66,19 @@ App 作者是当前 Web 的创建者，`role` 的 `tenant_owner` 表示访问者
 
 ## 直连 SQLite：确认账号与数据库
 
-已确认 CLI 具备本流程命令时直接使用。命令缺失时按[开始使用](../../tiana/references/getting-started.md)安装匹配版本。
+已确认 CLI 具备本流程命令时直接使用。命令缺失时按 `tiana` 技能的“开始使用”指引安装匹配版本。
 
 1. 复用本轮已完成的账号和额度检查；尚未检查时执行 `tiana status`。需要登录时，按分步登录流程展示链接并确认完成，不读取或输出凭据。
 2. 项目已记录且已核实可用的数据库实例 ID 可直接复用，无需列举实例。否则用 `tiana sqlite list/show` 查找；确实没有可用数据库时执行一次 `tiana sqlite create NAME --wait`，保存完整实例 ID。中断后核实原请求和实例，不重复创建。
-3. 复用已提供的实际表结构；缺少时执行 `tiana sqlite shell INSTANCE -e "SELECT name, sql FROM sqlite_schema WHERE type='table' ORDER BY name LIMIT 100" --format json`。将表结构和迁移文件保存在项目中。对已核对的 SQL 文件执行 `tiana sqlite shell INSTANCE -f schema.sql --format json`。`-e` 接受一条语句，多语句使用 `-f`。动态数据按 [JavaScript 数据库连接](../../tiana-sqlite/references/js-sdk.md)使用参数化 SQL。
+3. 复用已提供的实际表结构；缺少时执行 `tiana sqlite shell INSTANCE -e "SELECT name, sql FROM sqlite_schema WHERE type='table' ORDER BY name LIMIT 100" --format json`。将表结构和迁移文件保存在项目中。对已核对的 SQL 文件执行 `tiana sqlite shell INSTANCE -f schema.sql --format json`。`-e` 接受一条语句，多语句使用 `-f`。动态数据按 `tiana-sqlite` 技能的“JavaScript 数据库连接”指引使用参数化 SQL。
 4. 复用项目中已记录、已核实的 Web ID；未记录时先用 `tiana web list --json` 查找并核实，重名时依据实际 ID 确认归属；首次创建时执行一次 `tiana web create "应用名称" -m "应用描述" --entry assets/app.js --database-instance-id DATABASE_ID --json`，保存返回的 `data.id`。Web ID 仅由 MGR 生成；CLI 不生成或提交 Web ID；描述为可选元数据（`-m`/`--description`，最多 1024 个 UTF-8 字节），名称仅用于展示，不能用名称推导 ID，不能自行指定 ID。结果未知时保持名称、描述和所有创建参数不变，重复同一条 create 命令恢复原请求，不删除待完成记录、不另发创建请求。成功后继续构建、预览或发布时复用该 ID，不重复创建。
 5. 将非敏感 Web ID 和数据库 ID 保存在项目交付记录中。entry 仅能在 create 指定，包括省略后的纯文件托管类型；创建后不可修改，publish/serve 都不能覆盖。数据库和 Git 绑定在创建时确定；名称、备注在 Console 实例基础信息编辑。
 
 ## 直连 SQLite：运行时数据库连接
 
-SDK、参数化 SQL 和结果解析按 [JavaScript 数据库连接](../../tiana-sqlite/references/js-sdk.md)处理。应用必须使用支持 `auth` 的 SDK 和 `window.tiana.auth` provider；`window.tiana.connection()` 用于获取连接元信息。共享 provider 和 adapter，不读取 Token 快照，不保留旧 SDK、旧 Bootstrap 或实例 Token 回退路径。
+SDK、参数化 SQL 和结果解析按 `tiana-sqlite` 技能的“JavaScript 数据库连接”指引处理。应用必须使用支持 `auth` 的 SDK 和 `window.tiana.auth` provider；`window.tiana.connection()` 用于获取连接元信息。共享 provider 和 adapter，不读取 Token 快照，不保留旧 SDK、旧 Bootstrap 或实例 Token 回退路径。
 
-CLI 本地预览优先复用已保存的 CLI 登录，通过一次性本地启动链接授权浏览器；凭据刷新和持久化锁由 CLI/SDK 负责，refresh token 不交给页面。没有可用的已保存账号时才走独立 Console 登录。配套 Web/MGR 托管 Bootstrap 也提供 `window.tiana.auth`，由现有 HttpOnly 登录会话在服务端取得并同步账号授权。账号/租户级 access token 的权限不局限于应用目标实例，业务代码应在相应信任范围内运行。用户要求验证或排查连接故障时，按 [目标托管环境核验](../../tiana-sqlite/references/js-sdk.md#核验目标托管环境)检查实际 provider 和只读 SQL 链路。模板应用常规发布后由用户检查页面；没有运行时验证结果不等于确认缺失，也不代表链路已连通。
+CLI 本地预览优先复用已保存的 CLI 登录，通过一次性本地启动链接授权浏览器；凭据刷新和持久化锁由 CLI/SDK 负责，refresh token 不交给页面。没有可用的已保存账号时才走独立 Console 登录。配套 Web/MGR 托管 Bootstrap 也提供 `window.tiana.auth`，由现有 HttpOnly 登录会话在服务端取得并同步账号授权。账号/租户级 access token 的权限不局限于应用目标实例，业务代码应在相应信任范围内运行。用户要求验证或排查连接故障时，按 `tiana-sqlite` 技能的“核验目标托管环境”指引检查实际 provider 和只读 SQL 链路。模板应用常规发布后由用户检查页面；没有运行时验证结果不等于确认缺失，也不代表链路已连通。
 
 凭据只保存在内存，不写入源码、构建产物或浏览器持久存储。skills 不读取 refresh token、不调用刷新接口、不设置管理地址；刷新和授权同步由 SDK/CLI 或运行时代理处理，部署路由由外围环境负责。鉴权失败不自动重放 SQL，写入结果不明时先用独立只读查询核实。
 
@@ -100,7 +100,7 @@ CLI 本地预览优先复用已保存的 CLI 登录，通过一次性本地启�
 
 输出浏览器可直接执行的 ES 模块、CSS 和资源，引用使用相对路径。Vite 库模式在顶层配置 `define: { 'process.env.NODE_ENV': JSON.stringify('production') }`，并验证产物无残留引用。入口与资源路径以实际工程的构建配置为准；入口模块自行加载 CSS。不要生成或读取 tiana.app.json，不提交 style、rendering、routing 参数。
 
-Site 参数来自 MGR 的 web_project：name、description、固定 entry、可选 database_instance_id 和 git_instance_id。首次创建可传 `--entry assets/app.js --database-instance-id DATABASE_ID --git-instance-id GIT_ID`，后端模式省略数据库绑定。已有项目沿用创建时的固定关联，名称、备注在 Console 实例基础信息编辑；后端绑定使用 `web functions get/set`。源码提交记录与远程引用核验见[源码发布](../../tiana-git/references/source-releases.md)，从确定提交构建并保存对应发布回执。
+Site 参数来自 MGR 的 web_project：name、description、固定 entry、可选 database_instance_id 和 git_instance_id。首次创建可传 `--entry assets/app.js --database-instance-id DATABASE_ID --git-instance-id GIT_ID`，后端模式省略数据库绑定。已有项目沿用创建时的固定关联，名称、备注在 Console 实例基础信息编辑；后端绑定使用 `web functions get/set`。源码提交记录与远程引用核验见 `tiana-git` 技能的“应用源码与版本发布”指引，从确定提交构建并保存对应发布回执。
 
 CLI 将目录打包为 ZIP Store/Deflate 的一个 `.tweb`，根目录是零字节 web.yaml 与 data/。web.yaml 预留 Web server 配置，与 Site 参数无关，目前为空。data/ 前缀不对外暴露，底层只提供 GET/HEAD 精确文件访问，没有目录索引、默认 index.html 或 SPA fallback；底层可托管 HTML，带 entry 的 Site 使用固定 CSR/hash Bootstrap。
 
@@ -120,7 +120,7 @@ CLI 将目录打包为 ZIP Store/Deflate 的一个 `.tweb`，根目录是零字�
 
 ## 预览与发布
 
-需要源码关联时，先按[应用源码与版本发布](../../tiana-git/references/source-releases.md)完成已授权的 Git 同步，再构建该提交的产物。纯个人静态站无需数据库或 Git 实例。
+需要源码关联时，先按 `tiana-git` 技能的“应用源码与版本发布”指引完成已授权的 Git 同步，再构建该提交的产物。纯个人静态站无需数据库或 Git 实例。
 
 1. 用户需要本地预览时执行 `tiana web serve WEB_ID --dir DIST --port 4174`。CLI 先读取 MGR 项目和固定 entry，不能用本地参数覆盖。
 2. 核验账号与配套环境。CLI 用登录账号读取 MGR 的项目参数；数据管控优先使用互斥的 `TIANA_TOKEN` / `TIANA_TOKEN_FILE`，否则使用该账号有效 access token。Endpoint、Instance、Group、Tenant Token 只要有效且作用域覆盖目标，均可用于发布；不要求签发或保存实例 Token，不读取 `instance-tokens.json`。显式凭据错误或拒绝时不回退、不重发；凭据不写入构建目录。
@@ -144,7 +144,7 @@ tiana web status WEB_ID --json
 
 用 `tiana web list --json` 核对当前账号拥有的 Web 应用，优先使用已保存的真实 ID。用户明确要求删除时，执行 `tiana web delete WEB_ID --force`；需要等待源站清理完成时加 `--wait --json`。不得把失败恢复、重新发布或清理本地构建目录当作删除云端应用的授权。
 
-删除会关闭应用入口并通过 Web 实例生命周期清理当前归档，关联 SQLite、Git 不随之删除。只收到 `state: deleting` 时报告已受理；收到 `state: deleted` 才报告本次源站清理完成。空应用、上传中和已发布的应用均可删除；本地仍有未完成的 CLI 创建操作时，先按原请求恢复该操作。已受理的删除等待 Control 确认实例存储删除完成，MGR 不枚举或删除 S3 对象；公开缓存按缓存策略失效。中断后保留待完成记录，用原 ID 恢复，详情见[CLI 命令](../../tiana/references/cloud-cli.md)。
+删除会关闭应用入口并通过 Web 实例生命周期清理当前归档，关联 SQLite、Git 不随之删除。只收到 `state: deleting` 时报告已受理；收到 `state: deleted` 才报告本次源站清理完成。空应用、上传中和已发布的应用均可删除；本地仍有未完成的 CLI 创建操作时，先按原请求恢复该操作。已受理的删除等待 Control 确认实例存储删除完成，MGR 不枚举或删除 S3 对象；公开缓存按缓存策略失效。中断后保留待完成记录，用原 ID 恢复，详情见 `tiana` 技能的“CLI 命令与恢复”指引。
 
 ## 应用文件
 

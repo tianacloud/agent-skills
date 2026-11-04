@@ -4,7 +4,7 @@ description: 使用 Tiana Cloud 管理实例、安装 CLI、登录和恢复账�
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.13"
+  version: "1.0.14"
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana
 ---
 
@@ -31,14 +31,14 @@ CLI 仍管理检查缓存和共同的 24 小时提醒额度；该额度不限制
 
 | 任务 | 技能 |
 | --- | --- |
-| 创建、修改、预览、发布 Web 应用 | [tiana-web](../tiana-web/SKILL.md) |
-| Go 后端服务、源码、参数及编译发布 | [tiana-function](../tiana-function/SKILL.md) |
-| SQLite 查询、连接、建表及数据库分支 | [tiana-sqlite](../tiana-sqlite/SKILL.md) |
-| Git 实例、仓库、源码版本同步 | [tiana-git](../tiana-git/SKILL.md) |
-| 用户密钥库初始化、名称列表、写入与删除 | [tiana-secrets](../tiana-secrets/SKILL.md) |
+| 创建、修改、预览、发布 Web 应用 | `tiana-web` 技能 |
+| Go 后端服务、源码、参数及编译发布 | `tiana-function` 技能 |
+| SQLite 查询、连接、建表及数据库分支 | `tiana-sqlite` 技能 |
+| Git 实例、仓库、源码版本同步 | `tiana-git` 技能 |
+| 用户密钥库初始化、名称列表、写入与删除 | `tiana-secrets` 技能 |
 | 登录、账号、额度、通用实例管理 | 本技能 |
 
-组合请求中，安装完成后继续用户要求的任务。按需读取对应技能和直接链接的参考资料，跨技能文件按宿主返回的安装目录解析。
+组合请求中，安装完成后继续用户要求的任务。需要其他技能时，按技能名加载对应技能，携带当前任务、已确认的资源 ID 和已完成结果；完成所需步骤后，带回操作结果继续当前任务。技能内部的参考资料按该技能提供的链接读取。
 
 ## 管理实例
 

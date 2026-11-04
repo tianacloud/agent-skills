@@ -1,6 +1,6 @@
 # 带后端服务的 Web 开发流程
 
-仅在应用需要后端时使用。Web skill 负责以下编排与浏览器验收；后端实现交给 [Tiana Function](../../tiana-function/SKILL.md)，具体命令、参数格式和 Go 示例由该 skill 维护。
+仅在应用需要后端时使用。Web skill 负责以下编排与浏览器验收；后端实现交给 `tiana-function` 技能，具体命令、参数格式和 Go 示例由该 skill 维护。
 
 ## 1. 确定共仓资源
 

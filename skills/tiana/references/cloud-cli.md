@@ -21,13 +21,13 @@ tiana sqlite shell INSTANCE -f schema.sql --format json
 
 删除使用 `sqlite/git delete INSTANCE`；默认需要终端确认。仅在用户已授权相应删除时使用 `--force`。`--wait` 等待删除操作成功，不等于物理存储已经回收完毕。
 
-SQLite 分支操作使用 [SQLite 分支](../../tiana-sqlite/references/branches-cli.md)。`branch list --json` 自动取完所有匹配页，返回 `data.items`；`--after` 仅指定起始游标，`--search` 在所有页保持一致。创建和删除默认只报告受理。分支创建没有本地待完成请求恢复机制，不能套用上面的实例创建重试规则；结果未知时先核实，保留原 Operation ID。分支查询和连接用 `sqlite show/shell INSTANCE --branch NAME`，省略时选择默认分支（固定 ID `main`）。
+SQLite 分支操作使用 `tiana-sqlite` 技能的“SQLite 分支操作”指引。`branch list --json` 自动取完所有匹配页，返回 `data.items`；`--after` 仅指定起始游标，`--search` 在所有页保持一致。创建和删除默认只报告受理。分支创建没有本地待完成请求恢复机制，不能套用上面的实例创建重试规则；结果未知时先核实，保留原 Operation ID。分支查询和连接用 `sqlite show/shell INSTANCE --branch NAME`，省略时选择默认分支（固定 ID `main`）。
 
 应用列表使用 `tiana web list`；脚本可用 `tiana web list --json` 取得全部分页的 `data.items`，保存真实 `id`。列表只包含当前账号拥有的应用；名称可以重复，不能仅凭同名断定是原应用。
 
 Serverless Web 候选命令为 `web create NAME [-m DESCRIPTION] [--entry ENTRY] [--database-instance-id DB_ID] [--git-instance-id GIT_ID] --json`、`web publish ID --dir DIST --json`、`web status ID [--publish-id PUBLISH_ID] --json`。执行前核验配套 CLI/平台版本，尚未发布的候选不能视为线上能力。MGR 生成 `data.id` 与绑定的 Web 实例，保存真实 ID；创建结果未知时沿用本地待完成记录与相同参数恢复。Web 与 SQLite/Git 统一使用实例额度，没有单独 app 配额。
 
-发布经 Gateway 业务管控 channel，接受有效且作用域覆盖目标的 Endpoint、Instance、Group、Tenant Token。CLI 优先使用互斥的 TIANA_TOKEN / TIANA_TOKEN_FILE，否则使用已登录账号 access token；不读取实例 Token 缓存，显式凭据拒绝时不回退。MGR 项目元数据仍通过登录账号读取。CLI 内部将目录打包为含空 `web.yaml` 和 `data/` 的单个 `.tweb`；普通文件可以发布，Site 包装使用 MGR 项目参数；不生成或读取旧清单。发布回执确认 S3 上传，不等待激活；记录 publish_id 和 SHA256，随后查询激活状态。结果未知时只查询、不自动重放 PUT；404 回执消失表示未知，检查 current 内容。没有 --version、upload 或 reload 命令，详细边界见[应用要求](../../tiana-web/references/csr-apps.md)。
+发布经 Gateway 业务管控 channel，接受有效且作用域覆盖目标的 Endpoint、Instance、Group、Tenant Token。CLI 优先使用互斥的 TIANA_TOKEN / TIANA_TOKEN_FILE，否则使用已登录账号 access token；不读取实例 Token 缓存，显式凭据拒绝时不回退。MGR 项目元数据仍通过登录账号读取。CLI 内部将目录打包为含空 `web.yaml` 和 `data/` 的单个 `.tweb`；普通文件可以发布，Site 包装使用 MGR 项目参数；不生成或读取旧清单。发布回执确认 S3 上传，不等待激活；记录 publish_id 和 SHA256，随后查询激活状态。结果未知时只查询、不自动重放 PUT；404 回执消失表示未知，检查 current 内容。没有 --version、upload 或 reload 命令，详细边界见 `tiana-web` 技能的“Web 开发与发布”指引。
 
 登录 JSON 的 `pending_auth:true` 表示待批准；`NO_PENDING_AUTH` / `pending_auth:false` 仅表示无待恢复授权。缺少 `logged_in` 或 `pending_auth` 时该状态未核实，不能推断已退出或丢失授权。用 `status --json` 核实当前账号；配额不可用时仍可能返回已核实的 `logged_in:true`。目录失败按 `LOCAL_STATE_UNAVAILABLE` 修复 XDG 路径/权限，锁占用先等待，过期才重新 start，拒绝不自动再次授权。
 
