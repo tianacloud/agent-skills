@@ -1,17 +1,17 @@
 ---
 name: tiana-function
-description: 使用 Tiana 创建和管理 Go 后端服务，读取及保存 Git 源码、编译发布、修改参数与 CORS；为 Web 应用开发访问 SQLite 的后端服务时使用。前端页面开发配合 tiana-web。
+description: 使用 Tiana 创建和管理 Go 后端服务，读取及保存 Git 源码、编译发布、修改参数与 CORS；为 Web 应用开发访问 SQLite 的后端服务，或初始化用户密钥库、列出密钥名称与版本、写入和删除密钥时使用。前端页面开发配合 tiana-web。
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.14"
+  version: "1.0.15"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-function
 ---
 
 # Tiana Function
 
-本 skill 负责后端服务的创建与管理、源码、运行参数、Go 接口及数据库访问、编译发布。为 Web 开发后端时，接收 `tiana-web` 技能确定的 Git ID、接口需求和数据依赖；完成后返回服务 ID、source_dir、发布回执、接口契约和参数生效结果，由 Web skill 继续前端接入、绑定、发布及分享验收。
+本 skill 负责后端服务的创建与管理、源码、运行参数、用户密钥库、Go 接口及数据库访问、编译发布。为 Web 开发后端时，接收 `tiana-web` 技能确定的 Git ID、接口需求和数据依赖；完成后返回服务 ID、source_dir、发布回执、接口契约和参数生效结果，由 Web skill 继续前端接入、绑定、发布及分享验收。
 
 安装、账号与环境选择按 `tiana` 技能。共享各 Tiana 技能本会话的实际更新检查记录；尚未检查时先完成该入口的检查，包括从本会话实际加载的 SKILL.md 的 `metadata.version` 取得 `SKILLS_VERSION`，在同一次 shell 调用中赋值并实际执行 `tiana version check --skills-version "$SKILLS_VERSION" --json` 并按结果自动更新 CLI 和整套 Skills、补齐新增技能并核验，在对话中报告结果与重载要求；`should_notify=false` 也执行。两个包各自比较自身 npm 最新版，检查与安装无需 Tiana 登录；暂不登录或不操作云端资源时仍完成此流程。执行前确认 `tiana function --help` 可用；当前最新正式 CLI 仍缺少命令时，报告配套能力尚未可用及两个包的实际版本，等待已验证的配套发布。
 
@@ -27,11 +27,15 @@ metadata:
 
 涉及数据库 Token、第三方 API Key 等敏感配置时，必须先按[参数配置与生效](references/commands.md#参数配置与生效)配置，再按 [Go 后端服务开发](references/go-backend.md)读取与使用。参数更新无需重新编译，但要核对保存回执的应用状态和实际请求结果。
 
-数据库 Endpoint 使用明文参数；Token 和第三方密钥先通过 `tiana-secrets` 技能写入用户密钥库，再保存为后端服务的密钥引用参数，不写入 Git、前端源码、业务响应或日志。缺少实际凭据时说明待配置项，不使用占位值宣称联调成功。Web 的数据访问方式、资源绑定与模板制作由 Tiana Web 负责。
+数据库 Endpoint 使用明文参数；Token 和第三方密钥先按[用户密钥库](references/secrets.md)写入密钥，再保存为后端服务的密钥引用参数，不写入 Git、前端源码、业务响应或日志。缺少实际凭据时说明待配置项，不使用占位值宣称联调成功。Web 的数据访问方式、资源绑定与模板制作由 Tiana Web 负责。
 
 调用方身份通过 SDK 从请求上下文读取，业务需要区分用户数据时使用该身份，不能相信请求体中自报的用户 ID。完成接口核验后，将所需调用身份与数据范围一并交给 Web skill 验证。
 
 App 作者专属的初始化和权限管理接口，按 [App 作者与初始权限](references/go-backend.md#app-作者与初始权限)使用 `caller.IsAppOwner()` 校验；作者指本次来源 Web 的创建者，与租户角色分开。前端的 `is_app_owner` 展示由 Tiana Web 负责。
+
+## 用户密钥库
+
+初始化密钥库、查询名称与版本、写入或删除密钥时，阅读[密钥管理](references/secrets.md)。按操作回执报告 key、版本和结果；需要供函数使用时，继续配置密钥引用参数并核验生效。
 
 ## 结果与恢复
 

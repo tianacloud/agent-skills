@@ -1,10 +1,10 @@
 ---
 name: tiana
-description: 使用 Tiana Cloud 管理实例、安装 CLI、登录和恢复账号会话。通用 Tiana 任务从此技能开始；Web 应用创建发布使用 tiana-web，数据库和分支使用 tiana-sqlite，Git 仓库和源码同步使用 tiana-git，后端服务与数据库后端使用 tiana-function，用户密钥管理使用 tiana-secrets。
+description: 使用 Tiana Cloud 管理实例、安装 CLI、登录和恢复账号会话。通用 Tiana 任务从此技能开始；Web 应用创建发布使用 tiana-web，数据库和分支使用 tiana-sqlite，Git 仓库和源码同步使用 tiana-git，后端服务、数据库后端和用户密钥管理使用 tiana-function。
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.14"
+  version: "1.0.15"
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana
 ---
 
@@ -35,7 +35,7 @@ CLI 仍管理检查缓存和共同的 24 小时提醒额度；该额度不限制
 | Go 后端服务、源码、参数及编译发布 | `tiana-function` 技能 |
 | SQLite 查询、连接、建表及数据库分支 | `tiana-sqlite` 技能 |
 | Git 实例、仓库、源码版本同步 | `tiana-git` 技能 |
-| 用户密钥库初始化、名称列表、写入与删除 | `tiana-secrets` 技能 |
+| 用户密钥库初始化、名称列表、写入与删除 | `tiana-function` 技能 |
 | 登录、账号、额度、通用实例管理 | 本技能 |
 
 组合请求中，安装完成后继续用户要求的任务。需要其他技能时，按技能名加载对应技能，携带当前任务、已确认的资源 ID 和已完成结果；完成所需步骤后，带回操作结果继续当前任务。技能内部的参考资料按该技能提供的链接读取。

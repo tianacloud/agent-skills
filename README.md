@@ -1,6 +1,6 @@
 # Tiana Agent Skills
 
-六个基础技能覆盖 Tiana 账号与实例、SQLite、Git、后端服务、密钥和 Web 应用。应用模板由在线目录提供，用户描述需求后，Agent 根据实时目录决定使用模板还是直接开发。
+五个基础技能覆盖 Tiana 账号与实例、SQLite、Git、后端服务、密钥和 Web 应用。应用模板由在线目录提供，用户描述需求后，Agent 根据实时目录决定使用模板还是直接开发。
 
 ## 从 npm 安装
 
@@ -24,17 +24,16 @@ npx --yes @tianacloud/agent-skills@latest install --dir /path/to/client/skills
 
 Windows PowerShell 使用 `npx.cmd`。目录可以含空格，用引号包住。重复安装会更新包内全部技能并补齐新版新增技能，其他技能保留。安装完成后让客户端重载技能或开始新会话。
 
-WorkBuddy、豆包按所用版本的目录／ZIP 导入方式加载这六个目录，保留 SKILL.md 和 references。若要求 ZIP，可将每个技能目录的内容打包，SKILL.md 位于包根部。WorkBuddy 专用本地化 ZIP 由维护者构建流程提供；本仓验证 ZIP 格式和内容，不声称已验收这些客户端的运行行为。
+WorkBuddy、豆包按所用版本的目录／ZIP 导入方式加载这五个目录，保留 SKILL.md 和 references。若要求 ZIP，可将每个技能目录的内容打包，SKILL.md 位于包根部。WorkBuddy 专用本地化 ZIP 由维护者构建流程提供；本仓验证 ZIP 格式和内容，不声称已验收这些客户端的运行行为。
 
-## 六个入口
+## 五个入口
 
 | 技能 | 职责 |
 | --- | --- |
 | [tiana](skills/tiana/SKILL.md) | CLI 安装、登录、账号额度和通用实例管理 |
 | [tiana-sqlite](skills/tiana-sqlite/SKILL.md) | SQL、表结构、SDK 连接和数据库分支 |
 | [tiana-git](skills/tiana-git/SKILL.md) | Git 实例、原生仓库操作和源码版本同步 |
-| [tiana-function](skills/tiana-function/SKILL.md) | Go 后端服务源码、构建发布、参数/CORS 与数据库后端 |
-| [tiana-secrets](skills/tiana-secrets/SKILL.md) | 用户密钥库初始化、名称与版本列表、写入和删除 |
+| [tiana-function](skills/tiana-function/SKILL.md) | Go 后端服务源码、构建发布、参数/CORS、数据库后端与用户密钥管理 |
 | [tiana-web](skills/tiana-web/SKILL.md) | 实时模板选择、工程与数据初始化、通用开发、构建发布 |
 
 Web 技能每次任务都实际执行 `tiana web list-template --json`，使用当前 name/description 判断需求。模板 ZIP 原样下载解压到独立项目目录；Agent 按根部 metadata.json 替换变量、先 schema 后 seeds。模板源码和制作规范见 [template-apps](https://github.com/tianacloud/template-apps)，客户安装模板由 CLI 和 MGR 目录完成。

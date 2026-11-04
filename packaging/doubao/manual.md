@@ -16,7 +16,7 @@
 | CLI 安装方式 | 包安装（分平台上传） |
 | CLI Runtime 及最低版本 | 不需要外部 Runtime。原生 Go 可执行文件，启动不依赖 Node.js/npm。Web 工程构建仍按项目准备运行时；原生 Git 功能需要系统 Git。 |
 | CLI 版本 | {{CLI_VERSION}} |
-| 配套 Skills 版本 | {{SKILLS_VERSION}}，共 {{SKILL_COUNT}} 个技能，含 tiana-function 与 tiana-secrets |
+| 配套 Skills 版本 | {{SKILLS_VERSION}}，共 {{SKILL_COUNT}} 个技能，密钥管理包含在 tiana-function 内 |
 | CLI 可执行文件名 | Linux/macOS：tiana；Windows：tiana.exe。实际文件名与平台槽位的入口一致。 |
 | CLI 安装命令 | 不适用，使用下面的分平台 ZIP。 |
 | CLI 安装包支持平台 | Linux AMD64、Linux ARM64、macOS AMD64、macOS ARM64、Windows AMD64；验收范围见末节。 |

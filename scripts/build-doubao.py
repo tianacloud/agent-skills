@@ -77,8 +77,7 @@ labels = {
     'tiana-sqlite': ('Tiana SQLite', '管理云端数据库、SQL 与数据库分支。'),
     'tiana-git': ('Tiana Git', '管理 Git 仓库、同步源码与应用版本。'),
     'tiana-web': ('Tiana Web', '让 AI 创建、修改和部署 Web 应用。'),
-    'tiana-function': ('Tiana Function', '创建 Go 后端服务、管理源码、参数及编译发布。'),
-    'tiana-secrets': ('Tiana Secrets', '管理用户密钥名称、版本、写入与删除。'),
+    'tiana-function': ('Tiana Function', '创建 Go 后端服务、管理源码、参数、用户密钥及编译发布。'),
 }
 assert {name.split('/')[1] for name in entries} == set(labels)
 

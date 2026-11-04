@@ -10,8 +10,7 @@
         "tiana-sqlite",
         "tiana-git",
         "tiana-web",
-        "tiana-function",
-        "tiana-secrets"
+        "tiana-function"
       ]
     }
   ]

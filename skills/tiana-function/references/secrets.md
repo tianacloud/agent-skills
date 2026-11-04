@@ -1,17 +1,6 @@
----
-name: tiana-secrets
-description: 管理 Tiana 用户密钥库：初始化、列出密钥名称和当前版本号、写入与删除密钥。函数参数引用密钥时配合 tiana-function；不提供密钥明文读取或导出。
-license: Apache-2.0
-metadata:
-  author: Tiana Cloud
-  version: "1.0.14"
-  parent: tiana
-  source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-secrets
----
+# 用户密钥库
 
-# Tiana Secrets
-
-安装、登录、环境选择和本会话的 CLI／Skills 更新检查复用 `tiana` 技能。执行前核实 `tiana secrets --help` 包含 init、list、set、remove；若正式 CLI 尚未提供，说明配套能力未发布，使用用户已指定的候选版本或等待配套发布，不猜造其他访问方式。
+执行前核实 `tiana secrets --help` 包含 init、list、set、remove；若正式 CLI 尚未提供，说明配套能力未发布，使用用户已指定的候选版本或等待配套发布，不猜造其他访问方式。
 
 ## 初始化与列表
 
@@ -39,6 +28,6 @@ Set 直接写入，不先读取密钥。新 key 从 v1 开始，值变化则版�
 
 ## 函数引用
 
-写入后，把 key 交给 `tiana-function` 技能。函数参数使用 `{"kind":"secret","value":"production/database/password"}`，value 是引用名称，不是密钥明文；函数执行首次读取成功后缓存，下次冷启动读取当前值。
+写入后，需要供函数使用时，按[参数配置与生效](commands.md#参数配置与生效)将 key 保存为函数参数。函数参数使用 `{"kind":"secret","value":"production/database/password"}`，value 是引用名称，不是密钥明文；函数执行首次读取成功后缓存，下次冷启动读取当前值。
 
-本技能不提供 Get、明文回显或导出，也不通过 curl、SDK 或函数接口绕过 CLI 读取明文。需要人工查看时，引导用户到 Console 输入安全口令自行操作。平台 HashiCorp Vault 运维不属于本技能。
+密钥管理不提供 Get、明文回显或导出，也不通过 curl、SDK 或函数接口绕过 CLI 读取明文。需要人工查看时，引导用户到 Console 输入安全口令自行操作。平台 HashiCorp Vault 运维不属于本密钥管理流程。

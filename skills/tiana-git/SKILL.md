@@ -4,7 +4,7 @@ description: 使用 Tiana Git 管理 Git 实例和原生仓库，关联项目远
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.14"
+  version: "1.0.15"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-git
 ---

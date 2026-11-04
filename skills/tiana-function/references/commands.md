@@ -64,7 +64,7 @@ set 替换整个参数对象。get 的 JSON 回执从 `data.parameters` 取出�
 }
 ```
 
-先通过 `tiana-secrets` 技能写入敏感值，再将其 key 配为 secret；plain 保存明文，secret 只保存引用名称。
+先按[密钥管理](secrets.md)写入敏感值，再将其 key 配为 secret；plain 保存明文，secret 只保存引用名称。
 
 含凭据的文件放在 Git 和前端构建目录之外，使用仅当前用户可读写的临时文件，用完删除。get 和 set 回执都可能包含参数值，同样写入受限临时文件处理，不打印到对话或交付日志。仅报告参数名称与生效状态。
 
