@@ -26,6 +26,15 @@ canonical distributions without treating local checks as cloud acceptance. This
 work does not bump package versions, install skills globally or publish npm.
 
 
+## Platform packaging
+
+For platform delivery, run the corresponding script from the repository root:
+
+- Doubao: `./scripts/doubao_packaging` generates the complete delivery ZIP.
+- WorkBuddy: `./scripts/workbuddy_packaging` generates the Connector ZIP.
+
+Both scripts run without arguments and print the final ZIP's absolute path last.
+
 ## Management origin and public installation
 
 CLI defaults to online when TIANA_API_ORIGIN is absent. Inherit a configured
