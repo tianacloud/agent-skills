@@ -3,4 +3,4 @@ set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
 
 npm ci --ignore-scripts
-exec node scripts/build-workbuddy.mjs
+exec node scripts/build-workbuddy-connector.mjs

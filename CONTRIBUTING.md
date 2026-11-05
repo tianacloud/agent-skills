@@ -46,9 +46,10 @@ with a matching `.sha256` file. It contains five native platform ZIPs, the
 five-Skill ZIP, the integration manual, check results and checksums. The script
 prints the complete delivery archive path last.
 
-WorkBuddy prepares the build dependencies and packages this checkout into
-`dist/workbuddy/`: one Connector ZIP and one ZIP per skill. Its existing CLI
-installation configuration continues to use `@latest`.
+WorkBuddy prepares the build dependencies and builds the Connector ZIP at
+`dist/workbuddy/tiana-cloud-<version>.zip`, with its SHA-256 file. Its existing CLI
+installation configuration continues to use `@latest`. The script prints the
+Connector ZIP absolute path last.
 
 Both preserve the source Skill instructions and add only platform display
 metadata and assets.

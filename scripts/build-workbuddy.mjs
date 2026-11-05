@@ -4,15 +4,10 @@ import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
-import { spawnSync } from "node:child_process";
 import { zipSync } from "fflate";
 import { addWorkBuddyFrontmatter } from "./workbuddy-metadata.mjs";
 
 const root = process.cwd();
-if (process.argv.includes("--help")) {
-  console.log("Usage: npm run build:workbuddy -- [--output DIRECTORY]\nBuild the Connector ZIP and all individual Skill ZIPs (default: dist/workbuddy).");
-  process.exit(0);
-}
 const outputFlag = process.argv.indexOf("--output");
 const outputDir = path.resolve(
   outputFlag >= 0 ? process.argv[outputFlag + 1] : path.join(root, "dist", "workbuddy"),
@@ -49,20 +44,8 @@ for (const [name, metadata] of Object.entries(config.skills)) {
     const archivePath = path.join(outputDir, `${name}-${pkg.version}.zip`);
     const archive = zipSync(await archiveEntries(staging), { level: 9 });
     await fs.writeFile(archivePath, archive);
+    process.stdout.write(`${archivePath}\n`);
   } finally {
     await fs.rm(staging, { recursive: true, force: true });
   }
-}
-
-const connector = spawnSync(process.execPath, ["scripts/build-workbuddy-connector.mjs", "--output", outputDir], {
-  cwd: root, stdio: "inherit",
-});
-if (connector.error) throw connector.error;
-if (connector.status !== 0) process.exit(connector.status ?? 1);
-
-console.log(`\nWorkBuddy 打包完成，输出目录：${outputDir}`);
-console.log("生成的包：");
-console.log(path.join(outputDir, `tiana-cloud-${pkg.version}.zip`));
-for (const name of Object.keys(config.skills)) {
-  console.log(path.join(outputDir, `${name}-${pkg.version}.zip`));
 }

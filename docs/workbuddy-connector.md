@@ -39,11 +39,10 @@ TIANA_TEST_CLI_BINARY=/absolute/path/to/tiana npm run test:connector-auth
 ```
 
 `./scripts/workbuddy_packaging` prepares dependencies and writes
-`dist/workbuddy/tiana-cloud-<version>.zip` and its SHA-256 file, plus one
-`<skill>-<version>.zip` per skill. The Connector ZIP has
-`connector-meta.json`, `cli.json`, `icon.png` and `skills/`
-at its root; each individual Skill ZIP has `SKILL.md` at its root. The Connector
-installs CLI through npm; it does not bundle a native CLI binary.
+`dist/workbuddy/tiana-cloud-<version>.zip` and its SHA-256 file. The Connector
+ZIP has `connector-meta.json`, `cli.json`, `icon.png` and `skills/` at its root.
+The script prints the Connector ZIP absolute path last. The Connector installs
+CLI through npm; it does not bundle a native CLI binary.
 
 The process fixture runs the real CLI against a local HTTP fixture, exercising
 delayed approval, status, quota failure, logout and cancellation. It does not
