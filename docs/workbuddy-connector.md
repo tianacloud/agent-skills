@@ -15,7 +15,7 @@ dependencies enabled. Tiana Git operations additionally require native Git.
 The declared minimum WorkBuddy version (4.24.0) covers these fields and localized
 metadata; their meanings are documented by [WorkBuddy](https://open.workbuddy.cn/docs/connector).
 
-Use CLI 1.0.4 or a newer stable release. On first use in a session, Skills check
+Use CLI 1.0.17 or a newer stable release. On first use in a session, Skills check
 the installed CLI and npm updates, then automatically install newer stable CLI
 and Skills packages, regardless of should_notify. The Connector's initial
 version does not cap either package. CLI upgrades must use the active managed

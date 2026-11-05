@@ -1,6 +1,6 @@
 # WebApp 文件存储
 
-CLI 文件操作要求 1.0.4 或更新正式版，使用 `tiana file --help` 核验命令入口。WebApp 文件能力还需目标环境提供配套的 MGR、Web 与 serverless-js Bootstrap；使用前核对目标环境能力。
+CLI 文件操作要求 1.0.17 或更新正式版，使用 `tiana file --help` 核验命令入口。WebApp 文件能力还需目标环境提供配套的 MGR、Web 与 serverless-js Bootstrap；使用前核对目标环境能力。
 
 存储分工及静态小图片的 16 KiB 上限见[数据与素材存储](storage-and-assets.md)。
 外置预置素材按[模板素材文件](template-files.md)使用 `template-assets/` 相对路径，
