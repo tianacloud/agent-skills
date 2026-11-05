@@ -49,7 +49,6 @@ for (const [name, metadata] of Object.entries(config.skills)) {
     const archivePath = path.join(outputDir, `${name}-${pkg.version}.zip`);
     const archive = zipSync(await archiveEntries(staging), { level: 9 });
     await fs.writeFile(archivePath, archive);
-    process.stdout.write(`${archivePath}\n`);
   } finally {
     await fs.rm(staging, { recursive: true, force: true });
   }
@@ -60,3 +59,10 @@ const connector = spawnSync(process.execPath, ["scripts/build-workbuddy-connecto
 });
 if (connector.error) throw connector.error;
 if (connector.status !== 0) process.exit(connector.status ?? 1);
+
+console.log(`\nWorkBuddy 打包完成，输出目录：${outputDir}`);
+console.log("生成的包：");
+console.log(path.join(outputDir, `tiana-cloud-${pkg.version}.zip`));
+for (const name of Object.keys(config.skills)) {
+  console.log(path.join(outputDir, `${name}-${pkg.version}.zip`));
+}
