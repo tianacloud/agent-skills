@@ -1,6 +1,6 @@
 ---
 name: tiana-function
-description: 使用 Tiana 创建和管理 Go 后端服务，读取及保存 Git 源码、编译发布、修改参数与 CORS；为 Web 应用开发访问 SQLite 的后端服务，或初始化用户密钥库、列出密钥名称与版本、写入和删除密钥时使用。前端页面开发配合 tiana-web。
+description: 使用 Tiana 创建和管理 Go 后端服务，读取及保存 Git 源码、编译发布、修改参数与 CORS、开发 WebSocket 实时接口；为 Web 应用开发访问 SQLite 的后端服务，或初始化用户密钥库、列出密钥名称与版本、写入和删除密钥时使用。前端页面开发配合 tiana-web。
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
@@ -32,6 +32,10 @@ metadata:
 调用方身份通过 SDK 从请求上下文读取，业务需要区分用户数据时使用该身份，不能相信请求体中自报的用户 ID。完成接口核验后，将所需调用身份与数据范围一并交给 Web skill 验证。
 
 App 作者专属的初始化和权限管理接口，按 [App 作者与初始权限](references/go-backend.md#app-作者与初始权限)使用 `caller.IsAppOwner()` 校验；作者指本次来源 Web 的创建者，与租户角色分开。前端的 `is_app_owner` 展示由 Tiana Web 负责。
+
+## WebSocket
+
+开发实时连接时，按 [WebSocket 实时连接](references/go-backend.md#websocket-实时连接)完成 Go 服务、浏览器原生连接、源码保存和发布验证，再交给 Web skill 绑定与托管验收。
 
 ## 用户密钥库
 
