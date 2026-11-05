@@ -1,18 +1,18 @@
 # 开始使用
 
-本豆包发行版固定 CLI {{CLI_VERSION}}、Skills {{SKILLS_VERSION}}，包含{{SKILL_COUNT}} 个技能。CLI 由豆包按平台下载原生 ZIP 并安装，Skills 由接入团队加载本次配套技能文件。
+本次豆包初始交付 CLI {{CLI_VERSION}}、Skills {{SKILLS_VERSION}}，包含 {{SKILL_COUNT}} 个技能。CLI 由豆包按平台下载原生 ZIP 并安装，Skills 由接入团队加载本次配套技能文件。
 
 ## 安装
 
 在 Agent 实际执行命令的环境使用豆包返回的 CLI 安装路径。macOS/Linux 的运行文件为 `tiana`，Windows 为 `tiana.exe`；本说明的 `tiana` 命令均指该原生文件。平台未将安装目录加入 PATH 时，使用实际完整路径，或在当前命令环境加入该目录。
 
-执行 `tiana version`，确认返回 {{CLI_VERSION}}，再核验任务所需命令的帮助。CLI 原生文件启动不需要 Node.js 或 npm；Web 项目构建仍按项目自身依赖准备运行时。原生 Git 操作需要系统 Git；首次使用时按 [Git helper 准备](windows-git-helper.md)建立入口。
+执行 `tiana version`，按入口 SKILL.md 完成本会话的版本检查与更新，再核验任务所需命令的帮助。CLI 原生文件启动不需要 Node.js 或 npm；Web 项目构建仍按项目自身依赖准备运行时。原生 Git 操作需要系统 Git；首次使用时按 [Git helper 准备](windows-git-helper.md)建立入口。
 
-缺少 CLI 或版本不符时，在豆包连接器中重新安装本发行版对应的平台包；安装目录与加载路径按 [宿主说明](connector-updates.md)核实。安装失败时报告实际错误，完成后继续用户原任务。
+CLI 最低版本为 1.0.4。缺少 CLI 或版本过低时，使用 Node.js 20+ 执行 `npm install -g @tianacloud/cli@latest --include=optional --registry=https://registry.npmjs.org/`，Windows 使用 `npm.cmd`。npm 安装或更新后使用实际生成的 tiana 入口，Windows 使用 tiana.cmd；核验新入口的版本，并在后续调用中沿用其路径。安装环境与 Skills 加载目录按[宿主说明](connector-updates.md)核实，完成后继续用户原任务。
 
 ## 更新
 
-本发行版固定 CLI {{CLI_VERSION}}、Skills {{SKILLS_VERSION}}。版本更新由新的豆包人工接入交付包完成，安装后核对实际 CLI 版本、{{SKILL_COUNT}} 份技能 metadata.version，并让宿主重载技能或开启新会话。CLI 安装成功与 Skills 已加载分别核验。
+{{UPDATE_GUIDE}}
 
 ## 授权范围
 

@@ -1,8 +1,8 @@
 # Git helper 准备与 PATH 排查
 
-本豆包发行版提供原生 CLI {{CLI_VERSION}}。Git 的 `tiana://` 远程地址还需要名为 `git-remote-tiana` 的启动入口，该入口调用同一个 CLI 的 `git remote-helper` 子命令。
+豆包初始交付提供原生 CLI {{CLI_VERSION}}。Git 的 `tiana://` 远程地址还需要名为 `git-remote-tiana` 的启动入口，该入口调用同一个 CLI 的 `git remote-helper` 子命令。
 
-先核验 `git --version`、`tiana version` 与 `tiana git remote-helper --help`。确认实际执行的 CLI 为 {{CLI_VERSION}}，其目录在当前命令环境 PATH 中。仅在使用原生 Git 且入口缺失时，在当前用户工具目录创建下面的脚本；已有入口时先核实其目标。
+先核验 `git --version`、`tiana version` 与 `tiana git remote-helper --help`。确认使用当前已核验的 CLI，其目录在当前命令环境 PATH 中。仅在使用原生 Git 且入口缺失时，在当前用户工具目录创建下面的脚本；已有入口时先核实其目标。
 
 ## macOS / Linux
 

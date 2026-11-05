@@ -1,6 +1,6 @@
 # TianaCloud CLI 人工接入配置与技术手册
 
-固定发行：CLI **{{CLI_VERSION}}** / Skills **{{SKILLS_VERSION}}**。整理日期：2026-11-03。
+初始交付版本：CLI **{{CLI_VERSION}}** / Skills **{{SKILLS_VERSION}}**。整理日期：2026-11-05。
 依据：[豆包接入指南第 4.2 节](https://bytedance.larkoffice.com/docx/J5o2dZK8hoJItxxNQyocHgRzncb#TyK6dUDnaouQxbx4h34c9Tm6nFb)，读取的文档 revision 为 1369。
 
 ## 接入方式
@@ -14,14 +14,14 @@
 | 产品展示名 | TianaCloud |
 | 产品简介 | 让 AI 创建、修改和部署 Web 应用，管理云端 SQLite、Git 源码及 Go 后端服务。 |
 | CLI 安装方式 | 包安装（分平台上传） |
-| CLI Runtime 及最低版本 | 不需要外部 Runtime。原生 Go 可执行文件，启动不依赖 Node.js/npm。Web 工程构建仍按项目准备运行时；原生 Git 功能需要系统 Git。 |
+| CLI Runtime 及最低版本 | 不需要外部 Runtime。原生 Go 可执行文件，启动不依赖 Node.js/npm。通过 npm 更新 CLI 需要 Node.js 20+，更新 Skills 需要 Node.js 22.20+。Web 工程构建仍按项目准备运行时；原生 Git 功能需要系统 Git。 |
 | CLI 版本 | {{CLI_VERSION}} |
 | 配套 Skills 版本 | {{SKILLS_VERSION}}，共 {{SKILL_COUNT}} 个技能，密钥管理包含在 tiana-function 内 |
 | CLI 可执行文件名 | Linux/macOS：tiana；Windows：tiana.exe。实际文件名与平台槽位的入口一致。 |
 | CLI 安装命令 | 不适用，使用下面的分平台 ZIP。 |
 | CLI 安装包支持平台 | Linux AMD64、Linux ARM64、macOS AMD64、macOS ARM64、Windows AMD64；验收范围见末节。 |
 | CLI 是否需要登录 | 需要 |
-| CLI 版本升级方式 | 发布新的固定正式版本后重新提供对应平台 ZIP 与 Skills。停止运行旧进程后，在原 CLI 安装位置替换同名二进制；用户级账号状态由 CLI 管理，安装文件与账号文件分别保存。接入团队更新包及技能后核验实际版本。覆盖更新与跨版本会话延续须随版本联调验证；不声明未验证的兼容性或自动更新能力。 |
+| CLI 版本升级方式 | Agent 按 Skills 的会话更新流程检查 CLI 与 Skills 各自的新正式版，通过 npm 安装更新回执中的目标版本。CLI 核验实际命令入口；Skills 更新到当前加载目录，并核验重载结果。 |
 | CLI 手册 / 命令参考 | 本文件与配套 Skills；CLI 实际命令以 tiana help 和各子命令 --help 为准。 |
 
 ## 命令配置
@@ -89,7 +89,7 @@
 - 认证 API：`/api/v1/auth/transactions`、当前事务的 poll 路径、`/api/v1/auth/token` 及登出撤销接口。浏览器使用事务返回的完整授权 URL；第三方登录跳转域名需按实际生产登录链路记录补齐。
 - SQLite、Git、Web、Function 业务地址取资源的实际 Endpoint/回执；模板、素材与文件下载地址取服务端返回的地址，可能包含对象存储域名。部署和防火墙域名清单须结合实际生产资源联调补齐，不把管理域名当作所有数据面地址。
 - CLI 使用系统公有 CA 信任。需要经过代理的环境按 CLI 代理说明与实际网络验证；本次已完成的本地检查不代表生产网络或防火墙已验收。
-- 此分平台安装模式由豆包分发原生 ZIP，本地 CLI 启动不访问 npm 下载平台包；应用构建依赖由项目自身决定。
+- 此分平台安装模式由豆包分发原生 ZIP，本地 CLI 启动不访问 npm 下载平台包；CLI/Skills 更新访问 https://registry.npmjs.org/，应用构建依赖由项目自身决定。
 
 ## 原生 Git 入口
 

@@ -81,16 +81,6 @@ labels = {
 }
 assert {name.split('/')[1] for name in entries} == set(labels)
 
-fixed_check = f'''## 每个会话一次的更新检查
-
-本豆包发行版固定 CLI **{CLI}**、Skills **{SKILLS}**，通过豆包人工接入的分平台包和配套 Skills 交付。
-首次使用时执行 `tiana version`，核对结果为 {CLI}，并核对实际加载技能的 metadata.version 为 {SKILLS}。
-沿用豆包给出的可执行路径；Windows 文件名为 `tiana.exe`，macOS/Linux 为 `tiana`。
-版本不符或命令缺失时，按 Tiana 的开始使用说明修复本发行版安装，再继续资源操作。
-升级由接入团队更新对应平台包和配套 Skills，并验证实际版本。核验记录由各个 Tiana 技能共享；后续轮次复用本会话记录。
-
-'''
-
 for name, raw in list(entries.items()):
     if not name.endswith('.md'):
         continue
@@ -99,10 +89,6 @@ for name, raw in list(entries.items()):
         skill = name.split('/')[1]
         label, description = labels[skill]
         text = text.replace('metadata:\n', 'metadata:\n  icon: \"./assets/icon.png\"\n  display_name: ' + json.dumps(label, ensure_ascii=False) + '\n  display_description: ' + json.dumps(description, ensure_ascii=False) + '\n', 1)
-        text = re.sub(r'## 每个会话一次的更新检查\n.*?(?=\n## )', fixed_check.rstrip() + '\n', text, flags=re.S)
-        if skill == 'tiana-function':
-            text = re.sub(r'安装、账号与环境选择按 .*?(?=\n\n## 创建与修改)',
-                          f'安装、账号与环境选择按 `tiana` 技能。先完成该入口的固定版本核验：CLI {CLI}、Skills {SKILLS}。执行前确认 `tiana function --help` 可用；缺少命令时报告实际版本与安装路径，修复豆包平台包安装后再继续。', text, flags=re.S)
         text = text.replace('本技能使用 `@tianacloud/cli`，包内提供 `tiana` 和 `git-remote-tiana`。',
                             '本技能使用豆包分平台包提供的原生 `tiana`。需要原生 Git 时，按 [Git helper 准备](references/windows-git-helper.md)建立入口。')
         text = text.replace('使用原生 Git 和包内的 `git-remote-tiana`。',
@@ -110,7 +96,11 @@ for name, raw in list(entries.items()):
     entries[name] = text.encode()
 
 
+update_guide = source_skills['skills/tiana/references/getting-started.md'].decode().split('## 更新\n', 1)[1].split('\n## 环境与地址', 1)[0]
+
+
 def render(text):
+    text = text.replace('{{UPDATE_GUIDE}}', update_guide.strip())
     return text.replace('{{CLI_VERSION}}', CLI).replace('{{SKILLS_VERSION}}', SKILLS).replace('{{SKILL_COUNT}}', str(len(labels)))
 
 for template in (ROOT / 'packaging/doubao/references').glob('*.md'):
@@ -134,7 +124,7 @@ for name, raw in entries.items():
     if not name.endswith('.md'):
         continue
     text = raw.decode()
-    assert not re.search(r'WorkBuddy|latest|tianacloud-staging', text, re.I), name
+    assert not re.search(r'WorkBuddy|tianacloud-staging', text, re.I), name
     for link in re.findall(r'\]\(([^)]+)\)', text):
         target = link.split('#')[0]
         if target and '://' not in target:

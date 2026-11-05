@@ -9,10 +9,10 @@
 需要 Python 3，以及用 npm pack --json 取得的五个平台包和 agent-skills 包。把 npm pack 的 JSON 数组保存为同目录 npm-pack.json；构建检查 SHA512、版本和平台信息。CLI 与 Skills 版本必须为明确的固定正式版本。
 
 ```sh
-npm run build:doubao -- --source /path/to/npm-packs --output dist/doubao --cli-version 1.0.12 --skills-version 1.0.15
+npm run build:doubao -- --source /path/to/npm-packs --output dist/doubao --cli-version 1.0.12 --skills-version 1.0.16
 ```
 
-业务技能取固定 npm 发行版，豆包副本补充展示元数据、原生安装、固定版本和 Git helper 指引。通用 skills/ 和 WorkBuddy 的 cli.json 保持各自行为。展示元数据和安装模板只在生成豆包副本时生效。
+业务技能取固定 npm 发行版，豆包副本补充展示元数据、原生初始安装和 Git helper 指引，更新流程取自该 npm 发行版的正式 Skills。通用 skills/ 和 WorkBuddy 的 cli.json 保持各自行为。展示元数据和安装模板只在生成豆包副本时生效。
 
 输出附带平台入口、文件大小和摘要清单，以及配置填写单。发布者补充本次实际执行的 TEST-RESULTS.md，更新 SHA256SUMS，再提供交付压缩包。
 
