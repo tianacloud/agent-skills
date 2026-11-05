@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
+
+cli_version=$(npm view @tianacloud/cli dist-tags.latest --registry=https://registry.npmjs.org/)
+skills_version=$(npm view @tianacloud/agent-skills dist-tags.latest --registry=https://registry.npmjs.org/)
+exec python3 scripts/build-qwen.py --cli-version "$cli_version" --skills-version "$skills_version"

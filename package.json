@@ -49,7 +49,7 @@
     "test:templates": "python3 -B -m unittest discover -s tests -p test_share_template_pack.py",
     "test:installer": "node --test scripts/installer.test.mjs",
     "test:release": "node --test scripts/release.test.mjs",
-    "test:packaging": "python3 -B scripts/doubao-packaging.test.py",
+    "test:packaging": "python3 -B scripts/doubao-packaging.test.py && python3 -B scripts/qwen-packaging.test.py",
     "build:doubao": "python3 scripts/build-doubao.py"
   },
   "devDependencies": {

@@ -32,11 +32,12 @@ Skills and the WorkBuddy connector configuration unchanged.
 
 ## Platform packages
 
-Run either script directly; no arguments or manual dependency setup are needed:
+Run the corresponding script directly; no arguments or manual dependency setup are needed:
 
 ```sh
 ./scripts/doubao_packaging
 ./scripts/workbuddy_packaging
+./scripts/qwen_packaging
 ```
 
 Doubao resolves the current published CLI and Skills versions, then downloads
@@ -51,8 +52,22 @@ WorkBuddy prepares the build dependencies and builds the Connector ZIP at
 installation configuration continues to use `@latest`. The script prints the
 Connector ZIP absolute path last.
 
-Both preserve the source Skill instructions and add only platform display
-metadata and assets.
+QwenWork resolves npm's latest stable CLI and Skills versions once per build,
+downloads those exact releases and produces one desktop ZIP containing Windows
+x64, macOS Apple Silicon and macOS Intel binaries, plus every published Skill.
+The output is `dist/qwen/tiana-qwen-desktop-skills-VERSION-cli-VERSION.zip`, with
+SHA-256 and source integrity records alongside it. The final output line is the
+ZIP's absolute path. The manifest version follows the Skills release and must
+match the submission form. Requirements: Bash, npm and Python 3.
+
+The Qwen package preserves published binary and Skill contents. Native Git needs
+the official npm helper installation documented in the Skills. Check the actual
+CLI commands against the [QwenWork guide](https://alidocs.dingtalk.com/i/p/Qrkoz3py2breX6L73RmQP3EP59bD1XaP)
+before submission; archive checks do not establish client authentication or
+business acceptance. `npm run test:packaging` verifies both Doubao and Qwen ZIPs.
+
+All three preserve source Skill instructions; Doubao and WorkBuddy also add
+platform display metadata and assets.
 
 ## npm initial setup and Actions release
 

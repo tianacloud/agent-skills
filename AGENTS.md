@@ -32,8 +32,9 @@ For platform delivery, run the corresponding script from the repository root:
 
 - Doubao: `./scripts/doubao_packaging` generates the complete delivery ZIP.
 - WorkBuddy: `./scripts/workbuddy_packaging` generates the Connector ZIP.
+- QwenWork: `./scripts/qwen_packaging` generates one desktop CLI and Skills ZIP.
 
-Both scripts run without arguments and print the final ZIP's absolute path last.
+All scripts run without arguments and print the final ZIP's absolute path last.
 
 ## Management origin and public installation
 
