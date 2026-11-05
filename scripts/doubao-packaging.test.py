@@ -83,6 +83,16 @@ class DoubaoPackagingTest(unittest.TestCase):
             for line in (output / 'SHA256SUMS').read_text().splitlines():
                 digest, name = line.split('  ', 1)
                 self.assertEqual(hashlib.sha256((output / name).read_bytes()).hexdigest(), digest)
+            delivery_name = f'tiana-doubao-manual-skills-{skills_version}-cli-{cli_version}'
+            delivery = output.parent / f'{delivery_name}.zip'
+            self.assertTrue(delivery.is_file())
+            with zipfile.ZipFile(delivery) as archive:
+                self.assertIsNone(archive.testzip())
+                files = {name: archive.read(name) for name in archive.namelist()}
+            self.assertEqual(files, {f'{delivery_name}/{p.name}': p.read_bytes() for p in output.iterdir()})
+            self.assertEqual(Path(str(delivery) + '.sha256').read_text(),
+                             f'{hashlib.sha256(delivery.read_bytes()).hexdigest()}  {delivery.name}\n')
+            self.assertEqual(result.stdout.splitlines()[-1], str(delivery.resolve()))
 
 
 if __name__ == '__main__':

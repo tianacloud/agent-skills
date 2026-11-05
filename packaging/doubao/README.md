@@ -16,7 +16,9 @@
 
 技能使用指定 npm 正式版的完整业务内容，仅增加豆包要求的展示元数据和图标。固定的是交付版本，技能内的安装、登录与更新指令保持原样。
 
-输出包含五个平台 ZIP、一个五技能 ZIP、`CLI-接入配置与技术手册.md`、`packages.json`、`source-integrities.json`、`README.md`、`TEST-RESULTS.md` 和 `SHA256SUMS`。测试结果文件只记录脚本实际完成的静态打包检查；客户端运行与授权需另行验收。
+最终交付文件为 `dist/doubao/tiana-doubao-manual-skills-<Skills版本>-cli-<CLI版本>.zip`，旁边附 `.sha256` 文件。沿用原交付的同名顶层目录，脚本最后一行输出整包的绝对路径。
+
+整包内包含五个平台 ZIP、一个五技能 ZIP、`CLI-接入配置与技术手册.md`、`packages.json`、`source-integrities.json`、`README.md`、`TEST-RESULTS.md` 和 `SHA256SUMS`。测试结果文件只记录脚本实际完成的静态打包检查；客户端运行与授权需另行验收。
 
 ## 授权验证
 

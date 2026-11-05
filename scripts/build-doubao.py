@@ -139,12 +139,21 @@ CLI {CLI} / Skills {SKILLS}。
 本脚本不执行 CLI、不登录账号。各操作系统运行、授权和豆包客户端验收未由本次打包执行。
 """)
     (OUT / 'SHA256SUMS').write_text(''.join(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n' for p in sorted(OUT.iterdir()) if p.is_file() and p.name != 'SHA256SUMS'))
+    delivery_name = f'tiana-doubao-manual-skills-{SKILLS}-cli-{CLI}'
+    delivery = OUT.parent / f'{delivery_name}.zip'
+    with zipfile.ZipFile(delivery, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
+        for file in sorted(OUT.rglob('*')):
+            if file.is_file():
+                archive.write(file, f'{delivery_name}/{file.relative_to(OUT).as_posix()}')
+    Path(str(delivery) + '.sha256').write_text(f'{hashlib.sha256(delivery.read_bytes()).hexdigest()}  {delivery.name}\n')
     print(f'Verified 5 platform ZIPs and {len(labels)} Skills, CLI {CLI}, Skills {SKILLS}')
     print(f'\n豆包打包完成，输出目录：{OUT.resolve()}')
     print('生成的包：')
     for filename in [item['file_name'] for item in items] + [skills_file]:
         print((OUT / filename).resolve())
     print(f'接入手册：{(OUT / "CLI-接入配置与技术手册.md").resolve()}')
+    print('\n可直接交付豆包的完整压缩包：')
+    print(delivery.resolve())
 
 
 def main():

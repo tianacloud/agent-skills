@@ -41,8 +41,10 @@ Run either script directly; no arguments or manual dependency setup are needed:
 
 Doubao resolves the current published CLI and Skills versions, then downloads
 and packages those exact versions into `dist/doubao/cli-VERSION-skills-VERSION/`.
-The output includes five native platform ZIPs, the five-Skill ZIP, the integration
-manual, check results and checksums.
+The final delivery is `dist/doubao/tiana-doubao-manual-skills-VERSION-cli-VERSION.zip`,
+with a matching `.sha256` file. It contains five native platform ZIPs, the
+five-Skill ZIP, the integration manual, check results and checksums. The script
+prints the complete delivery archive path last.
 
 WorkBuddy prepares the build dependencies and packages this checkout into
 `dist/workbuddy/`: one Connector ZIP and one ZIP per skill. Its existing CLI
