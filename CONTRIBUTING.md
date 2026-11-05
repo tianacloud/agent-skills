@@ -17,9 +17,6 @@ npm ci --ignore-scripts
 npm run validate:ci
 npm run test:installer
 npm run test:release
-npm run build:workbuddy
-npm run build:connector
-npm run build:doubao -- --source /path/to/npm-packs --output dist/doubao --cli-version 1.0.12 --skills-version 1.0.16
 node scripts/pack-skills.mjs dist/npm-release
 ```
 
@@ -32,6 +29,27 @@ with TIANA_TEST_CLI_BINARY pointing at the corresponding local CLI.
 The [Doubao CLI configuration](packaging/doubao/README.md) has a separate
 `test:doubao-auth` fixture using the same local binary. It leaves canonical
 Skills and the WorkBuddy connector configuration unchanged.
+
+## Platform packages
+
+Run either script directly; no arguments or manual dependency setup are needed:
+
+```sh
+./scripts/doubao_packaging
+./scripts/workbuddy_packaging
+```
+
+Doubao resolves the current published CLI and Skills versions, then downloads
+and packages those exact versions into `dist/doubao/cli-VERSION-skills-VERSION/`.
+The output includes five native platform ZIPs, the five-Skill ZIP, the integration
+manual, check results and checksums.
+
+WorkBuddy prepares the build dependencies and packages this checkout into
+`dist/workbuddy/`: one Connector ZIP and one ZIP per skill. Its existing CLI
+installation configuration continues to use `@latest`.
+
+Both preserve the source Skill instructions and add only platform display
+metadata and assets.
 
 ## npm initial setup and Actions release
 

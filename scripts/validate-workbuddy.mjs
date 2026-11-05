@@ -20,6 +20,9 @@ try {
   });
   if (result.status !== 0) process.exit(result.status ?? 1);
 
+  await fs.access(path.join(temporary, `tiana-cloud-${pkg.version}.zip`));
+  await fs.access(path.join(temporary, `tiana-cloud-${pkg.version}.zip.sha256`));
+
   for (const name of Object.keys(config.skills)) {
     const file = path.join(temporary, `${name}-${pkg.version}.zip`);
     const zip = unzipSync(new Uint8Array(await fs.readFile(file)));

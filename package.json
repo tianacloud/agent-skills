@@ -45,10 +45,11 @@
     "validate:plugin": "node scripts/validate-plugin.mjs",
     "validate:versions": "node scripts/validate-versions.mjs",
     "validate:workbuddy": "node scripts/validate-workbuddy.mjs",
-    "validate:ci": "npm run validate:skills && npm run validate:references && npm run validate:plugin && npm run validate:versions && npm run validate:workbuddy && npm run validate:connector && npm run test:doubao-auth",
+    "validate:ci": "npm run validate:skills && npm run validate:references && npm run validate:plugin && npm run validate:versions && npm run validate:workbuddy && npm run validate:connector && npm run test:doubao-auth && npm run test:packaging",
     "test:templates": "python3 -B -m unittest discover -s tests -p test_share_template_pack.py",
     "test:installer": "node --test scripts/installer.test.mjs",
     "test:release": "node --test scripts/release.test.mjs",
+    "test:packaging": "python3 -B scripts/doubao-packaging.test.py",
     "build:doubao": "python3 scripts/build-doubao.py"
   },
   "devDependencies": {

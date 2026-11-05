@@ -8,139 +8,109 @@ import re
 import stat
 import tarfile
 import zipfile
+import subprocess
+import tempfile
 
 import argparse
 import posixpath
 
-parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('--source', required=True, type=Path, help='npm pack directory including npm-pack.json')
-parser.add_argument('--output', required=True, type=Path)
-parser.add_argument('--cli-version', required=True)
-parser.add_argument('--skills-version', required=True)
-args = parser.parse_args()
 ROOT = Path(__file__).resolve().parent.parent
-SOURCE, OUT = args.source, args.output
-CLI, SKILLS = args.cli_version, args.skills_version
-if not all(re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', v) for v in (CLI, SKILLS)):
-    parser.error('CLI and Skills require exact stable versions')
-OUT.mkdir(parents=True, exist_ok=True)
-pack_info = json.loads((SOURCE / 'npm-pack.json').read_text())
-for pkg in pack_info:
-    raw = (SOURCE / pkg['filename']).read_bytes()
-    assert pkg['integrity'] == 'sha512-' + base64.b64encode(hashlib.sha512(raw).digest()).decode(), pkg['name']
 
 
-def read_package(filename):
-    with tarfile.open(SOURCE / filename) as archive:
-        return {m.name.removeprefix('package/'): archive.extractfile(m).read()
-                for m in archive.getmembers() if m.isfile()}
+def build(SOURCE, OUT, CLI, SKILLS):
+    OUT.mkdir(parents=True, exist_ok=True)
+    pack_info = json.loads((SOURCE / 'npm-pack.json').read_text())
+    for pkg in pack_info:
+        raw = (SOURCE / pkg['filename']).read_bytes()
+        assert pkg['integrity'] == 'sha512-' + base64.b64encode(hashlib.sha512(raw).digest()).decode(), pkg['name']
 
+    def read_package(filename):
+        with tarfile.open(SOURCE / filename) as archive:
+            return {m.name.removeprefix('package/'): archive.extractfile(m).read()
+                    for m in archive.getmembers() if m.isfile()}
 
-def write_zip(filename, entries, executable=False):
-    with zipfile.ZipFile(OUT / filename, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
-        for name, content in sorted(entries.items()):
-            info = zipfile.ZipInfo(name, (2026, 11, 2, 0, 0, 0))
-            info.create_system = 3
-            info.external_attr = (stat.S_IFREG | (0o755 if executable else 0o644)) << 16
-            info.compress_type = zipfile.ZIP_DEFLATED
-            archive.writestr(info, content, compresslevel=9)
+    def write_zip(filename, entries, executable=False):
+        with zipfile.ZipFile(OUT / filename, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+            for name, content in sorted(entries.items()):
+                info = zipfile.ZipInfo(name, (2026, 11, 2, 0, 0, 0))
+                info.create_system = 3
+                info.external_attr = (stat.S_IFREG | (0o755 if executable else 0o644)) << 16
+                info.compress_type = zipfile.ZIP_DEFLATED
+                archive.writestr(info, content, compresslevel=9)
 
+    platforms = [
+        ('linux-amd64', 'linux-x64', 'linux', 'x64'),
+        ('linux-arm64', 'linux-arm64', 'linux', 'arm64'),
+        ('darwin-amd64', 'darwin-x64', 'darwin', 'x64'),
+        ('darwin-arm64', 'darwin-arm64', 'darwin', 'arm64'),
+        ('windows-amd64', 'win32-x64', 'win32', 'x64'),
+    ]
+    items = []
+    for platform, suffix, os_name, arch in platforms:
+        source_name = f'tianacloud-cli-{suffix}-{CLI}.tgz'
+        files = read_package(source_name)
+        meta = json.loads(files['package.json'])
+        assert meta['version'] == CLI and meta['os'] == [os_name] and meta['cpu'] == [arch]
+        executable = 'tiana.exe' if os_name == 'win32' else 'tiana'
+        binary = files[f'bin/{executable}']
+        filename = f'tiana_{platform.replace("-", "_")}.zip'
+        write_zip(filename, {executable: binary}, executable=True)
+        raw = (OUT / filename).read_bytes()
+        items.append(dict(platform=platform, file_name=filename, exec_name=executable,
+                          file_size=len(raw), md5=hashlib.md5(raw).hexdigest(),
+                          sha256=hashlib.sha256(raw).hexdigest(),
+                          binary_sha256=hashlib.sha256(binary).hexdigest(), source=source_name))
 
-platforms = [
-    ('linux-amd64', 'linux-x64', 'linux', 'x64'),
-    ('linux-arm64', 'linux-arm64', 'linux', 'arm64'),
-    ('darwin-amd64', 'darwin-x64', 'darwin', 'x64'),
-    ('darwin-arm64', 'darwin-arm64', 'darwin', 'arm64'),
-    ('windows-amd64', 'win32-x64', 'win32', 'x64'),
-]
-items = []
-for platform, suffix, os_name, arch in platforms:
-    source_name = f'tianacloud-cli-{suffix}-{CLI}.tgz'
-    files = read_package(source_name)
-    meta = json.loads(files['package.json'])
-    assert meta['version'] == CLI and meta['os'] == [os_name] and meta['cpu'] == [arch]
-    executable = 'tiana.exe' if os_name == 'win32' else 'tiana'
-    binary = files[f'bin/{executable}']
-    filename = f'tiana_{platform.replace("-", "_")}.zip'
-    write_zip(filename, {executable: binary}, executable=True)
-    raw = (OUT / filename).read_bytes()
-    items.append(dict(platform=platform, file_name=filename, exec_name=executable,
-                      file_size=len(raw), md5=hashlib.md5(raw).hexdigest(),
-                      sha256=hashlib.sha256(raw).hexdigest(),
-                      binary_sha256=hashlib.sha256(binary).hexdigest(), source=source_name))
+    source_skills = read_package(f'tianacloud-agent-skills-{SKILLS}.tgz')
+    assert json.loads(source_skills['package.json'])['version'] == SKILLS
+    entries = {name: value for name, value in source_skills.items() if name.startswith('skills/')}
+    labels = {
+        'tiana': ('Tiana Cloud', '账号登录、CLI 使用及实例管理。'),
+        'tiana-sqlite': ('Tiana SQLite', '管理云端数据库、SQL 与数据库分支。'),
+        'tiana-git': ('Tiana Git', '管理 Git 仓库、同步源码与应用版本。'),
+        'tiana-web': ('Tiana Web', '让 AI 创建、修改和部署 Web 应用。'),
+        'tiana-function': ('Tiana Function', '创建 Go 后端服务、管理源码、参数、用户密钥及编译发布。'),
+    }
+    assert {name.split('/')[1] for name in entries} == set(labels)
 
-source_skills = read_package(f'tianacloud-agent-skills-{SKILLS}.tgz')
-assert json.loads(source_skills['package.json'])['version'] == SKILLS
-entries = {name: value for name, value in source_skills.items() if name.startswith('skills/')}
-labels = {
-    'tiana': ('Tiana Cloud', '账号登录、CLI 使用及实例管理。'),
-    'tiana-sqlite': ('Tiana SQLite', '管理云端数据库、SQL 与数据库分支。'),
-    'tiana-git': ('Tiana Git', '管理 Git 仓库、同步源码与应用版本。'),
-    'tiana-web': ('Tiana Web', '让 AI 创建、修改和部署 Web 应用。'),
-    'tiana-function': ('Tiana Function', '创建 Go 后端服务、管理源码、参数、用户密钥及编译发布。'),
-}
-assert {name.split('/')[1] for name in entries} == set(labels)
+    for name, raw in list(entries.items()):
+        if not name.endswith('.md'):
+            continue
+        text = raw.decode()
+        if name.endswith('/SKILL.md'):
+            skill = name.split('/')[1]
+            label, description = labels[skill]
+            text = text.replace('metadata:\n', 'metadata:\n  icon: \"./assets/icon.png\"\n  display_name: ' + json.dumps(label, ensure_ascii=False) + '\n  display_description: ' + json.dumps(description, ensure_ascii=False) + '\n', 1)
+        entries[name] = text.encode()
 
-for name, raw in list(entries.items()):
-    if not name.endswith('.md'):
-        continue
-    text = raw.decode()
-    if name.endswith('/SKILL.md'):
-        skill = name.split('/')[1]
-        label, description = labels[skill]
-        text = text.replace('metadata:\n', 'metadata:\n  icon: \"./assets/icon.png\"\n  display_name: ' + json.dumps(label, ensure_ascii=False) + '\n  display_description: ' + json.dumps(description, ensure_ascii=False) + '\n', 1)
-        text = text.replace('本技能使用 `@tianacloud/cli`，包内提供 `tiana` 和 `git-remote-tiana`。',
-                            '本技能使用豆包分平台包提供的原生 `tiana`。需要原生 Git 时，按 [Git helper 准备](references/windows-git-helper.md)建立入口。')
-        text = text.replace('使用原生 Git 和包内的 `git-remote-tiana`。',
-                            '使用原生 Git，并按 `tiana` 技能的“Windows 安装与 Git helper 排查”指引建立 `git-remote-tiana` 入口。')
-    entries[name] = text.encode()
+    def render(text):
+        return text.replace('{{CLI_VERSION}}', CLI).replace('{{SKILLS_VERSION}}', SKILLS).replace('{{SKILL_COUNT}}', str(len(labels)))
 
-
-update_guide = source_skills['skills/tiana/references/getting-started.md'].decode().split('## 更新\n', 1)[1].split('\n## 环境与地址', 1)[0]
-
-
-def render(text):
-    text = text.replace('{{UPDATE_GUIDE}}', update_guide.strip())
-    return text.replace('{{CLI_VERSION}}', CLI).replace('{{SKILLS_VERSION}}', SKILLS).replace('{{SKILL_COUNT}}', str(len(labels)))
-
-for template in (ROOT / 'packaging/doubao/references').glob('*.md'):
-    entries['skills/tiana/references/' + template.name] = render(template.read_text()).encode()
-source_path = 'skills/tiana-git/references/source-releases.md'
-text = entries[source_path].decode()
-text = re.sub(r'在 Agent 实际执行命令的环境中检查 .*?(?=\n\n)',
-              '在 Agent 实际执行命令的环境中检查 `git --version`、`tiana version` 及 `git-remote-tiana` 的命令路径。CLI 使用豆包分平台包提供的原生文件；按 `tiana` 技能的“Windows 安装与 Git helper 排查”指引建立并核验入口，随后继续源码操作。', text, count=1, flags=re.S)
-entries[source_path] = text.encode()
-name = 'skills/tiana/references/cloud-cli.md'
-text = entries[name].decode()
-pos = text.index('\n')
-text = text[:pos+1] + '\n豆包连接器授权由宿主运行阻塞式 `tiana login`，随后独立检查本地登录态，流程见 [开始使用](getting-started.md#对话中的登录)。本文列出的分步登录参数用于 CLI 手动调用参考。\n' + text[pos+1:]
-entries[name] = text.encode()
-icon = (ROOT / 'packaging/doubao/assets/icon.png').read_bytes()
-for skill in labels:
-    entries[f'skills/{skill}/assets/icon.png'] = icon
-entries = {name.removeprefix('skills/'): value for name, value in entries.items()}
-entries['LICENSE'] = source_skills['LICENSE']
-for name, raw in entries.items():
-    if not name.endswith('.md'):
-        continue
-    text = raw.decode()
-    assert not re.search(r'WorkBuddy|tianacloud-staging', text, re.I), name
-    for link in re.findall(r'\]\(([^)]+)\)', text):
-        target = link.split('#')[0]
-        if target and '://' not in target:
-            resolved = posixpath.normpath(posixpath.join(posixpath.dirname(name), target))
-            assert resolved.startswith(name.split('/')[0] + '/'), (name, target, 'outside skill directory')
-            assert resolved in entries, (name, target)
-    if name.endswith('/SKILL.md'):
-        assert f'version: "{SKILLS}"' in text
-        for key in ['display_name:', 'display_description:', 'icon:']:
-            assert key in text
-skills_file = f'tiana-skills-{SKILLS}.zip'
-write_zip(skills_file, entries)
-(OUT / 'CLI-接入配置与技术手册.md').write_text(render((ROOT / 'packaging/doubao/manual.md').read_text()))
-(OUT / 'packages.json').write_text(json.dumps(dict(cli_version=CLI, skills_version=SKILLS, skills=list(labels), packages=items), ensure_ascii=False, indent=2) + '\n')
-(OUT / 'source-integrities.json').write_text(json.dumps(pack_info, ensure_ascii=False, indent=2) + '\n')
-(OUT / 'README.md').write_text(f"""# TianaCloud 豆包 CLI 人工接入材料
+    icon = (ROOT / 'packaging/doubao/assets/icon.png').read_bytes()
+    for skill in labels:
+        entries[f'skills/{skill}/assets/icon.png'] = icon
+    entries = {name.removeprefix('skills/'): value for name, value in entries.items()}
+    entries['LICENSE'] = source_skills['LICENSE']
+    for name, raw in entries.items():
+        if not name.endswith('.md'):
+            continue
+        text = raw.decode()
+        for link in re.findall(r'\]\(([^)]+)\)', text):
+            target = link.split('#')[0]
+            if target and '://' not in target:
+                resolved = posixpath.normpath(posixpath.join(posixpath.dirname(name), target))
+                assert resolved.startswith(name.split('/')[0] + '/'), (name, target, 'outside skill directory')
+                assert resolved in entries, (name, target)
+        if name.endswith('/SKILL.md'):
+            assert f'version: "{SKILLS}"' in text
+            for key in ['display_name:', 'display_description:', 'icon:']:
+                assert key in text
+    skills_file = f'tiana-skills-{SKILLS}.zip'
+    write_zip(skills_file, entries)
+    (OUT / 'CLI-接入配置与技术手册.md').write_text(render((ROOT / 'packaging/doubao/manual.md').read_text()))
+    (OUT / 'packages.json').write_text(json.dumps(dict(cli_version=CLI, skills_version=SKILLS, skills=list(labels), packages=items), ensure_ascii=False, indent=2) + '\n')
+    (OUT / 'source-integrities.json').write_text(json.dumps(pack_info, ensure_ascii=False, indent=2) + '\n')
+    (OUT / 'README.md').write_text(f"""# TianaCloud 豆包 CLI 人工接入材料
 
 固定 CLI {CLI} / Skills {SKILLS}。
 
@@ -151,11 +121,51 @@ write_zip(skills_file, entries)
 
 依据：https://bytedance.larkoffice.com/docx/J5o2dZK8hoJItxxNQyocHgRzncb 第 4.2 节（已核对 revision 1369）。本材料用于已在对接的 CLI 人工配置流程。
 """)
-for item in items:
-    with zipfile.ZipFile(OUT / item['file_name']) as archive:
-        assert archive.namelist() == [item['exec_name']]
-        assert archive.testzip() is None
-        assert hashlib.sha256(archive.read(item['exec_name'])).hexdigest() == item['binary_sha256']
-(OUT / 'SHA256SUMS').write_text(''.join(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n' for p in sorted(OUT.iterdir()) if p.is_file() and p.name != 'SHA256SUMS'))
-print(OUT)
-print(f'Verified 5 platform ZIPs and {len(labels)} Skills, CLI {CLI}, Skills {SKILLS}')
+    for item in items:
+        with zipfile.ZipFile(OUT / item['file_name']) as archive:
+            assert archive.namelist() == [item['exec_name']]
+            assert archive.testzip() is None
+            assert hashlib.sha256(archive.read(item['exec_name'])).hexdigest() == item['binary_sha256']
+    (OUT / 'TEST-RESULTS.md').write_text(f"""# 打包检查结果
+
+CLI {CLI} / Skills {SKILLS}。
+
+- 已校验输入 npm 包 SHA-512、版本及 CLI 平台信息。
+- 已校验五个平台 ZIP 的唯一根目录入口、CRC 和源二进制 SHA-256；Linux/macOS 执行权限为 0755。
+- 已校验五个技能目录、展示字段、版本及本技能内的 Markdown 文件引用。
+- 技能来自指定 npm 正式版，仅补充展示元数据及图标；业务正文、参考资料及脚本保持来源内容。
+- 附件摘要见 SHA256SUMS。
+
+本脚本不执行 CLI、不登录账号。各操作系统运行、授权和豆包客户端验收未由本次打包执行。
+""")
+    (OUT / 'SHA256SUMS').write_text(''.join(f'{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n' for p in sorted(OUT.iterdir()) if p.is_file() and p.name != 'SHA256SUMS'))
+    print(OUT)
+    print(f'Verified 5 platform ZIPs and {len(labels)} Skills, CLI {CLI}, Skills {SKILLS}')
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--source', type=Path, help='reuse npm packs with npm-pack.json; otherwise download exact versions')
+    parser.add_argument('--output', type=Path, help='output directory (default: dist/doubao/cli-VERSION-skills-VERSION)')
+    parser.add_argument('--cli-version', required=True)
+    parser.add_argument('--skills-version', required=True)
+    args = parser.parse_args()
+    if not all(re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', v) for v in (args.cli_version, args.skills_version)):
+        parser.error('CLI and Skills require exact stable versions')
+    output = args.output or ROOT / 'dist/doubao' / f'cli-{args.cli_version}-skills-{args.skills_version}'
+    with tempfile.TemporaryDirectory(prefix='tiana-doubao-source-') as temporary:
+        source = args.source or Path(temporary)
+        if args.source is None:
+            packages = [f'@tianacloud/cli-{platform}@{args.cli_version}' for platform in
+                        ['linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64', 'win32-x64']]
+            packages.append(f'@tianacloud/agent-skills@{args.skills_version}')
+            print(f'Downloading CLI {args.cli_version} / Skills {args.skills_version}', flush=True)
+            result = subprocess.run(['npm', 'pack', '--json', '--ignore-scripts',
+                                     '--registry=https://registry.npmjs.org/', '--pack-destination', str(source),
+                                     *packages], check=True, stdout=subprocess.PIPE, text=True)
+            (source / 'npm-pack.json').write_text(result.stdout)
+        build(source, output, args.cli_version, args.skills_version)
+
+
+if __name__ == '__main__':
+    main()

@@ -1,6 +1,6 @@
 # TianaCloud CLI 人工接入配置与技术手册
 
-初始交付版本：CLI **{{CLI_VERSION}}** / Skills **{{SKILLS_VERSION}}**。整理日期：2026-11-05。
+初始交付版本：CLI **{{CLI_VERSION}}** / Skills **{{SKILLS_VERSION}}**。
 依据：[豆包接入指南第 4.2 节](https://bytedance.larkoffice.com/docx/J5o2dZK8hoJItxxNQyocHgRzncb#TyK6dUDnaouQxbx4h34c9Tm6nFb)，读取的文档 revision 为 1369。
 
 ## 接入方式
@@ -93,7 +93,7 @@
 
 ## 原生 Git 入口
 
-CLI 包只有一个原生执行文件。`git remote-helper` 能力在同一个 tiana 内；原生 Git 的 tiana:// 地址需要额外的 git-remote-tiana 入口，配套 Skill 在使用 Git 时指导于用户工具目录建立该入口，转调同一个 tiana。Linux 与 Windows 临时 Git 环境已验证入口协商，生产 Git clone/fetch/push 仍需在豆包实际环境验收。
+分平台 ZIP 只包含原生 tiana 执行文件。原生 Git 的 tiana:// 地址还需要 git-remote-tiana 入口；按配套正式 Skill 的 npm 安装与 Git helper 排查指引准备该入口。npm CLI 包提供 tiana 和 git-remote-tiana。
 
 ## 权限说明
 
@@ -101,4 +101,4 @@ CLI 包只有一个原生执行文件。`git remote-helper` 能力在同一个 t
 
 ## 验收范围
 
-本次包的结构、源包一致性、原生运行与授权回归结果见 TEST-RESULTS.md。平台包和技能内容验证不代表已经完成豆包客户端人工配置与真实授权验收；生产网络域名和各平台业务闭环仍由接入团队联调核验。
+本次自动打包的结构、源包与摘要检查结果见 TEST-RESULTS.md；脚本不执行原生 CLI 或授权回归。平台包和技能内容验证不代表已经完成豆包客户端人工配置与真实授权验收；生产网络域名和各平台业务闭环仍由接入团队联调核验。

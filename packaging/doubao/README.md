@@ -6,15 +6,17 @@
 
 ## 构建
 
-需要 Python 3，以及用 npm pack --json 取得的五个平台包和 agent-skills 包。把 npm pack 的 JSON 数组保存为同目录 npm-pack.json；构建检查 SHA512、版本和平台信息。CLI 与 Skills 版本必须为明确的固定正式版本。
+在仓库中直接执行，无需传参数（构建机器需有 Python 3 和 npm）：
 
 ```sh
-npm run build:doubao -- --source /path/to/npm-packs --output dist/doubao --cli-version 1.0.12 --skills-version 1.0.16
+./scripts/doubao_packaging
 ```
 
-业务技能取固定 npm 发行版，豆包副本补充展示元数据、原生初始安装和 Git helper 指引，更新流程取自该 npm 发行版的正式 Skills。通用 skills/ 和 WorkBuddy 的 cli.json 保持各自行为。展示元数据和安装模板只在生成豆包副本时生效。
+脚本查询 CLI、Skills 当前正式版本，确定具体版本号后下载五个平台包和 agent-skills 包，校验 SHA512、版本和平台信息。打包输入是解析后的固定版本号；输出目录为 `dist/doubao/cli-<CLI版本>-skills-<Skills版本>/`。
 
-输出附带平台入口、文件大小和摘要清单，以及配置填写单。发布者补充本次实际执行的 TEST-RESULTS.md，更新 SHA256SUMS，再提供交付压缩包。
+技能使用指定 npm 正式版的完整业务内容，仅增加豆包要求的展示元数据和图标。固定的是交付版本，技能内的安装、登录与更新指令保持原样。
+
+输出包含五个平台 ZIP、一个五技能 ZIP、`CLI-接入配置与技术手册.md`、`packages.json`、`source-integrities.json`、`README.md`、`TEST-RESULTS.md` 和 `SHA256SUMS`。测试结果文件只记录脚本实际完成的静态打包检查；客户端运行与授权需另行验收。
 
 ## 授权验证
 
