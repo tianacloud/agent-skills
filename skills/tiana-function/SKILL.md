@@ -29,6 +29,8 @@ metadata:
 
 数据库 Endpoint 使用明文参数；Token 和第三方密钥先按[用户密钥库](references/secrets.md)写入密钥，再保存为后端服务的密钥引用参数，不写入 Git、前端源码、业务响应或日志。缺少实际凭据时说明待配置项，不使用占位值宣称联调成功。Web 的数据访问方式、资源绑定与模板制作由 Tiana Web 负责。
 
+后端服务需要访问 SQLite 时，必须先完成 [SQLite 访问配置](references/sqlite-backend.md)：从实例取得 Endpoint、用 CLI 创建 Instance Token、写入密钥库并配置参数，再发布函数和验证真实查询。执行前通过 `tiana token create --help` 核对配套 CLI 能力。
+
 调用方身份通过 SDK 从请求上下文读取，业务需要区分用户数据时使用该身份，不能相信请求体中自报的用户 ID。完成接口核验后，将所需调用身份与数据范围一并交给 Web skill 验证。
 
 App 作者专属的初始化和权限管理接口，按 [App 作者与初始权限](references/go-backend.md#app-作者与初始权限)使用 `caller.IsAppOwner()` 校验；作者指本次来源 Web 的创建者，与租户角色分开。前端的 `is_app_owner` 展示由 Tiana Web 负责。

@@ -45,7 +45,9 @@ tiana function logs FUNCTION_ID --build SUBMISSION_ID --json
 
 先列出代码实际需要的参数名和用途，例如 `SQLITE_ENDPOINT`（数据库连接地址）、`SQLITE_TOKEN`（该数据库实例 Token）、`PAYMENT_API_KEY`（第三方接口密钥）。使用已核实的目标资源取得实际值；缺少第三方密钥时请用户在 Console 配置，不要求在对话中粘贴。
 
-Console 操作：打开目标后端服务 →「参数配置」→「参数列表」，分别填写参数名和值并保存。参数名须与代码 Get 的名称一致。当前只支持 `kind=plain`；敏感值也通过此入口配置，不能将它描述为已支持密钥引用管理。
+Console 操作：打开目标后端服务 →「参数配置」→「参数列表」，选择明文或密钥引用，填写参数名和值并保存。参数名须与代码 Get 的名称一致；密钥引用填写密钥库中的 key。
+
+为 SQLite 准备 Endpoint 和实例 Token 时，先按 [SQLite 访问配置](sqlite-backend.md)完成凭据交付，再使用本节更新参数。
 
 CLI 操作：
 

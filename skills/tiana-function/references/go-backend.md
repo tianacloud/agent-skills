@@ -68,7 +68,7 @@ req.Header.Set("Authorization", "Bearer "+apiKey)
 
 ## 访问 SQLite
 
-先用 `tiana-sqlite` 技能核实数据库实例、表结构及初始化 SQL。数据库 Endpoint 和实例 Token 分别保存为后端服务参数 `SQLITE_ENDPOINT`、`SQLITE_TOKEN`，Token 在该数据库的连接管理中创建。只在后端服务内读取并传给 SDK：
+先用 `tiana-sqlite` 技能核实数据库实例、表结构及初始化 SQL，再按 [SQLite 访问配置](sqlite-backend.md)通过 CLI 创建实例 Token 并保存参数。`SQLITE_ENDPOINT` 使用 `sqlite show --json` 返回的 `data.connection.hostname`，不含 URL scheme 或端口。连接端口沿用 SDK 默认值。只在后端服务内读取并传给 SDK：
 
 ```go
 endpoint, endpointErr := params.Get("SQLITE_ENDPOINT")
@@ -96,7 +96,7 @@ defer db.Close()
 
 对应导入为 `database/sql`、`time`、`tiana "github.com/tianacloud/sdk-go"`、`tianasqlite "github.com/tianacloud/sdk-go-sqlite"`。OpenDB 创建句柄并不证明数据库已连接，继续执行实际查询并检查错误。后续 SQL 使用 `r.Context()` 与占位符绑定业务值。对需要按用户隔离的数据，从 SDK 读取可信请求身份并在查询条件中限定所属用户；不要提供任意 SQL 执行接口。
 
-沙箱内包含公共 CA 包，正式环境公共证书通常无需业务配置 RootCAs。本地环境私有 CA 按该环境的测试指导提供，不关闭证书验证。只有 tmpfs 用于临时写入，持久业务数据保存到 SQLite 或平台文件存储。
+沙箱内包含公共 CA 包，SDK 默认使用系统信任。只有 tmpfs 用于临时写入，持久业务数据保存到 SQLite 或平台文件存储。
 
 ## App 作者与初始权限
 

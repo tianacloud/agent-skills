@@ -44,6 +44,8 @@ CLI 从保存的账号登录态取得连接凭据。缺少或过期时按 `tiana
 
 ## 应用连接
 
+Go 后端服务访问 SQLite 时，转到 `tiana-function` 的“SQLite 访问配置”，通过 CLI 创建 Instance Token、保存密钥引用和 Endpoint，再验证实际 SQL。浏览器直连按下文流程使用账号鉴权。
+
 JavaScript 应用阅读 [JS SDK 与 SQL 协议](references/js-sdk.md)，使用参数化 SQL。应用必须使用支持 `auth` 的 SDK 和 Bootstrap 的 `window.tiana.auth`，通过 `connection()` 获取连接元信息；不传静态 Token、不保留旧版回退。能力缺失时报告未就绪，不把 Token 写进源码。终端连接见 [CLI 连接](references/cli.md)，Rust 客户端见 [Rust SDK](references/rust-sdk.md)。
 
 ## 数据库分支

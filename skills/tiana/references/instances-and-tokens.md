@@ -6,6 +6,8 @@
 
 账号凭据由 CLI 的安全存储管理。不要在聊天、源码、构建文件或 Git URL 中复制凭据。缺少权限、配额超限与登录失效是不同问题，按实际错误处理。
 
+后端服务需要独立 Instance Token 时，使用 `tiana token create INSTANCE --name NAME --json`；先用 `--help` 核实配套 CLI 能力。该 Token 覆盖实例各分支，默认不过期，可用 `--expires-at` 指定 Unix 秒。明文只在创建成功回执中交付，直接保存到密钥库；完整步骤见 `tiana-function` 的“SQLite 访问配置”。回执缺少明文或结果未知时先在 Console 检查原 Token，重复请求不能恢复明文。
+
 浏览器应用通过 `window.tiana.connection()` 获取连接元信息，通过共享的 `window.tiana.auth` 获取动态 access token。应用不使用 `connection.tianaToken` 快照、不传静态 Token，也不回退到实例 Token。
 
 CLI 本地预览优先复用已有 CLI 登录，通过一次性本地启动链接授权浏览器；没有可用账号时才走独立浏览器登录。刷新和持久化由 CLI/SDK 负责，refresh token 不交给页面。access token 具有账号/租户级权限，清单中的数据库 ID 不收窄凭据权限。
