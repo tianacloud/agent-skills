@@ -52,7 +52,7 @@ CLI 主包及当前系统的原生平台包全部来自 npm，提供 tiana 和 g
 
 开发者也可以向已运行的 Agent 要求：“设置 `TIANA_API_ORIGIN=https://console.tianacloud-staging.net`，安装 Tiana skills，然后创建一个账单应用。”技能会在本任务每次 CLI/Git 调用中传递这一选择。staging CLI 自动加载内置 CA；开发者需已有 VPN/DNS 和浏览器 CA 信任。仅在安装器子进程中 export 一次不会配置后续命令。
 
-WorkBuddy Connector 固定 online，配置和当前使用说明见 [Connector](docs/workbuddy-connector.md)。
+WorkBuddy Connector 固定 online，配置和当前使用说明见 [Connector](https://github.com/tianacloud/agent-skills/blob/main/docs/workbuddy-connector.md)。
 
 ## 检查与更新
 
