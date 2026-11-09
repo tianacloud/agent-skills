@@ -4,7 +4,7 @@ description: 使用 Tiana 创建、修改、预览和发布 Web 应用。用户�
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.17"
+  version: "1.0.18"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-web
 ---

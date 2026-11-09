@@ -4,7 +4,7 @@ description: 使用 Tiana Cloud 管理实例、安装 CLI、登录和恢复账�
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.17"
+  version: "1.0.18"
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana
 ---
 

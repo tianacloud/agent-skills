@@ -3,7 +3,7 @@
 后端服务是监听 `PORT` 环境变量指定端口的 Go HTTP 程序。平台固定 Go 1.26 工具链。source_dir 包含 package main，所属 go.mod 可在该目录或仓库内上级目录，多个入口可共享模块；依赖由构建流程下载。本页的 Get(value, error) 与密钥引用示例使用下列配套 SDK；将解析后的 go.mod、go.sum 一起保存到源码仓库。
 
 ```sh
-go get github.com/tianacloud/sdk-go@v1.1.0-function.4.0.20261102183840-52d162f75066
+go get github.com/tianacloud/sdk-go@v1.2.0
 ```
 
 最小程序返回 JSON：
@@ -98,9 +98,13 @@ defer db.Close()
 
 沙箱内包含公共 CA 包，SDK 默认使用系统信任。只有 tmpfs 用于临时写入，持久业务数据保存到 SQLite 或平台文件存储。
 
+## 访问文件存储
+
+需要持久保存业务文件、流式下载或生成前端可用文件 URL 时，按[函数文件存储](file-storage.md)使用 `function.Files()`、`FilesByWebApp` 或 `FilesFromRequest`。文件连接由平台配置，业务代码使用相对路径。
+
 ## App 作者与初始权限
 
-在需要作者权限的 HTTP handler 内使用 Go SDK `v1.1.0-function.4.0.20261102183840-52d162f75066`（包含参数 Get 错误语义和密钥引用），并将实际依赖固定到 go.mod：
+在需要作者权限的 HTTP handler 内使用 Go SDK `v1.2.0`（包含参数 Get 错误语义和密钥引用），并将实际依赖固定到 go.mod：
 
 ```go
 caller, present := function.CallerFromRequest(r)

@@ -1,17 +1,17 @@
 ---
 name: tiana-function
-description: 使用 Tiana 创建和管理 Go 后端服务，读取及保存 Git 源码、编译发布、修改参数与 CORS、开发 WebSocket 实时接口；为 Web 应用开发访问 SQLite 的后端服务，或初始化用户密钥库、列出密钥名称与版本、写入和删除密钥时使用。前端页面开发配合 tiana-web。
+description: 使用 Tiana 创建和管理 Go 后端服务，读取及保存 Git 源码、编译发布、修改参数与 CORS、开发 WebSocket 实时接口、在函数中访问文件存储；为 Web 应用开发访问 SQLite 的后端服务，或初始化用户密钥库、列出密钥名称与版本、写入和删除密钥时使用。前端页面开发配合 tiana-web。
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.17"
+  version: "1.0.18"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-function
 ---
 
 # Tiana Function
 
-本 skill 负责后端服务的创建与管理、源码、运行参数、用户密钥库、Go 接口及数据库访问、编译发布。为 Web 开发后端时，接收 `tiana-web` 技能确定的 Git ID、接口需求和数据依赖；完成后返回服务 ID、source_dir、发布回执、接口契约和参数生效结果，由 Web skill 继续前端接入、绑定、发布及分享验收。
+本 skill 负责后端服务的创建与管理、源码、运行参数、用户密钥库、Go 接口、数据库与文件存储访问、编译发布。为 Web 开发后端时，接收 `tiana-web` 技能确定的 Git ID、接口需求和数据依赖；完成后返回服务 ID、source_dir、发布回执、接口契约和参数生效结果，由 Web skill 继续前端接入、绑定、发布及分享验收。
 
 安装、账号与环境选择按 `tiana` 技能。共享各 Tiana 技能本会话的实际更新检查记录；尚未检查时先完成该入口的检查，包括从本会话实际加载的 SKILL.md 的 `metadata.version` 取得 `SKILLS_VERSION`，在同一次 shell 调用中赋值并实际执行 `tiana version check --skills-version "$SKILLS_VERSION" --json` 并按结果自动更新 CLI 和整套 Skills、补齐新增技能并核验，在对话中报告结果与重载要求；`should_notify=false` 也执行。两个包各自比较自身 npm 最新版，检查与安装无需 Tiana 登录；暂不登录或不操作云端资源时仍完成此流程。执行前确认 `tiana function --help` 可用；当前最新正式 CLI 仍缺少命令时，报告配套能力尚未可用及两个包的实际版本，等待已验证的配套发布。
 
@@ -34,6 +34,10 @@ metadata:
 调用方身份通过 SDK 从请求上下文读取，业务需要区分用户数据时使用该身份，不能相信请求体中自报的用户 ID。完成接口核验后，将所需调用身份与数据范围一并交给 Web skill 验证。
 
 App 作者专属的初始化和权限管理接口，按 [App 作者与初始权限](references/go-backend.md#app-作者与初始权限)使用 `caller.IsAppOwner()` 校验；作者指本次来源 Web 的创建者，与租户角色分开。前端的 `is_app_owner` 展示由 Tiana Web 负责。
+
+## 文件存储
+
+函数需要上传、读取、列目录、删除文件或返回浏览器文件 URL 时，先阅读[函数文件存储](references/file-storage.md)，按函数所属租户选择根目录或 Web 子目录，再接入示例。存储连接与凭据由平台注入；业务参数只保存业务配置。结合可信调用身份实现业务权限，完成真实文件读写及浏览器授权访问验收。
 
 ## WebSocket
 

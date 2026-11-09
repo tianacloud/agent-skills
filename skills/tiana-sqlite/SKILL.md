@@ -4,7 +4,7 @@ description: 查询 Tiana SQLite 表结构、执行 SQL、选择数据库分支�
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.17"
+  version: "1.0.18"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-sqlite
 ---
