@@ -7,7 +7,10 @@ import json
 from pathlib import Path
 import tempfile
 import stat
+import subprocess
+import sys
 import unittest
+from unittest.mock import patch
 import zipfile
 
 spec = importlib.util.spec_from_file_location("pack_template", Path(__file__).resolve().parents[1] / "skills/tiana-web/scripts/pack-template.py")
@@ -33,12 +36,318 @@ class SharedTemplatePackTest(unittest.TestCase):
             (dist / "app.js").write_bytes(b"export async function mount(root, { files }) { return () => {}; }")
             yield root, source, dist
 
+    def preflight_report(self, updates, remove=(), files=None):
+        with self.fixture(declaration="absent") as (root, source, _):
+            snapshot, _, _ = pack.source_files(source.read_bytes())
+            metadata = json.loads(snapshot["metadata.json"])
+            metadata.update(updates)
+            for field in remove:
+                metadata.pop(field, None)
+            snapshot.update(files or {})
+            snapshot["metadata.json"] = json.dumps(metadata).encode()
+            source.write_bytes(pack.archive(snapshot))
+            output = root / "install.zip"
+            output.write_bytes(b"previous package")
+            with self.assertRaises(pack.TemplatePreflightError) as caught:
+                pack.pack(source, object(), "app.js", output)
+            self.assertEqual(output.read_bytes(), b"previous package")
+            report = str(caught.exception)
+            self.assertIn("Fix:", report)
+            self.assertIn("was not written or updated", report)
+            self.assertNotIn("SYNTHETIC_PRIVATE_VALUE", report)
+            return report
+
+    def test_required_text_fields_fail_before_output(self):
+        for field in ("name", "display_name", "description"):
+            with self.subTest(field=field, missing=True):
+                report = self.preflight_report({}, remove=(field,))
+                self.assertIn(f"metadata.json:{field}: missing required field", report)
+                self.assertEqual(report.count("[preflight/"), 1)
+            for value in (None, False, 1, [], {}, "", "   ", "\ud800"):
+                with self.subTest(field=field, value=value):
+                    report = self.preflight_report({field: value})
+                    self.assertIn(f"metadata.json:{field}:", report)
+                    self.assertEqual(report.count("[preflight/"), 1)
+
+    def test_both_boolean_fields_reject_non_booleans(self):
+        for field in ("database_required", "private_database"):
+            for value in ("false", "true", 0, 1, None, [], {}):
+                with self.subTest(field=field, value=value):
+                    report = self.preflight_report({field: value})
+                    self.assertIn(f"metadata.json:{field}: requires a JSON boolean", report)
+                    self.assertEqual(report.count("[preflight/"), 1)
+
+    def test_boolean_values_and_omitted_optional_field_preserve_success(self):
+        for required in (False, True):
+            for private in ("absent", False, True):
+                with self.subTest(required=required, private=private), self.fixture(declaration="absent") as (root, source, dist):
+                    snapshot, _, _ = pack.source_files(source.read_bytes())
+                    metadata = json.loads(snapshot["metadata.json"])
+                    metadata["database_required"] = required
+                    metadata.update(variables=[], repositories=[], functions=[], site_variables=[],
+                                    custom_extension={"unowned_flag": "false"})
+                    if private != "absent":
+                        metadata["private_database"] = private
+                    snapshot["metadata.json"] = json.dumps(metadata).encode()
+                    source.write_bytes(pack.archive(snapshot))
+                    target = root / "install.zip"
+                    result = pack.pack(source, dist, "app.js", target)
+                    self.assertEqual(result["database_required"], required)
+                    with zipfile.ZipFile(target) as archive:
+                        manifest = json.loads(archive.read("install.json"))
+                        self.assertEqual(manifest["metadata"], metadata)
+                        self.assertEqual("private_database" in manifest, private != "absent")
+
+    def test_sql_types_missing_files_and_database_conflict(self):
+        for field in ("schema", "seeds"):
+            for value in (None, False, 1, [], {}, ""):
+                with self.subTest(field=field, value=value):
+                    report = self.preflight_report({field: value})
+                    self.assertIn(f"metadata.json:{field}: requires a nonempty string", report)
+                    self.assertEqual(report.count("[preflight/"), 1)
+        report = self.preflight_report({"database_required": True,
+                                       "schema": "SYNTHETIC_PRIVATE_VALUE/schema.sql",
+                                       "seeds": "SYNTHETIC_PRIVATE_VALUE/seed.sql"})
+        self.assertEqual(report.count("declared SQL file is missing"), 2)
+        self.assertLess(report.index("metadata.json:schema:"), report.index("metadata.json:seeds:"))
+        report = self.preflight_report({"schema": "db/schema.sql"}, files={"db/schema.sql": b"CREATE TABLE items(id);"})
+        self.assertIn("SQL materials require database_required=true", report)
+        self.assertIn("do not remove required SQL", report)
+
+    def test_bad_array_parents_do_not_trigger_child_errors(self):
+        for field in ("variables", "repositories", "functions", "site_variables"):
+            for value in (None, False, 1, {}, "text", [None], [42]):
+                with self.subTest(field=field, value=value):
+                    report = self.preflight_report({field: value})
+                    self.assertIn(f"metadata.json:{field}", report)
+                    self.assertEqual(report.count("[preflight/"), 1)
+                    self.assertNotIn(".placeholder", report)
+                    self.assertNotIn(".source_dir", report)
+
+    def test_variable_fields_and_declared_file_locations(self):
+        base = {"name": "APP_NAME", "description": "App name", "placeholder": "__APP__", "files": ["src/app.js"]}
+        for field in ("name", "description", "placeholder", "files"):
+            variable = {key: value for key, value in base.items() if key != field}
+            with self.subTest(missing=field):
+                report = self.preflight_report({"variables": [variable]}, files={"src/app.js": b"__APP__"})
+                self.assertIn(f"metadata.json:variables[0].{field}:", report)
+                self.assertEqual(report.count("[preflight/"), 1)
+        for value in (None, "src/app.js", [], [None], [{}], ["SYNTHETIC_PRIVATE_VALUE.js"]):
+            with self.subTest(files=value):
+                report = self.preflight_report({"variables": [{**base, "files": value}]})
+                self.assertIn("metadata.json:variables[0].files", report)
+                self.assertEqual(report.count("[preflight/"), 1)
+        report = self.preflight_report({"variables": [base]}, files={"src/app.js": b"no placeholder"})
+        self.assertIn("variables[0].files[0]: Source placeholder missing", report)
+
+    def test_repository_shapes_references_and_source_presence(self):
+        for repo, location in [({}, "repositories[0].key"),
+                               ({"key": [], "path": "."}, "repositories[0].key"),
+                               ({"key": "app", "path": []}, "repositories[0].path"),
+                               ({"key": "app", "path": "../outside"}, "repositories[0].path"),
+                               ({"key": "app", "path": "SYNTHETIC_PRIVATE_VALUE"}, "repositories[0].path"),
+                               ({"key": "app", "path": ".", "variables": {}}, "repositories[0].variables")]:
+            with self.subTest(location=location, repo=repo):
+                report = self.preflight_report({"repositories": [repo]})
+                self.assertIn(f"metadata.json:{location}:", report)
+        report = self.preflight_report({"web_repository": "SYNTHETIC_PRIVATE_VALUE"})
+        self.assertIn("web_repository: references an undeclared repository", report)
+        report = self.preflight_report({"repositories": [{"key": "app", "path": "."}] * 2})
+        self.assertIn("repositories[1].key: duplicate repository key", report)
+
+    def test_function_fields_and_missing_repository_or_go_source(self):
+        base = {"key": "api", "name": "API", "repository": "app", "source_dir": "/"}
+        repositories = [{"key": "app", "path": "."}]
+        for field in ("key", "name", "repository", "source_dir"):
+            for value in (None, 0, [], ""):
+                with self.subTest(field=field, value=value):
+                    report = self.preflight_report({"repositories": repositories, "functions": [{**base, field: value}]},
+                                                   files={"main.go": b"package main"})
+                    self.assertIn(f"metadata.json:functions[0].{field}:", report)
+                    self.assertEqual(report.count("[preflight/"), 1)
+        report = self.preflight_report({"functions": [base]})
+        self.assertIn("functions[0].repository: Function repository missing", report)
+        report = self.preflight_report({"repositories": repositories, "functions": [base]})
+        self.assertIn("functions[0].source_dir: Function entry Go source missing", report)
+        report = self.preflight_report({"repositories": repositories, "functions": [base, base]}, files={"main.go": b"package main"})
+        self.assertIn("functions[1].key: duplicate function key", report)
+
+    def test_function_database_and_other_object_declarations(self):
+        base = {"key": "api", "name": "API", "repository": "app", "source_dir": "/"}
+        for field in ("parameters", "cors", "database"):
+            report = self.preflight_report({"repositories": [{"key": "app", "path": "."}], "functions": [{**base, field: []}]},
+                                           files={"main.go": b"package main"})
+            self.assertIn(f"functions[0].{field}: requires an object", report)
+        for database, expected in [({}, "endpoint_parameter: missing required field"),
+                                   ({"endpoint_parameter": "X", "token_parameter": "X"}, "requires distinct endpoint and token"),
+                                   ({"endpoint_parameter": "X", "token_parameter": "Y"}, "requires database_required=true")]:
+            report = self.preflight_report({"repositories": [{"key": "app", "path": "."}], "functions": [{**base, "database": database}]},
+                                           files={"main.go": b"package main"})
+            self.assertIn(expected, report)
+
+    def test_material_declaration_errors_have_actionable_feedback(self):
+        for value in (None, True, 1, [], {}, "other", "template-files"):
+            with self.subTest(value=value):
+                report = self.preflight_report({"file_seeds": value})
+                self.assertIn("metadata.json:file_seeds:", report)
+                self.assertEqual(report.count("[preflight/"), 1)
+        report = self.preflight_report({}, files={"template-files/a.txt": b"asset"})
+        self.assertIn("file_seeds: missing declaration", report)
+
+    def test_reports_are_bounded_and_independent_of_metadata_key_order(self):
+        for count in (pack.MAX_PREFLIGHT_ISSUES, pack.MAX_PREFLIGHT_ISSUES + 1):
+            report = self.preflight_report({"variables": [None] * count})
+            self.assertEqual(report.count("[preflight/"), pack.MAX_PREFLIGHT_ISSUES)
+            self.assertEqual("More problems found" in report, count > pack.MAX_PREFLIGHT_ISSUES)
+        bad = {"name": 1, "private_database": "SYNTHETIC_PRIVATE_VALUE", "schema": []}
+        self.assertEqual(self.preflight_report(bad), self.preflight_report(dict(reversed(list(bad.items())))))
+
+    def test_cli_aggregates_extended_errors_without_leaking_or_overwriting(self):
+        with self.fixture(declaration="absent") as (root, source, _):
+            snapshot, _, _ = pack.source_files(source.read_bytes())
+            metadata = json.loads(snapshot["metadata.json"])
+            del metadata["name"]
+            metadata.update(database_required=True, private_database="SYNTHETIC_PRIVATE_VALUE", schema="SYNTHETIC_PRIVATE_VALUE.sql")
+            snapshot["metadata.json"] = json.dumps(metadata).encode()
+            del snapshot["showcase/cover.webp"]
+            source.write_bytes(pack.archive(snapshot))
+            output = root / "install.zip"
+            for existing in (False, True):
+                if existing:
+                    output.write_bytes(b"previous package")
+                result = subprocess.run([sys.executable, "-B", str(spec.origin), "--source", str(source),
+                                         "--dist", str(root / "does-not-exist"), "--entry", "app.js", "--output", str(output)],
+                                        capture_output=True, text=True, check=False)
+                self.assertEqual(result.returncode, 1)
+                self.assertEqual(result.stdout, "")
+                self.assertEqual(result.stderr.count("[preflight/"), 4)
+                self.assertNotIn("Traceback", result.stderr)
+                self.assertNotIn("SYNTHETIC_PRIVATE_VALUE", result.stderr)
+                locations = ["metadata.json:name:", "metadata.json:private_database:", "metadata.json:schema:", "showcase/cover.webp:"]
+                offsets = [result.stderr.index(location) for location in locations]
+                self.assertEqual(offsets, sorted(offsets))
+                if existing:
+                    self.assertEqual(output.read_bytes(), b"previous package")
+                else:
+                    self.assertFalse(output.exists())
+
+    def test_preflight_collects_independent_errors_without_touching_dist_or_output(self):
+        for value in ("SYNTHETIC_PRIVATE_VALUE", None, 0):
+            with self.subTest(value=value), self.fixture(declaration="absent") as (root, source, _):
+                snapshot, _, _ = pack.source_files(source.read_bytes())
+                metadata = json.loads(snapshot["metadata.json"])
+                metadata.update(database_required=value, schema="schema.sql")
+                snapshot["metadata.json"] = json.dumps(metadata).encode()
+                snapshot["schema.sql"] = b"CREATE TABLE items(id);"
+                del snapshot["showcase/cover.webp"], snapshot["showcase/prompt.md"]
+                source.write_bytes(pack.archive(snapshot))
+                output = root / "install.zip"
+                output.write_bytes(b"previous package")
+                # Path(object()) would fail if the packer reached the build input.
+                with self.assertRaises(pack.TemplatePreflightError) as caught:
+                    pack.pack(source, object(), "app.js", output)
+                report = str(caught.exception)
+                self.assertEqual(report.count("[preflight/"), 3)
+                self.assertLess(report.index("database_required"), report.index("showcase/cover.webp"))
+                self.assertLess(report.index("showcase/cover.webp"), report.index("showcase/prompt.md"))
+                self.assertIn("Declared schema/seeds require true", report)
+                self.assertIn("do not remove required SQL", report)
+                self.assertNotIn("SYNTHETIC_PRIVATE_VALUE", report)
+                self.assertIn("was not written or updated", report)
+                self.assertEqual(output.read_bytes(), b"previous package")
+
+    def test_preflight_cli_reports_metadata_failures_once_without_leaking_values(self):
+        for raw in (None, b" " * (pack.MIB + 1), b"\xff", b'{"SYNTHETIC_PRIVATE_VALUE":',
+                    b'{"SYNTHETIC_PRIVATE_VALUE":1,"SYNTHETIC_PRIVATE_VALUE":2}', b"[]", b"null"):
+            with self.subTest(raw_size=None if raw is None else len(raw)), self.fixture(declaration="absent") as (root, source, _):
+                source.write_bytes(pack.archive({} if raw is None else {"metadata.json": raw}))
+                output = root / "install.zip"
+                output.write_bytes(b"previous package")
+                result = subprocess.run([sys.executable, "-B", str(spec.origin), "--source", str(source),
+                                         "--dist", str(root / "does-not-exist"), "--entry", "app.js",
+                                         "--output", str(output)], capture_output=True, text=True, check=False)
+                self.assertEqual(result.returncode, 1)
+                self.assertEqual(result.stdout, "")
+                self.assertEqual(result.stderr.count("[preflight/metadata]"), 1)
+                self.assertNotIn("Traceback", result.stderr)
+                self.assertNotIn("SYNTHETIC_PRIVATE_VALUE", result.stderr)
+                self.assertIn("Fix:", result.stderr)
+                self.assertEqual(output.read_bytes(), b"previous package")
+
+    def test_preflight_cli_lists_material_errors_and_does_not_create_output(self):
+        with self.fixture(declaration="absent") as (root, source, dist):
+            source.write_bytes(pack.archive({"metadata.json": b'{"name":"demo","display_name":"Demo","description":"Synthetic","database_required":"false"}',
+                                            "showcase/preview.html": b"preview"}))
+            output = root / "install.zip"
+            result = subprocess.run([sys.executable, "-B", str(spec.origin), "--source", str(source),
+                                     "--dist", str(dist), "--entry", "app.js", "--output", str(output)],
+                                    capture_output=True, text=True, check=False)
+            self.assertEqual(result.returncode, 1)
+            self.assertEqual(result.stdout, "")
+            self.assertEqual(result.stderr.count("[preflight/"), 3)
+            self.assertNotIn("Traceback", result.stderr)
+            self.assertIn("not publishing approval", result.stderr)
+            self.assertFalse(output.exists())
+
+    def test_source_safety_still_precedes_preflight(self):
+        for data in (b"not a ZIP", pack.archive({"../unsafe": b"file"})):
+            with self.subTest(data_size=len(data)), self.fixture(declaration="absent") as (root, source, _):
+                source.write_bytes(data)
+                with patch.object(pack, "preflight") as preflight:
+                    with self.assertRaises(ValueError):
+                        pack.pack(source, object(), "app.js", root / "install.zip")
+                    preflight.assert_not_called()
+                self.assertFalse((root / "install.zip").exists())
+
+    def test_preflight_preview_limit_and_combined_showcase_errors(self):
+        with self.fixture(declaration="absent") as (root, source, dist):
+            snapshot, _, _ = pack.source_files(source.read_bytes())
+            snapshot["showcase/preview.html"] = b" " * 500_000
+            source.write_bytes(pack.archive(snapshot))
+            pack.pack(source, dist, "app.js", root / "allowed.zip")
+            snapshot["showcase/preview.html"] += b" "
+            del snapshot["showcase/cover.webp"], snapshot["showcase/prompt.md"]
+            snapshot["metadata.json"] = b'{"name":"demo","display_name":"Demo","description":"Synthetic"}'
+            source.write_bytes(pack.archive(snapshot))
+            with self.assertRaises(pack.TemplatePreflightError) as caught:
+                pack.pack(source, object(), "app.js", root / "rejected.zip")
+            self.assertEqual(str(caught.exception).count("[preflight/"), 4)
+            self.assertIn("exceeds 500,000 bytes", str(caught.exception))
+            self.assertFalse((root / "rejected.zip").exists())
+
+    def test_preflight_keeps_without_source_and_empty_material_semantics(self):
+        with self.fixture(declaration="absent") as (root, source, dist):
+            snapshot, _, _ = pack.source_files(source.read_bytes())
+            del snapshot["showcase/prompt.md"]
+            snapshot["showcase/preview.html"] = snapshot["showcase/cover.webp"] = b""
+            source.write_bytes(pack.archive(snapshot))
+            result = pack.pack(source, dist, "app.js", root / "allowed.zip", True)
+            self.assertFalse(result["has_source"])
+            with self.assertRaisesRegex(pack.TemplatePreflightError, "showcase/prompt.md: missing"):
+                pack.pack(source, object(), "app.js", root / "rejected.zip")
+            self.assertFalse((root / "rejected.zip").exists())
+
+    def test_fixing_showcase_does_not_skip_seed_path_rejection(self):
+        with self.fixture({"%2e%2e/a": b"asset"}) as (root, source, _):
+            snapshot, _, _ = pack.source_files(source.read_bytes())
+            cover = snapshot.pop("showcase/cover.webp")
+            source.write_bytes(pack.archive(snapshot))
+            output = root / "install.zip"
+            with self.assertRaisesRegex(pack.TemplatePreflightError, "showcase/cover.webp: missing"):
+                pack.pack(source, object(), "app.js", output)
+            self.assertFalse(output.exists())
+            snapshot["showcase/cover.webp"] = cover
+            source.write_bytes(pack.archive(snapshot))
+            with self.assertRaisesRegex(ValueError, "Invalid template file path"):
+                pack.pack(source, object(), "app.js", output)
+            self.assertFalse(output.exists())
+
     def test_source_choice_preserves_installation_and_sql_mapping(self):
         with tempfile.TemporaryDirectory() as root:
             root = Path(root)
-            metadata = {"name": "demo", "database_required": True, "schema": "db/schema.sql", "seeds": "db/seed.sql", "variables": [{"name": "APP_NAME", "placeholder": "__APP__", "files": ["db/seed.sql", "src/app.js"]}]}
+            metadata = {"name": "demo", "display_name": "Demo", "description": "Synthetic SQL fixture", "database_required": True, "schema": "db/schema.sql", "seeds": "db/seed.sql", "variables": [{"name": "APP_NAME", "description": "App name", "placeholder": "__APP__", "files": ["db/seed.sql", "src/app.js"]}]}
             source = root / "source.zip"
-            source.write_bytes(pack.archive({"metadata.json": json.dumps(metadata).encode(), "showcase/preview.html": b"<p>synthetic demo</p>", "showcase/cover.webp": b"cover", "showcase/prompt.md": b"build demo", "db/schema.sql": b"CREATE TABLE items(name TEXT);", "db/seed.sql": b"INSERT INTO items VALUES('__APP__');", "src/app.js": b"source"}))
+            source.write_bytes(pack.archive({"metadata.json": json.dumps(metadata).encode(), "showcase/preview.html": b"<p>synthetic demo</p>", "showcase/cover.webp": b"cover", "showcase/prompt.md": b"build demo", "db/schema.sql": b"CREATE TABLE items(name TEXT);", "db/seed.sql": b"INSERT INTO items VALUES('__APP__');", "src/app.js": b"source __APP__"}))
             dist = root / "dist"
             dist.mkdir()
             (dist / "app.js").write_text("built demo")
@@ -61,7 +370,7 @@ class SharedTemplatePackTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as root:
             root = Path(root)
             variable = {"name": "FUNCTION_ID:api", "placeholder": "__API__", "description": "Backend", "files": ["app.js"]}
-            metadata = {"name": "backend", "database_required": True, "private_database": True,
+            metadata = {"name": "backend", "display_name": "Backend", "description": "Synthetic backend", "database_required": True, "private_database": True,
                         "web_repository": "app", "repositories": [{"key": "app", "path": "repositories/app", "variables": [variable]}],
                         "functions": [{"key": "api", "name": "API", "repository": "app", "source_dir": "/functions/fn-old", "database": {"endpoint_parameter": "SQLITE_ENDPOINT", "token_parameter": "SQLITE_TOKEN"}}],
                         "site_variables": [variable]}
@@ -87,7 +396,7 @@ class SharedTemplatePackTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             variable = {"name": "FUNCTION_ID:api", "placeholder": "__API__", "description": "Backend", "files": ["app.js"]}
-            metadata = {"name": "backend-files", "database_required": True, "private_database": True,
+            metadata = {"name": "backend-files", "display_name": "Backend files", "description": "Synthetic backend and files", "database_required": True, "private_database": True,
                         "file_seeds": "template-files", "web_repository": "app",
                         "repositories": [{"key": "app", "path": "repositories/app", "variables": [variable]}],
                         "functions": [{"key": "api", "name": "API", "repository": "app", "source_dir": "/functions/api"}],
