@@ -4,12 +4,14 @@ description: 使用 Tiana 创建和管理 Go 后端服务，读取及保存 Git 
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.18"
+  version: "1.0.19"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-function
 ---
 
 # Tiana Function
+
+标准源码数据连接失败时，阅读 `tiana` 技能的“兼容传输”指引；结果未知时保留原请求 ID 和源码提交，先查询原操作。
 
 本 skill 负责后端服务的创建与管理、源码、运行参数、用户密钥库、Go 接口、数据库与文件存储访问、编译发布。为 Web 开发后端时，接收 `tiana-web` 技能确定的 Git ID、接口需求和数据依赖；完成后返回服务 ID、source_dir、发布回执、接口契约和参数生效结果，由 Web skill 继续前端接入、绑定、发布及分享验收。
 

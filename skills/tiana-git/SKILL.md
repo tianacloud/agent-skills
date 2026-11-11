@@ -4,7 +4,7 @@ description: 使用 Tiana Git 管理 Git 实例和原生仓库，关联项目远
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.18"
+  version: "1.0.19"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-git
 ---
@@ -36,6 +36,8 @@ CLI 仍管理检查缓存和共同的 24 小时提醒额度；该额度不限制
 4. 克隆、fetch、commit、branch 和 push 使用原生 Git。Git refs 与 SQLite 数据库分支是不同对象。保持已有 remote、跟踪设置及用户工作区；新远程名称冲突时先核对目标。
 
 ## 同步应用源码
+
+标准 Git 数据连接失败时，阅读 `tiana` 技能的“兼容传输”指引；可通过 `tiana --transport compat git` 的直接子命令访问原 remote。结果未知的 push 先核对实际推送目标的 ref。
 
 阅读 [源码与版本](references/source-releases.md)，确认项目托管选择和实际推送范围。全新 Tiana 应用创建自己的 Tiana Git；已有外部仓库首次同步时确认用户选择。提交源码与锁文件，排除凭据，普通推送并核验远端对应版本引用。
 
