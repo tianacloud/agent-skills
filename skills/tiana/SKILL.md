@@ -4,7 +4,7 @@ description: 使用 Tiana Cloud 管理实例、安装 CLI、登录和恢复账�
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.19"
+  version: "1.0.18"
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana
 ---
 
@@ -50,7 +50,5 @@ CLI 仍管理检查缓存和共同的 24 小时提醒额度；该额度不限制
 4. 创建中断且保留待完成请求时，用相同产品、名称和参数恢复原请求；已经成功时用 show 核实原实例，不能通过重复创建修复连接。
 
 ## 凭据与结果
-
-标准方式出现 SQLite、Git 或发布数据连接错误时，阅读[兼容传输](references/compat-transport.md)，按同一目标尝试恢复；管理 API 错误继续按管理流程处理。
 
 CLI 保存账号登录态。登录失败或凭据过期时复用原实例完成登录；不读取凭据文件、向命令手动注入 Token 或把密钥写入源码。资源、Endpoint、账号权限及结果不明的处理见[实例与凭据](references/instances-and-tokens.md)。以实际返回的状态和错误判断结果，不把未执行的操作报告为已完成。

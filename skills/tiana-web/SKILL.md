@@ -4,14 +4,12 @@ description: 使用 Tiana 创建、修改、预览和发布 Web 应用。用户�
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.19"
+  version: "1.0.18"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-web
 ---
 
 # Tiana Web
-
-标准发布数据连接失败时，阅读 `tiana` 技能的“兼容传输”指引；结果未知时先用原发布回执查询状态。
 
 安装、登录和通用实例管理见 `tiana` 技能，SQL 与连接见 `tiana-sqlite` 技能，后端服务见 `tiana-function` 技能，源码见 `tiana-git` 技能。
 
