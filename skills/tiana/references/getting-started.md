@@ -1,6 +1,6 @@
 # 开始使用
 
-在 Agent 实际执行命令的环境检查 `tiana version`。本技能要求 CLI 1.0.17 或更新正式版，具备分步登录、sqlite、git、web、file、list-template/init-template 和 version check。CLI 不存在或版本低于基线时，自动执行下面的 npm latest 安装并重新核验；版本无法核实时先排查实际错误，核验通过后再执行资源操作。
+在 Agent 实际执行命令的环境检查 `tiana version`。本技能要求 CLI 1.0.24 或更新正式版，具备分步登录、sqlite、git、web、file、list-template/init-template 和 version check。CLI 不存在或版本低于基线时，自动执行下面的 npm latest 安装并重新核验；版本无法核实时先排查实际错误，核验通过后再执行资源操作。
 
 连接器环境中，安装或更新前先按[宿主说明](connector-updates.md)定位实际 Node/npm、CLI 安装 prefix 和技能根目录，沿用宿主运行环境。
 

@@ -138,7 +138,18 @@ tiana web status WEB_ID --json
 
 当前内容查询的 `state` 是应用运行状态；回执查询的 `state` 是上传操作状态。JSON 外层 `status: succeeded` 只表示这次查询成功。当前查询的 `publish` / `publish_id` 为空是合理的，不从摘要推导发布 ID。配套新版 CLI 的 `query_kind: current / receipt` 可区分两类查询；缺少该附加字段时依据是否传入 `--publish-id` 判断。
 
-4. 托管入口使用 MGR/CLI 返回的 `endpoint`，形式为 `https://<id>.<site-host>/web/<id>/`；应用主机根地址也会转向该入口。Console 详情为 `/console/web/<id>`。报告 Web/实例 ID、publish_id、归档校验和、上传与激活状态，以及可选数据库/Git 关联。环境不具备候选能力时报告具体阻塞并提供本地开发地址；不自行修改部署。
+4. 确认目标内容正在服务后，使用发布或状态查询实际返回的地址交付：
+
+| 字段 | 用途与展示 |
+| --- | --- |
+| `endpoint` | 浏览器使用应用，展示“打开应用”链接 |
+| `console_url` | 管理应用与关联资源，展示“管理应用”链接 |
+| `mini_program_url` | 展示“在小程序中打开”链接；它是 HTTPS 入口页，手机浏览器由页面唤起微信，电脑可扫码 |
+| `mini_program_code_url` | 应用的小程序码图片；宿主支持时以 Markdown 图片展示，并保留图片链接 |
+
+小程序入口与扫码面向 online。图片加载依赖宿主的远程图片能力，不能仅凭取得 URL 宣称已经扫码或进入应用；图片无法显示时提供链接。链接本身不授予应用使用资格。邀请他人申请使用按[应用访问分享](app-sharing.md)取得永久邀请链接，独立安装副本按[模板分享](share-template.md)交付安装链接。
+
+同时报告 Web/实例 ID、publish_id、归档校验和、上传与激活状态，以及可选数据库/Git 关联。地址使用本次实际返回值，不从托管域名猜管理或小程序域名。环境不具备配套能力时说明实际限制。
 
 ## 应用列表与删除
 

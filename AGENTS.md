@@ -285,3 +285,8 @@ and local-state/login fixes. Keep all four skill metadata/update-check versions,
 package/lock/plugin and Connector metadata aligned. The CLI version floor is
 independent of SDK Git tags and package versions; SDK references are unchanged.
 Verify canonical distribution and fresh registry installation after publication.
+
+Web delivery uses the four addresses returned by CLI 1.0.24 or newer; their distinct
+purposes and host-dependent image display are documented in csr-apps.md. Current-App
+invitations use app-sharing.md and web share get/set; installable template sharing
+continues through share-template.md. Publication and each setting have separate results.

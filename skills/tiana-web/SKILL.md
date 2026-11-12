@@ -1,10 +1,10 @@
 ---
 name: tiana-web
-description: 使用 Tiana 创建、修改、预览和发布 Web 应用。用户要求制作账单、笔记、日历或其他 Web app 时使用；根据实时模板目录和需求决定采用模板或直接开发，并按业务选择直接连接 SQLite 或通过后端服务访问数据库。用户要求把已有 Web app 发布为模板、分享可安装应用链接时也使用。
+description: 使用 Tiana 创建、修改、预览和发布 Web 应用。用户要求制作账单、笔记、日历或其他 Web app 时使用；根据实时模板目录和需求决定采用模板或直接开发，并按业务选择直接连接 SQLite 或通过后端服务访问数据库。用户要求管理应用分享或自动批准、把已有 Web app 发布为模板、分享可安装应用链接时也使用。
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.21"
+  version: "1.0.22"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-web
 ---
@@ -35,6 +35,10 @@ CLI 管理检查缓存和共同的 24 小时提醒额度。按更新流程处理
 ## 将已有应用发布为模板
 
 用户要求“把某个 Web App 发布为模板”或分享可安装链接时，阅读[用户模板分享](references/share-template.md)，在独立副本中整理源码、结构与个人无关 seed，再打包、上传并交付安装链接。默认包含源码，可让用户选择仅安装；必须制作预览和封面，并按[预览的响应式展示与验收](references/share-template.md#预览的响应式展示与验收)完成 PC 和手机适配。无法判断 seed 是否涉及个人信息时，先让用户选择。用户提供分享链接要求做同款时，也按该文档取得源码并开始新工程。此分支直接处理指定应用。
+
+## 允许他人使用当前应用
+
+用户要求开启或关闭应用分享、自动批准，或取得申请使用链接时，阅读[应用访问分享](references/app-sharing.md)，通过 `web share get/set` 查询和修改。发布应用、分享设置和自动批准分别确认；按用户要求修改相应设置。
 
 ## 开发与普通发布：查询当前模板目录
 
