@@ -9,23 +9,39 @@ canonical Skills. It connects to online:
 and signs out with `tiana logout`. `authWaitForExit` keeps login running until
 browser approval completes. `authUrlDomain` identifies the online Console.
 macOS and Linux use `npm` / `tiana`; Windows uses `npm.cmd` / `tiana.cmd`
-to select the npm command shims explicitly. Node.js 22 is managed by WorkBuddy,
-and npm installs the matching native platform dependency. Keep optional
+to select the npm command shims explicitly. WorkBuddy manages Node.js 22 or newer;
+npm installs the matching native platform dependency. Keep optional
 dependencies enabled. Tiana Git operations additionally require native Git.
 The declared minimum WorkBuddy version (4.24.0) covers these fields and localized
 metadata; their meanings are documented by [WorkBuddy](https://open.workbuddy.cn/docs/connector).
 
 Use CLI 1.0.17 or a newer stable release. On first use in a session, Skills check
-the installed CLI and npm updates, then automatically install newer stable CLI
-and Skills packages, regardless of should_notify. The Connector's initial
-version does not cap either package. CLI upgrades must use the active managed
-Node/npm installation and prefix. A full Skills installation updates existing
+the installed CLI and npm updates. Missing or below-baseline CLI installations
+may be repaired automatically. Other CLI and Skills upgrades require user
+confirmation of the package and target version before installation; declining
+or leaving the prompt unanswered keeps the installed versions. Skills upgrades
+replace existing instructions and add newly shipped skills. Respect the CLI's
+should_notify reminder flag as described in the shared update workflow. CLI
+upgrades must use the active managed Node/npm installation and prefix. A full Skills installation updates existing
 skills and adds every skill shipped in the new package; verify host loading
-after reload. See [Connector and host automatic updates](../skills/tiana/references/connector-updates.md).
+after reload. See [Connector and host updates](../skills/tiana/references/connector-updates.md).
 
 Status uses the existing account and quota command. A successful result contains
 `Quota period:`; a login, network or quota-query failure makes the status check
 fail. In particular, quota unavailability does not imply credentials were deleted.
+
+## npm connectivity
+
+If initialization or an update cannot reach `https://registry.npmjs.org/`, report
+the actual error and check connectivity from WorkBuddy's managed Node/npm
+environment with `npm ping --registry=https://registry.npmjs.org/` (`npm.cmd` on
+Windows). Corporate proxies or firewalls may block the registry. Check the host
+proxy and npm proxy/https-proxy configuration, and ask the network administrator
+to allow the registry and configure the required trusted CA. Redact proxy
+credentials from diagnostics; keep certificate verification enabled and retain
+the configured registry. Retry initialization after connectivity is restored.
+For update failures, follow the shared workflow's conditions for continuing
+with the installed versions. This failure does not establish a Tiana login issue.
 
 ## Build and verify
 
@@ -43,6 +59,11 @@ TIANA_TEST_CLI_BINARY=/absolute/path/to/tiana npm run test:connector-auth
 ZIP has `connector-meta.json`, `cli.json`, `icon.png` and `skills/` at its root.
 The script prints the Connector ZIP absolute path last. The Connector installs
 CLI through npm; it does not bundle a native CLI binary.
+
+When publishing substantive Skills changes to npm, notify the WorkBuddy platform
+of both the Skills and Connector version numbers and submit the corresponding
+Connector ZIP for review. Include those versions and the review changes in the
+submission notes.
 
 The process fixture runs the real CLI against a local HTTP fixture, exercising
 delayed approval, status, quota failure, logout and cancellation. It does not

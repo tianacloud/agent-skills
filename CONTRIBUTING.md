@@ -6,7 +6,8 @@ its build/persistence/browser tests belong to tianacloud/template-apps.
 
 Every new Tiana skill must participate in the shared first-use update flow in
 [the Tiana entrypoint](skills/tiana/SKILL.md#每个会话一次的更新检查). CLI and
-Skills updates are independent of Connector releases. The installer discovers
+Skills upgrades require user confirmation once the CLI baseline is met.
+The installer discovers
 all bundled skill directories; keep distribution metadata aligned with them so
 new skills ship in npm and Connector archives and are installed during updates.
 
@@ -84,6 +85,10 @@ review. GitHub Actions validates and tests, packs one npm tarball, retains it
 with its integrity descriptor and WorkBuddy archives, then publishes that exact
 artifact. Stable releases use latest; prereleases use next. Update discovery
 checks latest.
+
+For substantive Skills changes published to npm, notify the WorkBuddy platform
+of the Skills and Connector version numbers and submit the corresponding
+Connector archive for review. See the [Connector submission guide](docs/workbuddy-connector.md).
 
 Manual dispatch accepts an existing matching tag and defaults to dry_run=true.
 It builds and verifies without publishing. After publication, the workflow

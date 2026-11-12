@@ -50,15 +50,13 @@ CLI 主包及当前系统的原生平台包全部来自 npm，提供 tiana 和 g
 
 普通用户可以直接要求：“执行 `npx -y @tianacloud/agent-skills@latest install` 安装 Tiana skills，然后使用 tiana 创建一个账单应用。”未配置环境时，CLI 使用 online 公有域名与系统 CA；首次登录按 Agent 提供的浏览器链接授权。
 
-开发者也可以向已运行的 Agent 要求：“设置 `TIANA_API_ORIGIN=https://console.tianacloud-staging.net`，安装 Tiana skills，然后创建一个账单应用。”技能会在本任务每次 CLI/Git 调用中传递这一选择。staging CLI 自动加载内置 CA；开发者需已有 VPN/DNS 和浏览器 CA 信任。仅在安装器子进程中 export 一次不会配置后续命令。
-
 WorkBuddy Connector 固定 online，配置和当前使用说明见 [Connector](https://github.com/tianacloud/agent-skills/blob/main/docs/workbuddy-connector.md)。
 
 ## 检查与更新
 
-各 Tiana 技能调用 CLI 检查两个 npm 包的 latest。两个包各自最多每 24 小时尝试检查一次，CLI 普通终端与 Skills 共用每 24 小时一次提醒。Agent 发现 CLI 或 Skills 新正式版后自动安装并核验，无需再次询问；should_notify 不限制自动更新。每个会话首次检查后简短报告检查、两个包的更新结果及新增技能。
+各 Tiana 技能调用 CLI 检查两个 npm 包的 latest。两个包各自最多每 24 小时尝试检查一次，CLI 普通终端与 Skills 共用每 24 小时一次提醒。Agent 发现 CLI 或 Skills 新正式版且 should_notify=true 时展示版本并询问用户，仅在用户同意后安装并核验；用户拒绝或尚未回复时保留当前版本。CLI 缺失或低于 1.0.17 时可自动安装并核验基线。每个会话首次检查后简短报告检查、两个包的更新结果及新增技能。
 
-CLI 在当前实际使用的安装位置升级并核验版本和所需命令；Skills 安装新版包中的全部技能，覆盖已有技能并补齐新增技能，核验 metadata.version 与宿主加载结果。Connector 只分发初始版本，后续两个包独立更新，无需等待 Connector 发版。已加载的会话不会因磁盘替换而自动更换指令；需要重载时明确提示。具体步骤及失败后的继续条件见 [开始使用](skills/tiana/references/getting-started.md#更新)，各宿主安装位置及加载核验见[连接器与宿主中的自动更新](skills/tiana/references/connector-updates.md)。
+CLI 在当前实际使用的安装位置升级并核验版本和所需命令；Skills 安装新版包中的全部技能，覆盖已有技能并补齐新增技能，核验 metadata.version 与宿主加载结果。实质性技能变更发布到 npm 时，同步向 WorkBuddy 平台告知 Skills 与 Connector 版本号并提交对应连接器包审核。已加载的会话不会因磁盘替换而自动更换指令；需要重载时明确提示。具体步骤及失败后的继续条件见 [开始使用](skills/tiana/references/getting-started.md#更新)，各宿主安装位置及加载核验见[连接器与宿主中的更新](skills/tiana/references/connector-updates.md)。
 
 ## 维护与其他分发格式
 

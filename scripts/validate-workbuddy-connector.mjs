@@ -25,7 +25,7 @@ try {
   assert.equal(meta.minWorkbuddyVersion, '4.24.0');
   for (const field of ['name', 'name_zh', 'name_en', 'description', 'description_zh', 'description_en']) assert.ok(meta[field]);
   for (const field of ['examples_zh', 'examples_en']) assert.ok(meta[field].length >= 2);
-  assert.deepEqual(cli.runtime, { type: 'node', version: '22' });
+  assert.deepEqual(cli.runtime, { type: 'node', version: '>=22' });
   assert.equal(cli.authWaitForExit, true);
   assert.equal(cli.authUrlDomain, 'console.tianacloud.com');
   for (const platform of ['darwin', 'linux', 'win32']) {

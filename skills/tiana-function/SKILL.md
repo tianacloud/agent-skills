@@ -4,7 +4,7 @@ description: 使用 Tiana 创建和管理 Go 后端服务，读取及保存 Git 
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.20"
+  version: "1.0.21"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-function
 ---
@@ -13,7 +13,7 @@ metadata:
 
 本 skill 负责后端服务的创建与管理、源码、运行参数、用户密钥库、Go 接口、数据库与文件存储访问、编译发布。为 Web 开发后端时，接收 `tiana-web` 技能确定的 Git ID、接口需求和数据依赖；完成后返回服务 ID、source_dir、发布回执、接口契约和参数生效结果，由 Web skill 继续前端接入、绑定、发布及分享验收。
 
-安装、账号与环境选择按 `tiana` 技能。共享各 Tiana 技能本会话的实际更新检查记录；尚未检查时先完成该入口的检查，包括从本会话实际加载的 SKILL.md 的 `metadata.version` 取得 `SKILLS_VERSION`，在同一次 shell 调用中赋值并实际执行 `tiana version check --skills-version "$SKILLS_VERSION" --json` 并按结果自动更新 CLI 和整套 Skills、补齐新增技能并核验，在对话中报告结果与重载要求；`should_notify=false` 也执行。两个包各自比较自身 npm 最新版，检查与安装无需 Tiana 登录；暂不登录或不操作云端资源时仍完成此流程。执行前确认 `tiana function --help` 可用；当前最新正式 CLI 仍缺少命令时，报告配套能力尚未可用及两个包的实际版本，等待已验证的配套发布。
+安装、账号与环境选择按 `tiana` 技能。共享各 Tiana 技能本会话的实际更新检查记录；尚未检查时先完成该入口的检查，包括从本会话实际加载的 SKILL.md 的 `metadata.version` 取得 `SKILLS_VERSION`，在同一次 shell 调用中赋值并实际执行 `tiana version check --skills-version "$SKILLS_VERSION" --json`。发现新正式版且 `should_notify=true` 时展示包名与当前/目标版本，询问用户是否升级，仅在同意后安装并核验；Skills 升级会覆盖已有技能并补齐新增技能，询问时说明这一影响。在对话中报告结果与重载要求；提醒节流和未升级时的继续条件按 `tiana` 技能的“更新”指引。两个包各自比较自身 npm 最新版，检查与安装无需 Tiana 登录；暂不登录或不操作云端资源时仍完成此流程。执行前确认 `tiana function --help` 可用；当前最新正式 CLI 仍缺少命令时，报告配套能力尚未可用及两个包的实际版本，等待已验证的配套发布。
 
 ## 创建与修改
 
