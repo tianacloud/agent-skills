@@ -138,16 +138,29 @@ tiana web status WEB_ID --json
 
 当前内容查询的 `state` 是应用运行状态；回执查询的 `state` 是上传操作状态。JSON 外层 `status: succeeded` 只表示这次查询成功。当前查询的 `publish` / `publish_id` 为空是合理的，不从摘要推导发布 ID。配套新版 CLI 的 `query_kind: current / receipt` 可区分两类查询；缺少该附加字段时依据是否传入 `--publish-id` 判断。
 
-4. 确认目标内容正在服务后，使用发布或状态查询实际返回的地址交付：
+### 发布结果交付
+
+确认目标内容正在服务后，按用途展示发布或状态查询实际返回的全部地址。它们定位同一个 Web 应用：用户既可用浏览器访问，也可通过平台已有的 Tiana 微信小程序访问；小程序按 Web ID 打开该应用的已发布内容，每个 Web 应用直接使用这个平台入口。
 
 | 字段 | 用途与展示 |
 | --- | --- |
 | `endpoint` | 浏览器使用应用，展示“打开应用”链接 |
 | `console_url` | 管理应用与关联资源，展示“管理应用”链接 |
-| `mini_program_url` | 展示“在小程序中打开”链接；它是 HTTPS 入口页，手机浏览器由页面唤起微信，电脑可扫码 |
-| `mini_program_code_url` | 应用的小程序码图片；宿主支持时以 Markdown 图片展示，并保留图片链接 |
+| `mini_program_url` | 同一个 Web 应用在 Tiana 微信小程序中的使用入口，展示“在小程序中打开”链接；它是 HTTPS 入口页，手机浏览器由页面唤起微信，电脑可扫码 |
+| `mini_program_code_url` | 定位该 Web 应用的小程序码图片；宿主支持时以 Markdown 图片展示，并保留图片链接 |
 
-小程序入口与扫码面向 online。图片加载依赖宿主的远程图片能力，不能仅凭取得 URL 宣称已经扫码或进入应用；图片无法显示时提供链接。链接本身不授予应用使用资格。邀请他人申请使用按[应用访问分享](app-sharing.md)取得永久邀请链接，独立安装副本按[模板分享](share-template.md)交付安装链接。
+展示格式示例；示例地址仅为占位，交付时分别整体替换为对应字段的实际返回值：
+
+```markdown
+- [打开应用](https://example.com/endpoint)
+- [管理应用](https://example.com/console_url)
+- [在小程序中打开](https://example.com/mini_program_url)
+- [查看小程序码](https://example.com/mini_program_code_url)
+
+![应用小程序码](https://example.com/mini_program_code_url)
+```
+
+小程序入口与扫码面向 online。地址交付与可用性验证分别报告：取得 URL 后展示入口，未实际验证时说明“小程序跳转待验证”；观察到失败时说明具体失败，保留对应入口供排查。图片加载依赖宿主的远程图片能力，图片无法显示时保留图片链接。登录账号、当前空间与应用资格由实际打开流程核对。邀请他人申请使用按[应用访问分享](app-sharing.md)取得永久邀请链接，独立安装副本按[模板分享](share-template.md)交付安装链接。
 
 同时报告 Web/实例 ID、publish_id、归档校验和、上传与激活状态，以及可选数据库/Git 关联。地址使用本次实际返回值，不从托管域名猜管理或小程序域名。环境不具备配套能力时说明实际限制。
 
