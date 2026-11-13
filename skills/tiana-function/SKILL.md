@@ -4,7 +4,7 @@ description: 使用 Tiana 创建和管理 Go 后端服务，读取及保存 Git 
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.24"
+  version: "1.0.25"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-function
 ---
