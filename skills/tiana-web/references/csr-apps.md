@@ -147,7 +147,7 @@ tiana web status WEB_ID --json
 | `endpoint` | 浏览器使用应用，展示“打开应用”链接 |
 | `console_url` | 管理应用与关联资源，展示“管理应用”链接 |
 | `mini_program_url` | 同一个 Web 应用在 Tiana 微信小程序中的使用入口，展示“在小程序中打开”链接；它是 HTTPS 入口页，手机浏览器由页面唤起微信，电脑可扫码 |
-| `mini_program_code_url` | 定位该 Web 应用的小程序码图片；宿主支持时以 Markdown 图片展示，并保留图片链接 |
+| `mini_program_code_url` | 定位该 Web 应用的小程序码图片；宿主支持时以 Markdown 图片内嵌展示 |
 
 展示格式示例；示例地址仅为占位，交付时分别整体替换为对应字段的实际返回值：
 
@@ -155,12 +155,11 @@ tiana web status WEB_ID --json
 - [打开应用](https://example.com/endpoint)
 - [管理应用](https://example.com/console_url)
 - [在小程序中打开](https://example.com/mini_program_url)
-- [查看小程序码](https://example.com/mini_program_code_url)
 
 ![应用小程序码](https://example.com/mini_program_code_url)
 ```
 
-小程序入口与扫码面向 online。地址交付与可用性验证分别报告：取得 URL 后展示入口，未实际验证时说明“小程序跳转待验证”；观察到失败时说明具体失败，保留对应入口供排查。图片加载依赖宿主的远程图片能力，图片无法显示时保留图片链接。登录账号、当前空间与应用资格由实际打开流程核对。邀请他人申请使用按[应用访问分享](app-sharing.md)取得永久邀请链接，独立安装副本按[模板分享](share-template.md)交付安装链接。
+小程序入口与扫码面向 online。地址交付与可用性验证分别报告：取得 URL 后展示入口，未实际验证时说明“小程序跳转待验证”；观察到失败时说明具体失败，保留对应入口供排查。图片加载依赖宿主的远程图片能力，图片无法显示时说明实际情况，用户可在小程序入口页扫码。登录账号、当前空间与应用资格由实际打开流程核对。邀请他人申请使用按[应用访问分享](app-sharing.md)取得永久邀请链接，独立安装副本按[模板分享](share-template.md)交付安装链接。
 
 同时报告 Web/实例 ID、publish_id、归档校验和、上传与激活状态，以及可选数据库/Git 关联。地址使用本次实际返回值，不从托管域名猜管理或小程序域名。环境不具备配套能力时说明实际限制。
 
