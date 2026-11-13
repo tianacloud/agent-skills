@@ -4,7 +4,7 @@ description: 使用 Tiana 创建、修改、预览和发布 Web 应用。用户�
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.23"
+  version: "1.0.25"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-web
 ---
@@ -67,7 +67,7 @@ CLI 管理检查缓存和共同的 24 小时提醒额度。按更新流程处理
 3. 直接开发时，使用 [固定 index.html](references/index.html)、哈希路由、支持动态账号鉴权的 SDK，按实际数据库结构编写应用及构建清单。
 4. **模板和直接开发都由 Agent 处理数据库初始化。** 模板先执行已配置且存在的 schema，再执行已配置且存在的 seeds；两项独立跳过，SQL 失败先核对结果并停止后续发布。普通源码开发还须按[模板素材文件](references/template-files.md)准备新 Web ID 的预置素材；`web publish` 只发布程序包。
 5. 构建前按[应用图标](references/csr-apps.md#应用图标)准备真实 PNG：使用用户指定图片或已有的合适图标；需要制作时优先调用可用的 AI 生图工具，以应用核心功能设计图形图标。图片保存到源码，查看缩小后的效果，并核验干净构建根目录和发布包中都有该图片。
-6. 按用户需求完成交互和定制。采用后端服务时，先完成[后端交接与接入验证](references/backend-apps.md)，再交付可用前端。安装依赖并从确定源码提交构建；转 `tiana-git` 技能完成源码同步，带回 Git 实例 ID、完整提交号和远端同步结果后，用 `web publish` 发布当前归档，再用 `web status --publish-id` 核对。除非用户仅要求本地开发，按[发布结果交付](references/csr-apps.md#发布结果交付)展示本次返回的浏览器入口、管理入口、小程序入口及小程序码，并报告资源 ID 和对应源码提交；未验证的阶段如实说明。
+6. 按用户需求完成交互和定制。采用后端服务时，先完成[后端交接与接入验证](references/backend-apps.md)，再交付可用前端。安装依赖并从确定源码提交构建；转 `tiana-git` 技能完成源码同步，带回 Git 实例 ID、完整提交号和远端同步结果后，用 `web publish` 发布当前归档，再用 `web status --publish-id` 核对。除非用户仅要求本地开发，按[发布结果交付](references/csr-apps.md#发布结果交付)展示本次返回的浏览器、管理和小程序三个入口链接，并报告资源 ID 和对应源码提交；未验证的阶段如实说明。
 
 ## 素材、文件上传、预览与下载
 
