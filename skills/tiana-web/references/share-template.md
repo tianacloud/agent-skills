@@ -78,17 +78,17 @@
 
    修正公开副本后，重新执行第1–2步，直到原命令成功并返回本轮回执；编辑本地文件不会更新已有source.zip。这类前置失败不读取dist、不生成或覆盖安装包；已有output未更新，不能当作本次成功产物。尚未执行的构建材料和服务端检查仍需继续完成。
 3. 复查脚本输出的大小、SHA-256、源码选择及数据库依赖。有素材时再核对 file_count、file_bytes、file_manifest_sha256、源/独立素材字节和干净构建。安装包上限 32 MiB，单材料 16 MiB，所有解析层累计展开 128 MiB、5,000 个条目；site.tweb 同时遵守 16 MiB 和 4,097 条目的 Web 归档限制。超限时先移除无用依赖、压缩资源或精简材料。
-4. 执行 `tiana web publish-share-template WEB_ID --file /绝对路径/install.zip --wait --json`。上传峰值包含原模板材料、中转 ZIP 和新材料，全部计入当前租户额度。CLI 申请精确对象授权、直传上传并提交异步发布。
-5. 用 `tiana web status-share-template WEB_ID --json` 核对当前 `share.package_id`、Web ID、模板名称和 URL。支持配套字段的 CLI 还会保留 share.version、material_version 和 manifest.files；材料版本应等于本次完整安装包摘要。上传响应未知或等待被中断时先查询原状态，不把新上传当作恢复。发布失败时核对错误和中转清理。完整历史能力上线后旧版发布材料继续保留和计费，中转 ZIP 确认删除后才释放其占用额度。
+4. 通过统一发布入口提交安装包（`share` 与市场共用同一模板体系，`--request-id` 必须稳定保存以备恢复）：
+   - 首次从该 Web 创建模板：`tiana web publish-share-template WEB_ID --request-id REQUEST_ID --file /绝对路径/install.zip --wait --json`
+   - 更新已有模板：`tiana web publish-share-template WEB_ID --template-id TEMPLATE_ID --request-id NEW_REQUEST_ID --file /绝对路径/install.zip --wait --json`
+   上传峰值包含原模板材料、中转 ZIP 和新材料，全部计入当前租户额度。CLI 申请精确对象授权、直传上传并提交异步发布。
+5. 用 `tiana web status-template TEMPLATE_ID --json`（或按原任务查 `tiana web status-template TEMPLATE_ID --job-id JOB_ID --json`，也可通过 `tiana web status-share-template WEB_ID --json` 按来源 Web 查关联模板）核对 `current_version.version`、`current_version.material_version`、`published_version`、`revision` 和 `distribution`。上传响应未知或等待被中断时保留原 `--request-id` 与 `job_id` 只读核对，不把新请求或新上传当作恢复。发布失败时核对服务端返回的 `last_error` 与修复指引后修正重打。
+6. 发布材料不等于开启分享或上架市场；如需开启、关闭链接分享或市场展示，按[统一模板生命周期与分发管理](unified-templates.md)读取 `revision` 后调用 `tiana web set-template-distribution`。
 
-完成条件：服务端当前分享指向本次发布的 package_id，才能报告发布成功。交付稳定安装链接、材料摘要、源码选择、数据库结构和 seed 处理说明。链接在应用详情的“分享模板”页可复制，并显示成功安装次数。既有分享更新沿用原链接；同租户同来源同版本重复安装复用原结果，新版本按独立新装处理。已安装应用不会自动更新。统一模板的身份、版本及链接按[统一模板对接边界](unified-templates.md)核对。
+完成条件：原发布任务 `status=complete` 且 `published_version` 非空（如需对外访问还须确认对应 `share_enabled`/`market_enabled` 开关已开启），才能报告发布成功。交付统一模板 ID、分享链接（`/templates/{template_id}`）、材料摘要、源码选择、数据库结构和 seed 处理说明。既有模板更新沿用原 `template_id` 与链接；新版本不影响已安装应用。身份、分发开关及链接规则详见[统一模板生命周期与分发管理](unified-templates.md)。
 
-## 撤回和做同款
+## 停用、删除和做同款
 
-统一模板的分享／市场开关及按模板 ID 获取源码，先阅读[统一模板对接边界](unified-templates.md)；下列撤回命令仅适用于旧 Web ID 分享。
-
-用户要求撤回时执行 `tiana web withdraw-share-template WEB_ID --json`，再查询原状态。
-完整历史能力上线后，撤回停止新安装，保留历史材料和已受理任务的原版恢复资格；
-已有应用继续独立使用。不能把 cleanup_job_id 为 0 当作历史材料已经删除或存储已释放。
-
-用户拿分享链接要求做同款时，执行 `tiana web init-share-template LINK --dir PROJECT_DIR --json`。读取回执中的 prompt 和工程 metadata.json，再按[模板初始化](template-init.md)及普通 Web 开发流程创建自己的新应用。没有源码的分享只支持落地页安装。做同款从新工程开始，原模板的安装来源与统计不跟踪这次开发。
+- **关闭分享或下架市场**：使用 `tiana web set-template-distribution TEMPLATE_ID --request-id REQUEST_ID --expected-revision REVISION --share-enabled=false --json`（或 `--market-enabled=false`）。已有应用继续独立运行。
+- **永久删除模板**：使用 `tiana web delete-template TEMPLATE_ID --request-id REQUEST_ID --expected-revision REVISION --json`，删除后 `template_id` 不可复用，旧链接不得改指新作品。
+- **做同款**：用户提供 `/templates/{template_id}` 链接时执行 `tiana web init-share-template LINK --dir PROJECT_DIR --json`；直接按市场模板 ID 做同款时执行 `tiana web init-template TEMPLATE_ID --dir PROJECT_DIR --json`（或 `init-unified-template TEMPLATE_ID --channel share|market --dir PROJECT_DIR --json`）。读取回执中的 `prompt` 和工程 `metadata.json`，再按[模板初始化](template-init.md)及普通 Web 开发流程创建新应用。没有源码（`has_source=false` / `TEMPLATE_SOURCE_UNAVAILABLE`）的模板只支持安装，不能做同款。

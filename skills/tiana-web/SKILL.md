@@ -36,7 +36,7 @@ CLI 管理检查缓存和共同的 24 小时提醒额度。按更新流程处理
 
 用户要求“把某个 Web App 发布为模板”或分享可安装链接时，阅读[用户模板分享](references/share-template.md)，在独立副本中整理源码、结构与个人无关 seed，再打包、上传并交付安装链接。默认包含源码，可让用户选择仅安装；必须制作预览和封面，并按[预览的响应式展示与验收](references/share-template.md#预览的响应式展示与验收)完成 PC 和手机适配。无法判断 seed 是否涉及个人信息时，先让用户选择。用户提供分享链接要求做同款时，也按该文档取得源码并开始新工程。此分支直接处理指定应用。
 
-用户要求查看统一模板列表或状态、更新版本、管理分享或市场开关，或按模板 ID 获取源码时，阅读[统一模板对接边界](references/unified-templates.md)，先确认目标环境与 CLI 支持。来源 Web 已删除时也按该指引处理。
+用户要求查看模板列表或状态、更新版本、管理分享/市场开关、删除模板，或按模板 ID 获取源码时，阅读[统一模板生命周期与分发管理](references/unified-templates.md)。来源 Web 已删除时也按该指引处理。
 
 ## 允许他人使用当前应用
 
@@ -46,7 +46,7 @@ CLI 管理检查缓存和共同的 24 小时提醒额度。按更新流程处理
 
 **每次创建、修改或普通发布 Web 应用，都必须实际执行 `tiana web list-template --json`。同一会话之前查过、记得某个模板、用户未提模板，都不能代替这次调用。** 有 `data.next_cursor` 时，以 `--after CURSOR` 继续查询本次需求需要的目录页。检查命令实际成功；当前目录不可用时说明结果并按通用方式继续，不能从旧列表选包。
 
-用户只需描述应用。根据本次返回的 `display_name`、`description` 判断核心功能、数据模型与可定制范围：合适的模板可加速制作，局部差异在工程中修改；没有合适模板就直接开发。已有工程继续修改自己的工程。以需求为依据决定，不要求用户选择模板，也不硬编码模板名称或模板版本。
+用户只需描述应用。根据本次返回的 `template_id`、`display_name`、`description` 及 `current_version.has_source` 判断核心功能、数据模型、是否可获取源码与可定制范围：合适的模板可加速制作，局部差异在工程中修改；没有合适模板就直接开发。已有工程继续修改自己的工程。以需求为依据决定，不要求用户选择模板，也不硬编码模板名称或模板版本。
 
 ## 选择数据访问方式
 
@@ -63,7 +63,7 @@ CLI 管理检查缓存和共同的 24 小时提醒额度。按更新流程处理
 ## 创建、初始化和发布
 
 1. 阅读 [Web 开发与发布](references/csr-apps.md)；前端直连模式转 `tiana-sqlite` 技能，按其“JavaScript 数据库连接”指引确认目标实例、分支、SDK 与连接方式，再回到本流程接入前端。新应用默认为本次需求创建所需的 SQLite 和 Git 实例，并等待就绪、保存实际 ID；仅在用户明确指定已有实例时核实后复用。修改已有工程时沿用其已确认绑定。实例名称按当前应用命名，模板变量使用 CLI 回执中的 ID。先确定最终入口路径；创建 Web 时用 `--entry` 固定入口，按所选访问方式配置数据库或后端服务绑定，并配置 Git 绑定，并等就绪。Web ID 取 `web create` 返回的 `data.id`。
-2. 采用模板时，执行 `tiana web init-template NAME --dir PROJECT_DIR --json`。PROJECT_DIR 是用户项目的不存在目录，位于技能安装目录之外。CLI 下载并原样解压；按 [模板初始化](references/template-init.md)读取工程根部 `metadata.json`，由 Agent 完成全部变量替换及 SQLite 数据初始化。
+2. 采用模板时，先确认该项的 `current_version.has_source` 为 `true`，再使用目录返回的 `template_id` 执行 `tiana web init-template TEMPLATE_ID --dir PROJECT_DIR --json`（无源码模板仅支持平台安装，不支持源码做同款）。PROJECT_DIR 是用户项目的不存在目录，位于技能安装目录之外。CLI 下载并原样解压；按 [模板初始化](references/template-init.md)读取工程根部 `metadata.json`，由 Agent 完成全部变量替换及 SQLite 数据初始化。
 3. 直接开发时，使用 [固定 index.html](references/index.html)、哈希路由、支持动态账号鉴权的 SDK，按实际数据库结构编写应用及构建清单。
 4. **模板和直接开发都由 Agent 处理数据库初始化。** 模板先执行已配置且存在的 schema，再执行已配置且存在的 seeds；两项独立跳过，SQL 失败先核对结果并停止后续发布。普通源码开发还须按[模板素材文件](references/template-files.md)准备新 Web ID 的预置素材；`web publish` 只发布程序包。
 5. 构建前按[应用图标](references/csr-apps.md#应用图标)准备真实 PNG：使用用户指定图片或已有的合适图标；需要制作时优先调用可用的 AI 生图工具，以应用核心功能设计图形图标。图片保存到源码，查看缩小后的效果，并核验干净构建根目录和发布包中都有该图片。

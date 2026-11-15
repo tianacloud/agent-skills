@@ -395,6 +395,17 @@ def validate_site_variables(metadata, site):
                 raise ValueError(f"Built site placeholder missing: {name}")
 
 
+def valid_web_entry(entry):
+    if not entry or len(entry.encode("utf-8")) > 512:
+        return False
+    if entry in (".", "..") or entry.startswith("/") or any(c in entry for c in "\\\x00\r\n?#%:"):
+        return False
+    parts = entry.split("/")
+    if any(not part or part in (".", "..") or part.startswith(".") for part in parts):
+        return False
+    return entry.endswith(".js") or entry.endswith(".mjs")
+
+
 def pack(source_zip, dist, entry, output, without_source=False):
     source = read_file(Path(source_zip))
     snapshot, source_size, source_count = source_files(source)
@@ -433,7 +444,9 @@ def pack(source_zip, dist, entry, output, without_source=False):
             site["data/" + file.relative_to(dist).as_posix()] = data
         elif not file.is_dir():
             raise ValueError(f"Build contains a nonregular entry: {relative}")
-    if not entry or "data/" + entry not in site:
+    if not valid_web_entry(entry):
+        raise ValueError("Entry must be a safe relative .js or .mjs path (for example assets/app.js or app.js)")
+    if "data/" + entry not in site:
         raise ValueError("Build is missing its fixed entry")
     validate_site_variables(metadata, site)
     compiled = archive(site)

@@ -1,11 +1,11 @@
 # 使用模板工程
 
-模板目录来自本次 `tiana web list-template --json` 实际返回的数据。每页 `data.items` 含 name、display_name、description；CLI 的 `--after` 查询下一页。即使 items 为空，存在 next_cursor 时仍继续需要的页。选择符合用户核心功能与数据结构的工程；没有匹配项时按通用 Web 方法制作。
+模板目录来自本次 `tiana web list-template --json` 实际返回的数据。每页 `data.items` 含 `template_id`、`display_name`、`description` 和 `current_version`（含 `has_source`、`installable`）；CLI 的 `--after` 查询下一页，`--q` / `--category-id` 可按需筛选。即使 items 为空，存在 next_cursor 时仍继续需要的页。选择 `current_version.has_source=true` 且符合用户核心功能与数据结构的工程；没有匹配项时按通用 Web 方法制作。
 
 新应用默认由 Agent 创建所需的 SQLite 和 Git，按当前应用命名并保存 CLI 返回的实际实例 ID；用户明确指定已有实例时核实后复用。保存资源回执后执行：
 
 ```sh
-tiana web init-template NAME --dir PROJECT_DIR --json
+tiana web init-template TEMPLATE_ID --dir PROJECT_DIR --json
 ```
 
 成功结果的 `data.directory` 是工程根目录，`data.metadata_path` 是元信息文件。CLI 负责下载校验和解压，工程仍保留占位符、SQL 和原始文件。下载失败先核对实际结果，再重新运行；不用链接地址当作创建成功依据。

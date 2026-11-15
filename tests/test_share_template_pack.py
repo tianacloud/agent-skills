@@ -584,5 +584,28 @@ class SharedTemplatePackTest(unittest.TestCase):
         self.assertEqual(digest, "57712187d2dd348f35fab47c89a5455d96c5e0e3d7fa258ca6a7221c2acdf929")
 
 
+    def test_pack_rejects_non_js_or_unsafe_entry(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / "source.zip"
+            dist = root / "dist"
+            dist.mkdir()
+            (dist / "index.html").write_text("<html></html>")
+            (dist / "app.js").write_text("export default {};")
+            metadata = {
+                "name": "demo",
+                "display_name": "Demo",
+                "description": "Synthetic demo",
+                "database_required": False,
+            }
+            source.write_bytes(pack.archive({
+                "metadata.json": json.dumps(metadata).encode(),
+                "showcase/preview.html": b"<p>preview</p>",
+                "showcase/cover.webp": b"webp",
+                "showcase/prompt.md": b"prompt",
+            }))
+            for bad_entry in ("index.html", "../app.js", "/app.js", ".hidden.js", "app.js?x=1"):
+                with self.assertRaisesRegex(ValueError, "Entry must be a safe relative .js or .mjs path"):
+                    pack.pack(source, dist, bad_entry, root / "install.zip")
 if __name__ == "__main__":
     unittest.main()
