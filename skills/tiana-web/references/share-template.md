@@ -83,7 +83,7 @@
    - 更新已有模板：`tiana web publish-share-template WEB_ID --template-id TEMPLATE_ID --request-id NEW_REQUEST_ID --file /绝对路径/install.zip --wait --json`
    上传峰值包含原模板材料、中转 ZIP 和新材料，全部计入当前租户额度。CLI 申请精确对象授权、直传上传并提交异步发布。
 5. 用 `tiana web status-template TEMPLATE_ID --json`（或按原任务查 `tiana web status-template TEMPLATE_ID --job-id JOB_ID --json`，也可通过 `tiana web status-share-template WEB_ID --json` 按来源 Web 查关联模板）核对 `current_version.version`、`current_version.material_version`、`published_version`、`revision` 和 `distribution`。上传响应未知或等待被中断时保留原 `--request-id` 与 `job_id` 只读核对，不把新请求或新上传当作恢复。发布失败时核对服务端返回的 `last_error` 与修复指引后修正重打。
-6. 发布材料不等于开启分享或上架市场；如需开启、关闭链接分享或市场展示，按[统一模板生命周期与分发管理](unified-templates.md)读取 `revision` 后调用 `tiana web set-template-distribution`。
+6. 每次发布版本成功后都会自动开启链接分享（`share_enabled=true`），首次发布和后续更新相同；不会自动上架市场，也不改变 `market_enabled`。若作者明确要求仅保留材料、不对外分享，发布完成后调用 `set-template-distribution --share-enabled=false` 并核对关闭回执。其他分发管理按[统一模板生命周期与分发管理](unified-templates.md)读取 `revision` 后调用 `tiana web set-template-distribution`。
 
 完成条件：原发布任务 `status=complete` 且 `published_version` 非空（如需对外访问还须确认对应 `share_enabled`/`market_enabled` 开关已开启），才能报告发布成功。交付统一模板 ID、分享链接（`/templates/{template_id}`）、材料摘要、源码选择、数据库结构和 seed 处理说明。既有模板更新沿用原 `template_id` 与链接；新版本不影响已安装应用。身份、分发开关及链接规则详见[统一模板生命周期与分发管理](unified-templates.md)。
 
