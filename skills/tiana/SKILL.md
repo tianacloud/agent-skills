@@ -4,7 +4,7 @@ description: 使用 Tiana Cloud 管理实例、安装 CLI、登录和恢复账�
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.28"
+  version: "1.0.29"
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana
 ---
 
@@ -18,7 +18,7 @@ metadata:
 
 CLI 与 Skills 各自独立比较本包的 npm 最新正式版。下面的版本检查与安装只访问公共包仓库，不需要 Tiana 登录，不操作 Tiana 云端资源；用户要求暂不登录或不操作云端资源时仍执行。用户明确要求离线、禁止联网或禁止安装时遵从该限制。
 
-1. 连接器内先按[宿主更新说明](references/connector-updates.md)确认实际入口与升级方式；渠道专用 CLI 使用同渠道平台包，千问桌面内置入口随连接器整包更新。执行 `tiana version --json`，按[开始使用](references/getting-started.md)核验最低版本；npm 托管的 CLI 缺失或版本过低时，自动安装 npm latest 正式版并重新核验；渠道专用构建和千问桌面包按宿主说明更新。
+1. 连接器内先按[宿主更新说明](references/connector-updates.md)确认实际入口与升级方式；渠道专用 CLI 使用同渠道平台包，连接器内置入口随连接器整包更新。执行 `tiana version --json`，按[开始使用](references/getting-started.md)核验最低版本；npm 托管的 CLI 缺失或版本过低时，自动安装 npm latest 正式版并重新核验；渠道专用构建和连接器内置包按宿主说明更新。
 2. CLI 满足最低版本后，从本会话实际加载的 SKILL.md 的 `metadata.version` 取得 `SKILLS_VERSION`，在同一次 shell 调用中赋值并**实际执行** `tiana version check --skills-version "$SKILLS_VERSION" --json`。这一步检查是否有更新版本。
 3. `updates` 中 CLI 或 Skills 有新正式版且 `should_notify=true` 时，**先展示包名、当前版本和实际返回的 `latest_version`，询问用户是否升级；仅在用户同意后安装对应版本**。Skills 升级会覆盖已有技能并补齐新增技能，询问时说明这一影响。用户拒绝或尚未回复时保留当前版本；安装目标及重载按[更新流程](references/getting-started.md#更新)，连接器内使用时再读其中链接的宿主说明。
 4. 在对话中简短报告实际 CLI/Skills 版本、检查状态与更新结果（包括新增技能及是否需要重载）；检查不可用时明确说明未能确认是否有新版，更新失败时说明实际错误。

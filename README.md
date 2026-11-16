@@ -7,14 +7,10 @@
 需要 Node.js 22.20+：
 
 ```sh
-npx --yes @tianacloud/agent-skills@latest install --agent codex
-```
-
-安装器调用精确依赖的 skills 工具，把 npm 包中的全部技能复制到客户端的持久目录；Codex 当前工具使用 `~/.agents/skills/`。不传目标时选择客户端：
-
-```sh
 npx --yes @tianacloud/agent-skills@latest install
 ```
+
+安装器调用精确依赖的 skills 工具，把 npm 包中的全部技能复制到所选客户端的持久目录。
 
 目录导入型客户端可指定实际技能根目录：
 
@@ -24,7 +20,7 @@ npx --yes @tianacloud/agent-skills@latest install --dir /path/to/client/skills
 
 Windows PowerShell 使用 `npx.cmd`。目录可以含空格，用引号包住。重复安装会更新包内全部技能并补齐新版新增技能，其他技能保留。安装完成后让客户端重载技能或开始新会话。
 
-WorkBuddy、豆包按所用版本的目录／ZIP 导入方式加载这五个目录，保留 SKILL.md 和 references。若要求 ZIP，可将每个技能目录的内容打包，SKILL.md 位于包根部。WorkBuddy 专用本地化 ZIP 由维护者构建流程提供；本仓验证 ZIP 格式和内容，不声称已验收这些客户端的运行行为。
+目录／ZIP 导入型宿主加载这五个目录，保留 SKILL.md 和 references。若要求独立技能 ZIP，将每个技能目录的内容打包，SKILL.md 位于包根部。归档检查验证格式和内容；宿主运行行为须在实际客户端验收。
 
 ## 五个入口
 
@@ -50,16 +46,16 @@ CLI 主包及当前系统的原生平台包全部来自 npm，提供 tiana 和 g
 
 普通用户可以直接要求：“执行 `npx -y @tianacloud/agent-skills@latest install` 安装 Tiana skills，然后使用 tiana 创建一个账单应用。”未配置环境时，CLI 使用 online 公有域名与系统 CA；首次登录按 Agent 提供的浏览器链接授权。
 
-WorkBuddy Connector 固定 online，配置和当前使用说明见 [Connector](https://github.com/tianacloud/agent-skills/blob/main/docs/workbuddy-connector.md)。
+连接器已提供运行环境时，沿用其 API origin、CLI 入口与安装位置。
 
 ## 检查与更新
 
 各 Tiana 技能调用 CLI 检查两个 npm 包的 latest。两个包各自最多每 24 小时尝试检查一次，CLI 普通终端与 Skills 共用每 24 小时一次提醒。Agent 发现 CLI 或 Skills 新正式版且 should_notify=true 时展示版本并询问用户，仅在用户同意后安装并核验；用户拒绝或尚未回复时保留当前版本。CLI 缺失或低于 1.0.17 时可自动安装并核验基线。每个会话首次检查后简短报告检查、两个包的更新结果及新增技能。
 
-CLI 在当前实际使用的安装位置升级并核验版本和所需命令；Skills 安装新版包中的全部技能，覆盖已有技能并补齐新增技能，核验 metadata.version 与宿主加载结果。实质性技能变更发布到 npm 时，同步向 WorkBuddy 平台告知 Skills 与 Connector 版本号并提交对应连接器包审核。已加载的会话不会因磁盘替换而自动更换指令；需要重载时明确提示。具体步骤及失败后的继续条件见 [开始使用](skills/tiana/references/getting-started.md#更新)，各宿主安装位置及加载核验见[连接器与宿主中的更新](skills/tiana/references/connector-updates.md)。
+CLI 在当前实际使用的安装位置升级并核验版本和所需命令；Skills 安装新版包中的全部技能，覆盖已有技能并补齐新增技能，核验 metadata.version 与宿主加载结果。实质性技能变更发布到 npm 时，同步向接入平台告知 Skills 与 Connector 版本号并提交对应连接器包审核。已加载的会话不会因磁盘替换而自动更换指令；需要重载时明确提示。具体步骤及失败后的继续条件见 [开始使用](skills/tiana/references/getting-started.md#更新)，各宿主安装位置及加载核验见[连接器与宿主中的更新](skills/tiana/references/connector-updates.md)。
 
 ## 维护与其他分发格式
 
-skills/ 是所有格式的规范源。Pi 可使用 `pi install npm:@tianacloud/agent-skills`，支持 Agent Plugins v1 的客户端也可发现 plugin.json。构建、版本对齐、GitHub Actions 自动发布及 npm 初始配置见 [Contributing](CONTRIBUTING.md)。
+skills/ 是所有格式的规范源。支持 Agent Plugins v1 的宿主可发现 plugin.json；其他宿主沿用其包管理或目录导入方式。构建、版本对齐、GitHub Actions 自动发布及 npm 初始配置见 [Contributing](CONTRIBUTING.md)。
 
 Apache-2.0

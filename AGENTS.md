@@ -26,6 +26,13 @@ canonical distributions without treating local checks as cloud acceptance. This
 work does not bump package versions, install skills globally or publish npm.
 
 
+## Skill 分发内容保持平台中立
+
+- 所有对外分发的 Skill 内容禁止出现宿主或竞品平台名称，包括 WorkBuddy、千问／QwenWork、豆包／Doubao 等。此要求覆盖 SKILL.md、frontmatter、references、脚本、示例、文件名、链接及随技能发布的 README；所有渠道使用同一份平台中立内容。
+- Skill 只描述 Tiana 能力，以及通用的宿主环境、实际 CLI 入口、来源参数和升级方式。不要把平台名单、渠道值、专用目录名或某个平台的接入说明写入 Skill。
+- 平台名称、渠道常量及专用适配留在各平台的打包脚本、连接器配置和独立接入材料中，不复制进 Skill。不得用“仅在其他平台时执行”等条件说明把这些名称带回 Skill。
+- 修改后运行 `npm run validate:ci`；发布前检查最终 npm 与各渠道 ZIP 中的全部 Skill 文件（含嵌套 ZIP）。必须同时修正规范源和重新生成的发布包，不能只改某份临时产物。
+
 ## Platform packaging
 
 For platform delivery, run the corresponding script from the repository root:
