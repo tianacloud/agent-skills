@@ -72,7 +72,7 @@ App 作者是当前 Web 的创建者，`role` 的 `tenant_owner` 表示访问者
 2. 项目已记录且已核实可用的数据库实例 ID 可直接复用，无需列举实例。否则用 `tiana sqlite list/show` 查找；确实没有可用数据库时执行一次 `tiana sqlite create NAME --wait`，保存完整实例 ID。中断后核实原请求和实例，不重复创建。
 3. 复用已提供的实际表结构；缺少时执行 `tiana sqlite shell INSTANCE -e "SELECT name, sql FROM sqlite_schema WHERE type='table' ORDER BY name LIMIT 100" --format json`。将表结构和迁移文件保存在项目中。对已核对的 SQL 文件执行 `tiana sqlite shell INSTANCE -f schema.sql --format json`。`-e` 接受一条语句，多语句使用 `-f`。动态数据按 `tiana-sqlite` 技能的“JavaScript 数据库连接”指引使用参数化 SQL。
 4. 复用项目中已记录、已核实的 Web ID；未记录时先用 `tiana web list --json` 查找并核实，重名时依据实际 ID 确认归属；首次创建时执行一次 `tiana web create "应用名称" -m "应用描述" --entry assets/app.js --database-instance-id DATABASE_ID --json`，保存返回的 `data.id`。Web ID 仅由 MGR 生成；CLI 不生成或提交 Web ID；描述为可选元数据（`-m`/`--description`，最多 1024 个 UTF-8 字节），名称仅用于展示，不能用名称推导 ID，不能自行指定 ID。结果未知时保持名称、描述和所有创建参数不变，重复同一条 create 命令恢复原请求，不删除待完成记录、不另发创建请求。成功后继续构建、预览或发布时复用该 ID，不重复创建。
-5. 将非敏感 Web ID 和数据库 ID 保存在项目交付记录中。entry 仅能在 create 指定，包括省略后的纯文件托管类型；创建后不可修改，publish/serve 都不能覆盖。数据库和 Git 绑定在创建时确定；名称、备注在 Console 实例基础信息编辑。
+5. 将非敏感 Web ID 和数据库 ID 保存在项目交付记录中。entry 仅能在 create 指定，包括省略后的纯文件托管类型；创建后不可修改，publish/serve 都不能覆盖。数据库和 Git 可在创建时关联，后续补绑、解绑见[资源关联](resource-bindings.md)；名称、备注在 Console 实例基础信息编辑。
 
 ## 直连 SQLite：运行时数据库连接
 
@@ -100,7 +100,7 @@ CLI 本地预览优先复用已保存的 CLI 登录，通过一次性本地启�
 
 输出浏览器可直接执行的 ES 模块、CSS 和资源，引用使用相对路径。Vite 库模式在顶层配置 `define: { 'process.env.NODE_ENV': JSON.stringify('production') }`，并验证产物无残留引用。入口与资源路径以实际工程的构建配置为准；入口模块自行加载 CSS。不要生成或读取 tiana.app.json，不提交 style、rendering、routing 参数。
 
-Site 参数来自 MGR 的 web_project：name、description、固定 entry、可选 database_instance_id 和 git_instance_id。首次创建可传 `--entry assets/app.js --database-instance-id DATABASE_ID --git-instance-id GIT_ID`，后端模式省略数据库绑定。已有项目沿用创建时的固定关联，名称、备注在 Console 实例基础信息编辑；后端绑定使用 `web functions get/set`。源码提交记录与远程引用核验见 `tiana-git` 技能的“应用源码与版本发布”指引，从确定提交构建并保存对应发布回执。
+Site 参数来自 MGR 的 web_project：name、description、固定 entry、可选 database_instance_id 和 git_instance_id。首次创建可传 `--entry assets/app.js --database-instance-id DATABASE_ID --git-instance-id GIT_ID`，后端模式省略数据库绑定。已有项目先核对当前关联；补绑、解绑使用[资源关联命令](resource-bindings.md)，名称、备注在 Console 实例基础信息编辑；后端绑定使用 `web functions get/set`。源码提交记录与远程引用核验见 `tiana-git` 技能的“应用源码与版本发布”指引，从确定提交构建并保存对应发布回执。
 
 CLI 将目录打包为 ZIP Store/Deflate 的一个 `.tweb`，根目录是零字节 web.yaml 与 data/。web.yaml 预留 Web server 配置，与 Site 参数无关，目前为空。data/ 前缀不对外暴露，底层只提供 GET/HEAD 精确文件访问，没有目录索引、默认 index.html 或 SPA fallback；底层可托管 HTML，带 entry 的 Site 使用固定 CSR/hash Bootstrap。
 

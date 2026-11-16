@@ -4,7 +4,7 @@ description: 使用 Tiana 创建、修改、预览和发布 Web 应用。用户�
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.29"
+  version: "1.0.30"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-web
 ---
@@ -53,6 +53,10 @@ CLI 管理检查缓存和共同的 24 小时提醒额度。按更新流程处理
 简单应用优先直接访问 SQLite。复杂业务、敏感数据或配置、需要限制用户可见数据时，采用后端服务，必须阅读[带后端服务的 Web 开发流程](references/backend-apps.md)。默认复用 Web 的 Git，后端私有数据库不绑定 Web。
 
 本 skill 负责选择访问方式、前端开发、Web 资源绑定、预览、发布与分享验收。后端的创建、源码、参数配置与读取、数据库访问和编译发布由 `tiana-function` 技能负责；取得后端发布结果后回到本流程完成前端接入。
+
+## 管理已有应用的资源关联
+
+用户要求为已创建的 Web 补绑 SQLite／Git，或取消其关联时，阅读[SQLite 与 Git 关联](references/resource-bindings.md)。使用 `web bindings get/bind/unbind`，先读当前关联与 revision；页面解绑需要二次确认。
 
 ## 展示当前用户
 
