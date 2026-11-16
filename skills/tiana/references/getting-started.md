@@ -82,6 +82,10 @@ Windows PowerShell 使用 `npx.cmd`。从当前加载的 SKILL.md 实际路径�
 
 Console/管理 API、用户 Web 地址、数据库 Endpoint 各有用途：全部取实际 CLI/服务回执，不猜域名或把管理地址作为数据库连接地址。应用地址使用回执中的 application_url，Git URL 使用用户 Git 实例的 Endpoint。
 
+## 登录来源
+
+宿主提供 `TIANA_FROM` 时，保留并传给每次 CLI 调用。已明确获知渠道、需覆盖环境变量时使用 `tiana login --from CHANNEL`；显式 `--from ""` 清除本次来源。来源只在新建登录事务时选取，恢复已有事务继续原来源。渠道取宿主明确配置，不从模型名或用户身份猜测。WorkBuddy 包注入 `workbuddy`，豆包接入登录命令传入 `doubao`，千问桌面包入口默认注入 `qwenwork`；后续登录继续沿用实际入口和环境。
+
 ## 对话中的登录
 
 1. 执行 `tiana login --start --no-open --json`。

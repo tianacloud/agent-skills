@@ -27,6 +27,7 @@
   "authUrlDomain": "console.tianacloud.com",
   "authWaitForExit": true,
   "env": {
-    "TIANA_API_ORIGIN": "https://console.tianacloud.com"
+    "TIANA_API_ORIGIN": "https://console.tianacloud.com",
+    "TIANA_FROM": "workbuddy"
   }
 }

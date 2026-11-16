@@ -36,7 +36,7 @@ try {
     assert.equal(cli.status[platform], `${tiana} status`);
     assert.equal(cli.unAuth[platform], `${tiana} logout`);
   }
-  assert.deepEqual(cli.env, {TIANA_API_ORIGIN: 'https://console.tianacloud.com'});
+  assert.deepEqual(cli.env, {TIANA_API_ORIGIN: 'https://console.tianacloud.com', TIANA_FROM: 'workbuddy'});
   const connected = new RegExp(cli.statusMatch);
   assert.equal(connected.test('Email: user@example.test\nQuota period: week (start to end)\nRESOURCE USED LIMIT'), true);
   assert.equal(connected.test('Not logged in'), false);

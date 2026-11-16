@@ -9,7 +9,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import test from 'node:test';
 
 const cli = {
-  auth: {commands: ['tiana login']},
+  auth: {commands: ['tiana login --from doubao']},
   status: {commands: ['tiana status --auth-only --json']},
   un_auth: {commands: ['tiana logout']},
   status_match_rex: String.raw`"logged_in"\s*:\s*true\b`,
@@ -28,11 +28,12 @@ test('real CLI blocking login and local status with a simulated browser (not Dou
   let approved = false, calls = 0, transactions = 0, exchanges = 0;
   const server = http.createServer(async (request, response) => {
     calls++;
-    for await (const chunk of request) { /* Consume the fixture request. */ }
+    let body=''; for await (const chunk of request) { body+=chunk; }
     response.setHeader('Content-Type', 'application/json');
     switch (request.url.split('?')[0]) {
       case '/api/v1/auth/transactions':
         transactions++;
+        assert.equal(JSON.parse(body).client.acquisition_source, 'doubao');
         response.end(JSON.stringify({ transaction_id: 'fixture', client_secret: 'synthetic-secret', user_code: 'ABCD-EFGH',
           verification_uri_complete: link, expires_in: 60, poll_interval: 1 }));
         break;
@@ -119,7 +120,7 @@ test('real CLI blocking login and local status with a simulated browser (not Dou
 
   for (const signal of ['SIGINT', 'SIGTERM']) {
     approved = false;
-    const interrupted = start('tiana login --json --no-open');
+    const interrupted = start('tiana login --from doubao --json --no-open');
     await waitFor(() => interrupted.output.stderr.includes(link), 'cancel fixture did not start');
     interrupted.child.kill(signal);
     const result = await interrupted.finished;

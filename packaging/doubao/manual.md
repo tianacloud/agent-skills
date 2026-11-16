@@ -31,7 +31,7 @@
 | 能力 | Linux / macOS | Windows |
 | --- | --- | --- |
 | 版本检查 | `tiana version` | `tiana.exe version` |
-| 登录 | `tiana login` | `tiana.exe login` |
+| 登录 | `tiana login --from doubao` | `tiana.exe login --from doubao` |
 | 登录状态检查 | `tiana status --auth-only --json` | `tiana.exe status --auth-only --json` |
 | 登出 | `tiana logout` | `tiana.exe logout` |
 | 帮助 | `tiana help` | `tiana.exe help` |
@@ -70,14 +70,14 @@
 
 ## 登录、状态与登出
 
-1. 宿主在非交互式 Shell 中启动单条 `tiana login`；CLI 无需 stdin、TTY 或按回车确认。
+1. 宿主在非交互式 Shell 中启动单条 `tiana login --from doubao`；CLI 无需 stdin、TTY 或按回车确认。
 2. CLI 创建认证事务、输出完整授权 URL 并尝试启动系统默认浏览器。用户在浏览器中完成账号登录及授权；自动打开失败时仍等待同一事务，可手动打开输出的 URL。
 3. CLI 按认证服务返回的间隔查询当前事务，等待批准、拒绝、到期或进程取消；只有兑换及保存用户凭据成功后才退出 0。已打开网页、已输出链接或正在等待均不等于成功。
 4. 宿主独立执行本地状态检查；退出 0 且正则命中才确认授权并续接原对话。
 5. 失败、取消或过期返回非 0，不续接受保护操作。事务有效期及轮询间隔由认证服务返回，不能由宿主把等待中间状态当成功。宿主终止进程即中止本次等待；本机状态与服务端短期事务是否需要额外清理，应在取消/超时联调中核验。
 6. 登出使用 `tiana logout`，未登录时重复执行也应成功；真实已登录的登出可能访问服务端撤销接口，网络失败按实际非 0 错误处理。
 
-`--no-open` 只关闭自动打开浏览器；`--json` 使阻塞登录的 URL/进度输出到 stderr，stdout 只输出最终 JSON。默认接入使用上表中的 `tiana login`。`--start` / `--resume` 是手动 CLI 的分步参数，宿主 Auth 不使用它们。
+`--no-open` 只关闭自动打开浏览器；`--json` 使阻塞登录的 URL/进度输出到 stderr，stdout 只输出最终 JSON。默认接入使用上表中的 `tiana login --from doubao`。`--start` / `--resume` 是手动 CLI 的分步参数，宿主 Auth 不使用它们。
 
 状态命令的 JSON 中 `data.logged_in` 是布尔值。已登录返回 true；凭据缺失或 access 已过期返回 false，这两种正常检查结果均退出 0。文件读取失败、损坏等执行错误退出非 0。该检查只读取当前管理入口对应的本地凭据及到期时间，不联网、不刷新、不写入；它不证明服务端尚未撤销该凭据，业务请求仍由服务端验证权限。
 

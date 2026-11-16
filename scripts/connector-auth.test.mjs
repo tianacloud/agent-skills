@@ -17,10 +17,11 @@ test('real CLI auth processes with delayed fixture approval (not WorkBuddy)', { 
   let approved = false, calls = 0, exchanges = 0, logouts = 0, quotaAvailable = true, whoamiCalls = 0;
   const server = http.createServer(async (request, response) => {
     calls++;
-    for await (const chunk of request) { /* Consume the isolated fixture request. */ }
+    let body=''; for await (const chunk of request) { body+=chunk; }
     response.setHeader('Content-Type', 'application/json');
     switch (request.url.split('?')[0]) {
       case '/api/v1/auth/transactions':
+        assert.equal(JSON.parse(body).client.acquisition_source, 'workbuddy');
         response.end(JSON.stringify({ transaction_id: 'at-fixture', client_secret: 'fixture-secret', user_code: 'ABCD-EFGH',
           verification_uri_complete: 'https://console.tianacloud.com/api/v1/a/ABCD-EFGH', expires_in: 240, poll_interval: 1 }));
         break;
@@ -36,6 +37,9 @@ test('real CLI auth processes with delayed fixture approval (not WorkBuddy)', { 
         whoamiCalls++;
         assert.equal(request.headers.authorization, 'Bearer fixture-access');
         response.end(JSON.stringify({user: {user_id: 'prn_fixture', tenant_id: 'ten_fixture', email: 'user@example.test'}}));
+        break;
+      case '/api/v1/tenant':
+        response.end(JSON.stringify({tenant_id:'ten_fixture',display_name:'Fixture',role:'tenant_owner',revision:'1',is_default:true,can_manage:true,can_set_admin:true}));
         break;
       case '/api/v1/usage':
         if (!quotaAvailable) { response.writeHead(503).end('{}'); break; }
@@ -54,7 +58,7 @@ test('real CLI auth processes with delayed fixture approval (not WorkBuddy)', { 
   server.listen(0, '127.0.0.1');
   await once(server, 'listening');
   t.after(() => new Promise(resolve => server.close(resolve)));
-  const env = { ...process.env, TIANA_API_ORIGIN: `http://127.0.0.1:${server.address().port}`,
+  const env = { ...process.env, ...cli.env, TIANA_API_ORIGIN: `http://127.0.0.1:${server.address().port}`,
     XDG_CONFIG_HOME: path.join(directory, 'config') };
   function start(command) {
     // The configured commands have only fixed words; no shell or browser is used.
@@ -102,7 +106,7 @@ test('real CLI auth processes with delayed fixture approval (not WorkBuddy)', { 
     assert.equal((authenticated.stdout + authenticated.stderr).includes(secret), false);
   }
   const whoamiBefore = whoamiCalls;
-  for (let i = 0; i < 3; i++) assert.equal((await status()).connected, true);
+  for (let i = 0; i < 3; i++) {const checked=await status();assert.equal(checked.connected, true, JSON.stringify(checked));}
   assert.equal(whoamiCalls, whoamiBefore + 3, 'ordinary status verifies the saved account');
   quotaAvailable = false;
   const unavailable = await status();

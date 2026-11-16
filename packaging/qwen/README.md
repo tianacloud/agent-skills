@@ -4,11 +4,23 @@ This ZIP contains the published Tiana CLI {{CLI_VERSION}} for Windows x64,
 macOS Apple Silicon and macOS Intel, plus all Skills from
 @tianacloud/agent-skills {{SKILLS_VERSION}}. The connector manifest version is
 {{SKILLS_VERSION}} and must match the submission form. QwenWork selects the
-native program from the corresponding `bin/<os>_<arch>/` directory.
+native connector entrypoint from the corresponding `bin/<os>_<arch>/` directory.
 
 Read `skills/tiana/SKILL.md` for account login, environment selection and updates,
 then the relevant product Skill for business operations. The native CLI manages
-its account credentials. `tiana version` reports the CLI version.
+its account credentials. `tiana version` reports the CLI version; `tiana --version`
+reports the connector manifest version. The entrypoint maps `auth init` to blocking
+browser login, `auth show --status` to an account check, `auth logout` to logout,
+and `identity whoami` to the nonsecret account identity. Status refreshes an expired
+session when possible and does not query quota. Ordinary unauthenticated status
+is `{"status":"unauthorized"}` with exit 0; operational errors use nonzero exits
+and JSON `code`/`message` on stderr.
+
+The entrypoint defaults an absent TIANA_FROM to qwenwork for the bundled core in
+`bin/<os>_<arch>/libexec/`. Explicit environment values (including empty) are
+preserved, and `login --from` takes priority. Use this entrypoint for Agent commands
+as well as desktop authentication. Upgrade the connector package as a unit to keep
+the entrypoint, core, manifest and Skills together.
 
 The native CLI runs without Node.js. Native Git workflows require Git and the
 official npm package's `git-remote-tiana` installation described in the Skills.

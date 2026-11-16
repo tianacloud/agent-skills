@@ -40,6 +40,7 @@ class QwenPackagingTest(unittest.TestCase):
                 package(f'@tianacloud/cli-{os_name}-{cpu}', '2.3.4', {
                     'package.json': json.dumps(dict(version='2.3.4', os=[os_name], cpu=[cpu])).encode(),
                     f'bin/{binary}': f'native {os_name}/{cpu}'.encode(),
+                    'bin/tiana-qwenwork'+('.exe' if os_name=='win32' else ''): f'adapter {os_name}/{cpu}'.encode(),
                     'LICENSE': b'CLI license',
                 })
             skills = {
@@ -68,7 +69,8 @@ class QwenPackagingTest(unittest.TestCase):
                     self.assertEqual(archive.read(name), content, name)
                 for os_name, cpu, directory, binary in platforms:
                     name = f'bin/{directory}/{binary}'
-                    self.assertEqual(archive.read(name), f'native {os_name}/{cpu}'.encode())
+                    self.assertEqual(archive.read(name), f'adapter {os_name}/{cpu}'.encode())
+                    self.assertEqual(archive.read(f'bin/{directory}/libexec/{binary}'), f'native {os_name}/{cpu}'.encode())
                     self.assertEqual((archive.getinfo(name).external_attr >> 16) & 0o777, 0o755)
                 self.assertEqual(archive.read('LICENSE'), b'Skills license')
                 self.assertEqual(archive.read('licenses/cli-LICENSE'), b'CLI license')

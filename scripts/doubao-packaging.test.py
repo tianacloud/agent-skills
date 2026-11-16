@@ -78,7 +78,9 @@ class DoubaoPackagingTest(unittest.TestCase):
                     self.assertEqual(archive.namelist(), [binary])
                     self.assertEqual(archive.read(binary), f'native fixture: {os_name}/{cpu}'.encode())
                     self.assertEqual((archive.getinfo(binary).external_attr >> 16) & 0o777, 0o755)
-            self.assertTrue((output / 'CLI-接入配置与技术手册.md').is_file())
+            manual=(output / 'CLI-接入配置与技术手册.md').read_text()
+            self.assertIn('`tiana login --from doubao`', manual)
+            self.assertIn('`tiana.exe login --from doubao`', manual)
             self.assertTrue((output / 'TEST-RESULTS.md').is_file())
             for line in (output / 'SHA256SUMS').read_text().splitlines():
                 digest, name = line.split('  ', 1)

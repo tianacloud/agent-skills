@@ -41,7 +41,9 @@ def build(source, output, cli_version, skills_version):
         files = read_package(f'@tianacloud/cli-{os_name}-{cpu}', cli_version)
         metadata = json.loads(files['package.json'][0])
         assert metadata['os'] == [os_name] and metadata['cpu'] == [cpu], directory
-        entries[f'bin/{directory}/{binary}'] = (files[f'bin/{binary}'][0], 0o755)
+        adapter = 'tiana-qwenwork.exe' if os_name == 'win32' else 'tiana-qwenwork'
+        entries[f'bin/{directory}/{binary}'] = (files[f'bin/{adapter}'][0], 0o755)
+        entries[f'bin/{directory}/libexec/{binary}'] = (files[f'bin/{binary}'][0], 0o755)
         entries['licenses/cli-LICENSE'] = (files['LICENSE'][0], 0o644)
 
     skills = read_package('@tianacloud/agent-skills', skills_version)
