@@ -9,7 +9,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import test from 'node:test';
 
 const cli = {
-  auth: {commands: ['tiana login --from doubao']},
+  auth: {commands: ['tiana login']},
   status: {commands: ['tiana status --auth-only --json']},
   un_auth: {commands: ['tiana logout']},
   status_match_rex: String.raw`"logged_in"\s*:\s*true\b`,
@@ -55,6 +55,7 @@ test('real CLI blocking login and local status with a simulated browser (not Dou
   const env = { ...process.env, TIANA_API_ORIGIN: `http://127.0.0.1:${server.address().port}`,
     XDG_CONFIG_HOME: path.join(directory, 'config'), PATH: `${directory}${path.delimiter}${process.env.PATH}`,
     TIANA_TEST_BROWSER_LOG: browserLog, TIANA_DIAGNOSTICS: '1' };
+  delete env.TIANA_FROM;
   function start(command, extraEnv = {}) {
     const [name, ...args] = command.split(' ');
     assert.equal(name, 'tiana');
@@ -120,7 +121,7 @@ test('real CLI blocking login and local status with a simulated browser (not Dou
 
   for (const signal of ['SIGINT', 'SIGTERM']) {
     approved = false;
-    const interrupted = start('tiana login --from doubao --json --no-open');
+    const interrupted = start('tiana login --json --no-open');
     await waitFor(() => interrupted.output.stderr.includes(link), 'cancel fixture did not start');
     interrupted.child.kill(signal);
     const result = await interrupted.finished;

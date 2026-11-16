@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Repackage pinned published artifacts for Doubao's native-package mode."""
+"""Build channel-specific native binaries and package published Skills for Doubao."""
 import base64
 import hashlib
 import json
 from pathlib import Path
 import re
+import os
 import stat
 import tarfile
 import zipfile
@@ -15,9 +16,11 @@ import argparse
 import posixpath
 
 ROOT = Path(__file__).resolve().parent.parent
+ACQUISITION_SOURCE = "doubao"
+CLI_MODULE = "github.com/tianacloud/cli"
 
 
-def build(SOURCE, OUT, CLI, SKILLS):
+def build(SOURCE, OUT, CLI, SKILLS, cli_source, source_info):
     OUT.mkdir(parents=True, exist_ok=True)
     pack_info = json.loads((SOURCE / 'npm-pack.json').read_text())
     for pkg in pack_info:
@@ -38,28 +41,26 @@ def build(SOURCE, OUT, CLI, SKILLS):
                 info.compress_type = zipfile.ZIP_DEFLATED
                 archive.writestr(info, content, compresslevel=9)
 
-    platforms = [
-        ('linux-amd64', 'linux-x64', 'linux', 'x64'),
-        ('linux-arm64', 'linux-arm64', 'linux', 'arm64'),
-        ('darwin-amd64', 'darwin-x64', 'darwin', 'x64'),
-        ('darwin-arm64', 'darwin-arm64', 'darwin', 'arm64'),
-        ('windows-amd64', 'win32-x64', 'win32', 'x64'),
-    ]
+    platforms = ['linux-amd64', 'linux-arm64', 'darwin-amd64', 'darwin-arm64', 'windows-amd64']
     items = []
-    for platform, suffix, os_name, arch in platforms:
-        source_name = f'tianacloud-cli-{suffix}-{CLI}.tgz'
-        files = read_package(source_name)
-        meta = json.loads(files['package.json'])
-        assert meta['version'] == CLI and meta['os'] == [os_name] and meta['cpu'] == [arch]
-        executable = 'tiana.exe' if os_name == 'win32' else 'tiana'
-        binary = files[f'bin/{executable}']
+    for platform in platforms:
+        executable = 'tiana.exe' if platform.startswith('windows-') else 'tiana'
+        goos, goarch = platform.split('-')
+        with tempfile.TemporaryDirectory(prefix='tiana-channel-build-') as temporary:
+            target = Path(temporary) / executable
+            subprocess.run(['go', 'build', '-mod=readonly', '-buildvcs=false', '-trimpath',
+                            '-ldflags', f'-s -w -X main.version={CLI} -X {CLI_MODULE}/internal/buildconfig.DefaultAcquisitionSource={ACQUISITION_SOURCE}',
+                            '-o', str(target), './cmd/tiana'], cwd=cli_source, check=True,
+                           env={**os.environ, 'GOWORK': 'off', 'GOFLAGS': '', 'GOOS': goos,
+                                'GOARCH': goarch, 'CGO_ENABLED': '0'})
+            binary = target.read_bytes()
         filename = f'tiana_{platform.replace("-", "_")}.zip'
         write_zip(filename, {executable: binary}, executable=True)
         raw = (OUT / filename).read_bytes()
         items.append(dict(platform=platform, file_name=filename, exec_name=executable,
                           file_size=len(raw), md5=hashlib.md5(raw).hexdigest(),
                           sha256=hashlib.sha256(raw).hexdigest(),
-                          binary_sha256=hashlib.sha256(binary).hexdigest(), source=source_name))
+                          binary_sha256=hashlib.sha256(binary).hexdigest(), source=f'{CLI_MODULE}@v{CLI}'))
 
     source_skills = read_package(f'tianacloud-agent-skills-{SKILLS}.tgz')
     assert json.loads(source_skills['package.json'])['version'] == SKILLS
@@ -109,6 +110,7 @@ def build(SOURCE, OUT, CLI, SKILLS):
     write_zip(skills_file, entries)
     (OUT / 'CLI-接入配置与技术手册.md').write_text(render((ROOT / 'packaging/doubao/manual.md').read_text()))
     (OUT / 'packages.json').write_text(json.dumps(dict(cli_version=CLI, skills_version=SKILLS, skills=list(labels), packages=items), ensure_ascii=False, indent=2) + '\n')
+    (OUT / 'cli-source.json').write_text(json.dumps({**source_info, 'default_acquisition_source': ACQUISITION_SOURCE}, ensure_ascii=False, indent=2) + '\n')
     (OUT / 'source-integrities.json').write_text(json.dumps(pack_info, ensure_ascii=False, indent=2) + '\n')
     (OUT / 'README.md').write_text(f"""# TianaCloud 豆包 CLI 人工接入材料
 
@@ -117,9 +119,9 @@ def build(SOURCE, OUT, CLI, SKILLS):
 1. 提交 CLI-接入配置与技术手册.md 中的问卷字段与命令配置。
 2. 分平台提交五个 tiana_<os>_<arch>.zip，根目录仅一个可执行文件；Linux/macOS 为 tiana，Windows 为 tiana.exe。
 3. 提供 {skills_file}，包含 {len(labels)} 个技能、引用资料及各自图标，由豆包接入团队加载。
-4. packages.json 为附件清单。源 npm 包完整性见 source-integrities.json；附件摘要见 SHA256SUMS。运行与联调范围见 TEST-RESULTS.md。
+4. packages.json 为附件清单。CLI 源码版本与构建来源见 cli-source.json，Skills npm 包完整性见 source-integrities.json；附件摘要见 SHA256SUMS。运行与联调范围见 TEST-RESULTS.md。
 
-依据：https://bytedance.larkoffice.com/docx/J5o2dZK8hoJItxxNQyocHgRzncb 第 4.2 节（已核对 revision 1369）。本材料用于已在对接的 CLI 人工配置流程。
+依据：https://bytedance.larkoffice.com/docx/J5o2dZK8hoJItxxNQyocHgRzncb 第 4.5 节（已核对 revision 1507）。本材料用于已在对接的 CLI 人工配置流程。
 """)
     for item in items:
         with zipfile.ZipFile(OUT / item['file_name']) as archive:
@@ -130,8 +132,8 @@ def build(SOURCE, OUT, CLI, SKILLS):
 
 CLI {CLI} / Skills {SKILLS}。
 
-- 已校验输入 npm 包 SHA-512、版本及 CLI 平台信息。
-- 已校验五个平台 ZIP 的唯一根目录入口、CRC 和源二进制 SHA-256；Linux/macOS 执行权限为 0755。
+- 已校验输入 Skills npm 包 SHA-512 和版本；CLI 从 cli-source.json 记录的源码构建五个平台版本。
+- 已校验五个平台 ZIP 的唯一根目录入口、CRC 和构建二进制 SHA-256；Linux/macOS 执行权限为 0755。
 - 已校验五个技能目录、展示字段、版本及本技能内的 Markdown 文件引用。
 - 技能来自指定 npm 正式版，仅补充展示元数据及图标；业务正文、参考资料及脚本保持来源内容。
 - 附件摘要见 SHA256SUMS。
@@ -162,6 +164,7 @@ def main():
     parser.add_argument('--output', type=Path, help='output directory (default: dist/doubao/cli-VERSION-skills-VERSION)')
     parser.add_argument('--cli-version', required=True)
     parser.add_argument('--skills-version', required=True)
+    parser.add_argument('--cli-source', type=Path, help='use a local CLI source checkout for build verification')
     args = parser.parse_args()
     if not all(re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+', v) for v in (args.cli_version, args.skills_version)):
         parser.error('CLI and Skills require exact stable versions')
@@ -169,15 +172,22 @@ def main():
     with tempfile.TemporaryDirectory(prefix='tiana-doubao-source-') as temporary:
         source = args.source or Path(temporary)
         if args.source is None:
-            packages = [f'@tianacloud/cli-{platform}@{args.cli_version}' for platform in
-                        ['linux-x64', 'linux-arm64', 'darwin-x64', 'darwin-arm64', 'win32-x64']]
-            packages.append(f'@tianacloud/agent-skills@{args.skills_version}')
+            packages = [f'@tianacloud/agent-skills@{args.skills_version}']
             print(f'Downloading CLI {args.cli_version} / Skills {args.skills_version}', flush=True)
             result = subprocess.run(['npm', 'pack', '--json', '--ignore-scripts',
                                      '--registry=https://registry.npmjs.org/', '--pack-destination', str(source),
                                      *packages], check=True, stdout=subprocess.PIPE, text=True)
             (source / 'npm-pack.json').write_text(result.stdout)
-        build(source, output, args.cli_version, args.skills_version)
+        if args.cli_source is None:
+            downloaded = json.loads(subprocess.check_output(
+                ['go', 'mod', 'download', '-json', f'{CLI_MODULE}@v{args.cli_version}'],
+                cwd=temporary, text=True, env={**os.environ, 'GOWORK': 'off'}))
+            cli_source = Path(downloaded['Dir'])
+            source_info = {key: downloaded[key] for key in ['Path', 'Version', 'Sum', 'GoModSum', 'Origin'] if key in downloaded}
+        else:
+            cli_source = args.cli_source.resolve()
+            source_info = {'Path': CLI_MODULE, 'Version': f'v{args.cli_version}', 'local_source': True}
+        build(source, output, args.cli_version, args.skills_version, cli_source, source_info)
 
 
 if __name__ == '__main__':

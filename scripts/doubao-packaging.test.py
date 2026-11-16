@@ -40,12 +40,12 @@ class DoubaoPackagingTest(unittest.TestCase):
                 ('darwin', 'x64', 'darwin_amd64'), ('darwin', 'arm64', 'darwin_arm64'),
                 ('win32', 'x64', 'windows_amd64'),
             ]
-            for os_name, cpu, _ in platforms:
-                binary = 'tiana.exe' if os_name == 'win32' else 'tiana'
-                package(f'@tianacloud/cli-{os_name}-{cpu}', cli_version, {
-                    'package.json': json.dumps(dict(version=cli_version, os=[os_name], cpu=[cpu])).encode(),
-                    f'bin/{binary}': f'native fixture: {os_name}/{cpu}'.encode(),
-                })
+            cli_source = Path(temporary) / 'cli'
+            (cli_source / 'cmd/tiana').mkdir(parents=True)
+            (cli_source / 'internal/buildconfig').mkdir(parents=True)
+            (cli_source / 'go.mod').write_text('module github.com/tianacloud/cli\n\ngo 1.25.0\n')
+            (cli_source / 'internal/buildconfig/config.go').write_text('package buildconfig\nvar DefaultAcquisitionSource string\n')
+            (cli_source / 'cmd/tiana/main.go').write_text('package main\nimport ("fmt"; "github.com/tianacloud/cli/internal/buildconfig")\nvar version string\nfunc main() { fmt.Println(version, buildconfig.DefaultAcquisitionSource) }\n')
             skills = {str(p.relative_to(ROOT)): p.read_bytes() for p in (ROOT / 'skills').rglob('*')
                       if p.is_file() and p.name != '.npmignore' and '__pycache__' not in p.parts and p.suffix not in ('.pyc', '.pyo')}
             package('@tianacloud/agent-skills', skills_version, {
@@ -54,7 +54,7 @@ class DoubaoPackagingTest(unittest.TestCase):
             })
             (source / 'npm-pack.json').write_text(json.dumps(descriptors))
             result = subprocess.run([sys.executable, str(ROOT / 'scripts/build-doubao.py'),
-                                     '--source', str(source), '--output', str(output),
+                                     '--source', str(source), '--output', str(output), '--cli-source', str(cli_source),
                                      '--cli-version', cli_version, '--skills-version', skills_version],
                                     capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
@@ -76,11 +76,16 @@ class DoubaoPackagingTest(unittest.TestCase):
                 with zipfile.ZipFile(output / f'tiana_{suffix}.zip') as archive:
                     binary = 'tiana.exe' if os_name == 'win32' else 'tiana'
                     self.assertEqual(archive.namelist(), [binary])
-                    self.assertEqual(archive.read(binary), f'native fixture: {os_name}/{cpu}'.encode())
+                    self.assertGreater(len(archive.read(binary)), 1000)
+                    if os_name == 'linux' and cpu == 'x64':
+                        executable = Path(temporary) / 'tiana'
+                        executable.write_bytes(archive.read(binary))
+                        executable.chmod(0o755)
+                        self.assertEqual(subprocess.check_output([str(executable)], text=True).strip(), f'{cli_version} doubao')
                     self.assertEqual((archive.getinfo(binary).external_attr >> 16) & 0o777, 0o755)
             manual=(output / 'CLI-接入配置与技术手册.md').read_text()
-            self.assertIn('`tiana login --from doubao`', manual)
-            self.assertIn('`tiana.exe login --from doubao`', manual)
+            self.assertIn('`tiana login`', manual)
+            self.assertIn('`tiana.exe login`', manual)
             self.assertTrue((output / 'TEST-RESULTS.md').is_file())
             for line in (output / 'SHA256SUMS').read_text().splitlines():
                 digest, name = line.split('  ', 1)
