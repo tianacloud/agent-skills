@@ -10,7 +10,7 @@ Skills 仍可按下文更新到当前加载目录；更新后保留上述实际 
 
 ## 千问办公桌面包
 
-实际 CLI 位于含 `.qwenwork-plugin/plugin.json` 的连接器包内时，使用该包 `bin/<os>_<arch>/tiana`（Windows 为 `tiana.exe`）作为后续命令入口。`--version` 返回连接器提交版本，`version` 返回通用 CLI 版本。来源由该入口注入；它与同目录 `libexec` 中的通用 CLI 随连接器整包升级。发现新 CLI 或 Skills 后，按会话更新规则征得同意，再通过宿主更新匹配的连接器包并核验实际入口、两个版本和技能重载。npm 全局安装用于独立 CLI，不作为这个内置入口的升级方式。
+实际 CLI 位于含 `.qwenwork-plugin/plugin.json` 的连接器包内时，使用该包 `bin/<os>_<arch>/tiana`（Windows 为 `tiana.exe`）作为后续命令入口。`--version` 返回连接器提交版本，`version` 返回通用 CLI 版本。来源由打包脚本写入同目录 `libexec` 中 CLI 的构建默认值；该入口与 CLI 随连接器整包升级。发现新 CLI 或 Skills 后，按会话更新规则征得同意，再通过宿主更新匹配的连接器包并核验实际入口、两个版本和技能重载。npm 全局安装用于独立 CLI，不作为这个内置入口的升级方式。
 
 ## CLI：沿用当前托管安装
 

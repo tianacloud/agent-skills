@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { once } from 'node:events';
 import { promises as fs } from 'node:fs';
 import http from 'node:http';
@@ -7,13 +7,17 @@ import os from 'node:os';
 import path from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import test from 'node:test';
+import { unzipSync } from 'fflate';
 
 const binary = process.env.TIANA_TEST_CLI_BINARY;
 
 test('real CLI auth processes with delayed fixture approval (not WorkBuddy)', { skip: !binary, timeout: 35000 }, async t => {
-  const cli = JSON.parse(await fs.readFile('packaging/workbuddy/tiana-cloud/cli.json', 'utf8'));
   const directory = await fs.mkdtemp(path.join(os.tmpdir(), 'tiana-connector-auth-'));
   t.after(() => fs.rm(directory, { recursive: true, force: true }));
+  const build = spawnSync(process.execPath, ['scripts/build-workbuddy-connector.mjs', '--output', directory], { encoding: 'utf8' });
+  assert.equal(build.status, 0, build.stderr);
+  const archive = unzipSync(await fs.readFile(build.stdout.trim().split('\n').at(-1)));
+  const cli = JSON.parse(Buffer.from(archive['cli.json']).toString('utf8'));
   let approved = false, calls = 0, exchanges = 0, logouts = 0, quotaAvailable = true, whoamiCalls = 0;
   const server = http.createServer(async (request, response) => {
     calls++;

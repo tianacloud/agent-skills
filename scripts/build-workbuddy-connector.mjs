@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { zipSync } from 'fflate';
 import { addWorkBuddyFrontmatter } from './workbuddy-metadata.mjs';
 
+const ACQUISITION_SOURCE = 'workbuddy';
 const root = process.cwd();
 const args = process.argv.slice(2);
 if (args.length && (args.length !== 2 || args[0] !== '--output')) {
@@ -28,6 +29,9 @@ async function addDirectory(directory, prefix) {
 for (const name of ['connector-meta.json', 'cli.json', 'icon.png']) {
   entries[name] = new Uint8Array(await fs.readFile(path.join(template, name)));
 }
+const cli = JSON.parse(Buffer.from(entries['cli.json']).toString('utf8'));
+cli.env = { ...cli.env, TIANA_FROM: ACQUISITION_SOURCE };
+entries['cli.json'] = Buffer.from(JSON.stringify(cli, null, 2) + '\n');
 for (const name of Object.keys(localized.skills)) {
   await addDirectory(path.join(root, 'skills', name), `skills/${name}`);
   const entry = `skills/${name}/SKILL.md`;

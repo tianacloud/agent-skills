@@ -4,7 +4,8 @@ The current Connector is built from `packaging/workbuddy/tiana-cloud` and the
 canonical Skills. It connects to online:
 `https://console.tianacloud.com`.
 
-`cli.json` injects that origin through `env`, installs the latest public
+The packaging script generates `cli.json` with `TIANA_FROM=workbuddy`.
+The configuration injects that source and the origin through `env`, installs the latest public
 `@tianacloud/cli`, logs in with `tiana login --no-open`, checks `tiana status`,
 and signs out with `tiana logout`. `authWaitForExit` keeps login running until
 browser approval completes. `authUrlDomain` identifies the online Console.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Package published native CLI binaries and Skills for QwenWork desktop."""
+"""Build channel-specific native CLI binaries and package Skills for QwenWork desktop."""
 import argparse
 import base64
 import hashlib
@@ -13,15 +13,19 @@ import tempfile
 import zipfile
 
 
+from channel_build import build_binary, resolve_source
+
+ACQUISITION_SOURCE = 'qwenwork'
+
 ROOT = Path(__file__).resolve().parent.parent
 PLATFORMS = (
-    ('windows_amd64', 'win32', 'x64', 'tiana.exe'),
-    ('darwin_arm64', 'darwin', 'arm64', 'tiana'),
-    ('darwin_amd64', 'darwin', 'x64', 'tiana'),
+    ('windows_amd64', 'tiana.exe'),
+    ('darwin_arm64', 'tiana'),
+    ('darwin_amd64', 'tiana'),
 )
 
 
-def build(source, output, cli_version, skills_version):
+def build(source, output, cli_version, skills_version, cli_source, source_info):
     records = json.loads((source / 'npm-pack.json').read_text())
 
     def read_package(name, version):
@@ -37,14 +41,13 @@ def build(source, output, cli_version, skills_version):
         return files
 
     entries = {}
-    for directory, os_name, cpu, binary in PLATFORMS:
-        files = read_package(f'@tianacloud/cli-{os_name}-{cpu}', cli_version)
-        metadata = json.loads(files['package.json'][0])
-        assert metadata['os'] == [os_name] and metadata['cpu'] == [cpu], directory
-        adapter = 'tiana-qwenwork.exe' if os_name == 'win32' else 'tiana-qwenwork'
-        entries[f'bin/{directory}/{binary}'] = (files[f'bin/{adapter}'][0], 0o755)
-        entries[f'bin/{directory}/libexec/{binary}'] = (files[f'bin/{binary}'][0], 0o755)
-        entries['licenses/cli-LICENSE'] = (files['LICENSE'][0], 0o644)
+    for directory, binary in PLATFORMS:
+        goos, goarch = directory.split('_')
+        entries[f'bin/{directory}/{binary}'] = (
+            build_binary(cli_source, cli_version, ACQUISITION_SOURCE, goos, goarch, 'tiana-qwenwork'), 0o755)
+        entries[f'bin/{directory}/libexec/{binary}'] = (
+            build_binary(cli_source, cli_version, ACQUISITION_SOURCE, goos, goarch), 0o755)
+    entries['licenses/cli-LICENSE'] = ((cli_source / 'LICENSE').read_bytes(), 0o644)
 
     skills = read_package('@tianacloud/agent-skills', skills_version)
     entries.update({name: value for name, value in skills.items() if name.startswith('skills/')})
@@ -85,6 +88,7 @@ def build(source, output, cli_version, skills_version):
         'cli_version': cli_version, 'skills_version': skills_version,
         'connector_version': skills_version, 'platforms': [p[0] for p in PLATFORMS],
         'skills': skill_paths, 'source_integrities': records,
+        'cli_source': {**source_info, 'default_acquisition_source': ACQUISITION_SOURCE},
         'sha256': digest, 'bytes': target.stat().st_size,
     }, ensure_ascii=False, indent=2) + '\n')
     print(f'Verified 3 platforms and {len(skill_paths)} Skills; CLI {cli_version}, Skills {skills_version}.')
@@ -96,6 +100,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, help='reuse npm packs with npm-pack.json; otherwise download exact versions')
     parser.add_argument('--output', type=Path, default=ROOT / 'dist/qwen')
+    parser.add_argument('--cli-source', type=Path, help='local CLI source for build verification')
     parser.add_argument('--cli-version', required=True)
     parser.add_argument('--skills-version', required=True)
     args = parser.parse_args()
@@ -104,15 +109,14 @@ def main():
     with tempfile.TemporaryDirectory(prefix='tiana-qwen-source-') as temporary:
         source = args.source or Path(temporary)
         if args.source is None:
-            packages = [f'@tianacloud/cli-{os_name}-{cpu}@{args.cli_version}'
-                        for _, os_name, cpu, _ in PLATFORMS]
-            packages.append(f'@tianacloud/agent-skills@{args.skills_version}')
+            packages = [f'@tianacloud/agent-skills@{args.skills_version}']
             print(f'Downloading CLI {args.cli_version} / Skills {args.skills_version}', flush=True)
             result = subprocess.run(['npm', 'pack', '--json', '--ignore-scripts',
                                      '--registry=https://registry.npmjs.org/', '--pack-destination', str(source),
                                      *packages], check=True, stdout=subprocess.PIPE, text=True)
             (source / 'npm-pack.json').write_text(result.stdout)
-        build(source, args.output, args.cli_version, args.skills_version)
+        cli_source, source_info = resolve_source(args.cli_version, args.cli_source)
+        build(source, args.output, args.cli_version, args.skills_version, cli_source, source_info)
 
 
 if __name__ == '__main__':

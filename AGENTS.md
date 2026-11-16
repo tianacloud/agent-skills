@@ -35,6 +35,9 @@ For platform delivery, run the corresponding script from the repository root:
 - QwenWork: `./scripts/qwen_packaging` generates one desktop CLI and Skills ZIP.
 
 All scripts run without arguments and print the final ZIP's absolute path last.
+Doubao and Qwen builds require Go, Python and npm on the packaging machine;
+they download pinned CLI module source and published Skills. Their native CLI
+binaries run without a Go installation.
 
 ## Management origin and public installation
 
@@ -293,6 +296,7 @@ continues through share-template.md. Publication and each setting have separate 
 
 Channel-specific CLI builds expose their build default through version --json.
 Use the matching channel platform package for upgrades and verify that default
-after replacing the actual host entrypoint. The Doubao packager compiles pinned
-CLI module source and owns its channel value; canonical Skills consume the generic
+after replacing the actual host entrypoint. Doubao and Qwen packagers compile pinned
+CLI module source and own their channel values. The WorkBuddy packager generates
+its source environment configuration for the npm-installed generic CLI; canonical Skills consume the generic
 version field and preserve the package-specific upgrade path.

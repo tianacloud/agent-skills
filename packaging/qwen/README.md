@@ -1,6 +1,6 @@
 # Tiana Cloud for QwenWork Desktop
 
-This ZIP contains the published Tiana CLI {{CLI_VERSION}} for Windows x64,
+This ZIP contains Tiana CLI built from the published source version {{CLI_VERSION}} for Windows x64,
 macOS Apple Silicon and macOS Intel, plus all Skills from
 @tianacloud/agent-skills {{SKILLS_VERSION}}. The connector manifest version is
 {{SKILLS_VERSION}} and must match the submission form. QwenWork selects the
@@ -16,9 +16,10 @@ session when possible and does not query quota. Ordinary unauthenticated status
 is `{"status":"unauthorized"}` with exit 0; operational errors use nonzero exits
 and JSON `code`/`message` on stderr.
 
-The entrypoint defaults an absent TIANA_FROM to qwenwork for the bundled core in
-`bin/<os>_<arch>/libexec/`. Explicit environment values (including empty) are
-preserved, and `login --from` takes priority. Use this entrypoint for Agent commands
+The packaging script compiles the default source into the bundled core in
+`bin/<os>_<arch>/libexec/`. `tiana version --json` reports it through
+`data.default_acquisition_source`. Explicit environment values (including empty)
+are preserved, and `login --from` takes priority. Use this entrypoint for Agent commands
 as well as desktop authentication. Upgrade the connector package as a unit to keep
 the entrypoint, core, manifest and Skills together.
 

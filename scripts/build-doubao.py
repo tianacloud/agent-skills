@@ -5,7 +5,6 @@ import hashlib
 import json
 from pathlib import Path
 import re
-import os
 import stat
 import tarfile
 import zipfile
@@ -15,9 +14,10 @@ import tempfile
 import argparse
 import posixpath
 
+from channel_build import CLI_MODULE, build_binary, resolve_source
+
 ROOT = Path(__file__).resolve().parent.parent
 ACQUISITION_SOURCE = "doubao"
-CLI_MODULE = "github.com/tianacloud/cli"
 
 
 def build(SOURCE, OUT, CLI, SKILLS, cli_source, source_info):
@@ -46,14 +46,7 @@ def build(SOURCE, OUT, CLI, SKILLS, cli_source, source_info):
     for platform in platforms:
         executable = 'tiana.exe' if platform.startswith('windows-') else 'tiana'
         goos, goarch = platform.split('-')
-        with tempfile.TemporaryDirectory(prefix='tiana-channel-build-') as temporary:
-            target = Path(temporary) / executable
-            subprocess.run(['go', 'build', '-mod=readonly', '-buildvcs=false', '-trimpath',
-                            '-ldflags', f'-s -w -X main.version={CLI} -X {CLI_MODULE}/internal/buildconfig.DefaultAcquisitionSource={ACQUISITION_SOURCE}',
-                            '-o', str(target), './cmd/tiana'], cwd=cli_source, check=True,
-                           env={**os.environ, 'GOWORK': 'off', 'GOFLAGS': '', 'GOOS': goos,
-                                'GOARCH': goarch, 'CGO_ENABLED': '0'})
-            binary = target.read_bytes()
+        binary = build_binary(cli_source, CLI, ACQUISITION_SOURCE, goos, goarch)
         filename = f'tiana_{platform.replace("-", "_")}.zip'
         write_zip(filename, {executable: binary}, executable=True)
         raw = (OUT / filename).read_bytes()
@@ -178,15 +171,7 @@ def main():
                                      '--registry=https://registry.npmjs.org/', '--pack-destination', str(source),
                                      *packages], check=True, stdout=subprocess.PIPE, text=True)
             (source / 'npm-pack.json').write_text(result.stdout)
-        if args.cli_source is None:
-            downloaded = json.loads(subprocess.check_output(
-                ['go', 'mod', 'download', '-json', f'{CLI_MODULE}@v{args.cli_version}'],
-                cwd=temporary, text=True, env={**os.environ, 'GOWORK': 'off'}))
-            cli_source = Path(downloaded['Dir'])
-            source_info = {key: downloaded[key] for key in ['Path', 'Version', 'Sum', 'GoModSum', 'Origin'] if key in downloaded}
-        else:
-            cli_source = args.cli_source.resolve()
-            source_info = {'Path': CLI_MODULE, 'Version': f'v{args.cli_version}', 'local_source': True}
+        cli_source, source_info = resolve_source(args.cli_version, args.cli_source)
         build(source, output, args.cli_version, args.skills_version, cli_source, source_info)
 
 
