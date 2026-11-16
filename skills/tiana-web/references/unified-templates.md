@@ -30,7 +30,7 @@ tiana web delete-template TEMPLATE_ID --request-id REQUEST_ID --expected-revisio
 
 ## 分享与市场分别管理
 
-发布材料不等于开启分享或上架市场。先读取模板详情中服务端计算的 `permissions`、`revision` 与 `distribution`，分别确认用户授权和实际权限。仅变更用户要求的一项：
+每次发布版本成功后都会自动开启链接分享（`share_enabled=true`），包括首次发布、更新及撤回后的重发；`market_enabled` 保持原值，上架市场仍需单独操作。尚未首次发布的空壳不能开启分发。若作者明确要求仅保留材料、不对外分享，在发布完成后调用下述 `--share-enabled=false` 并核对关闭回执。管理分发前读取模板详情中服务端计算的 `permissions`、`revision` 与 `distribution`，分别确认用户授权和实际权限。仅变更用户要求的一项：
 
 ```sh
 tiana web set-template-distribution TEMPLATE_ID --request-id REQUEST_ID --expected-revision REVISION --share-enabled=false --json
