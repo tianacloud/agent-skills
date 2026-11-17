@@ -65,6 +65,14 @@ def build(source, output, cli_version, skills_version, cli_source, source_info):
     readme = (ROOT / 'packaging/qwen/README.md').read_text()
     readme = readme.replace('{{CLI_VERSION}}', cli_version).replace('{{SKILLS_VERSION}}', skills_version)
     entries['README.md'] = (readme.encode(), 0o644)
+    review = ROOT / 'packaging/qwen/review'
+    for path in sorted(review.rglob('*')):
+        if path.is_file():
+            data = path.read_bytes()
+            if path.suffix == '.md':
+                data = data.replace(b'{{CLI_VERSION}}', cli_version.encode()).replace(
+                    b'{{SKILLS_VERSION}}', skills_version.encode())
+            entries['review/' + path.relative_to(review).as_posix()] = (data, 0o644)
     assert len(entries) <= 2048, 'Qwen ZIP entry limit exceeded'
     assert sum(len(data) for data, _ in entries.values()) <= 512 * 1024 * 1024, 'Qwen unpacked size limit exceeded'
 

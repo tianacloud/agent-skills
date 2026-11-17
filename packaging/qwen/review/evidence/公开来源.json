@@ -1,0 +1,95 @@
+{
+  "captured_at": "2026-11-17T06:29:12.985055+00:00",
+  "sources": [
+    {
+      "url": "https://api.github.com/orgs/tianacloud",
+      "observed": {
+        "login": "tianacloud",
+        "name": null,
+        "blog": null,
+        "description": "",
+        "html_url": "https://github.com/tianacloud",
+        "is_verified": false
+      }
+    },
+    {
+      "url": "https://registry.npmjs.org/@tianacloud/cli/latest",
+      "observed": {
+        "name": "@tianacloud/cli",
+        "version": "1.0.32",
+        "description": "Tiana CLI for account login, SQLite, Git and application publication",
+        "author": null,
+        "homepage": "https://github.com/tianacloud/cli#readme",
+        "repository": {
+          "url": "git+https://github.com/tianacloud/cli.git",
+          "type": "git"
+        },
+        "license": "Apache-2.0",
+        "dist": {
+          "shasum": "a849b5c822a796d14f2036e1edc6f106bfea5406",
+          "tarball": "https://registry.npmjs.org/@tianacloud/cli/-/cli-1.0.32.tgz",
+          "fileCount": 7,
+          "integrity": "sha512-g5zyH0EBgbLoHArfIl8/EjSn0Jqph5yBts7mOCTftvEK/BqkfJtWR0istzGj4d7jcR7glHCkF0AuV/tjchoDdA==",
+          "signatures": [
+            {
+              "sig": "MEUCIQCxF2Fo8VUN0gqa7EU5C5EKkHDKq69XkKmDAxaw2Va6YwIger0+ZlqzImK/eLiVglvz9g6GI15RF/8ciTf3XCnRERU=",
+              "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+            },
+            {
+              "sig": "MEYCIQCtz7CY7GZjqvYc8U9BNOauWWSmDYBOaLWFTLq9VzTXPQIhAII3pzMxZP9q1KfgrOKwC4ztl62RPmW6HQFaz2Je2+ac",
+              "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+            }
+          ],
+          "attestations": {
+            "url": "https://registry.npmjs.org/-/npm/v1/attestations/@tianacloud%2fcli@1.0.32",
+            "provenance": {
+              "predicateType": "https://slsa.dev/provenance/v1"
+            }
+          },
+          "unpackedSize": 16481
+        }
+      }
+    },
+    {
+      "url": "https://registry.npmjs.org/@tianacloud/agent-skills/latest",
+      "observed": {
+        "name": "@tianacloud/agent-skills",
+        "version": "1.0.30",
+        "description": "Tiana Cloud Skills for accounts, SQLite, Git, Functions and Web applications",
+        "author": {
+          "url": "https://github.com/tianacloud",
+          "name": "Tiana Cloud"
+        },
+        "homepage": "https://github.com/tianacloud/agent-skills#readme",
+        "repository": {
+          "url": "git+https://github.com/tianacloud/agent-skills.git",
+          "type": "git"
+        },
+        "license": "Apache-2.0",
+        "dist": {
+          "shasum": "0797ebef6b6be51d6d0809642d613ccce616063d",
+          "tarball": "https://registry.npmjs.org/@tianacloud/agent-skills/-/agent-skills-1.0.30.tgz",
+          "fileCount": 44,
+          "integrity": "sha512-k2w+myeh2CCq+k9HSrkzgrA0LuWjyxcMUO5aeBwIIneBIcy1diESm8dK/2Sku+wrfFBNKky87MoAvZEV3EVnAw==",
+          "signatures": [
+            {
+              "sig": "MEUCIF50eq8vWXeCNSLDLWIAFTcueqT2iFqhmNnKx8MVyze3AiEA8yhml6iuZEy1O6SB/sidHBaYq2d/Fwp/10PxIW1bddY=",
+              "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+            },
+            {
+              "sig": "MEYCIQCID2StpLVXGKvbSBHdX6I0cWyNE2e/th07H07BURZGSAIhAOG884IQZDPpVeb6h+PT9F0tP39/Bn6zF9KAUCT3t89t",
+              "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+            }
+          ],
+          "attestations": {
+            "url": "https://registry.npmjs.org/-/npm/v1/attestations/@tianacloud%2fagent-skills@1.0.30",
+            "provenance": {
+              "predicateType": "https://slsa.dev/provenance/v1"
+            }
+          },
+          "unpackedSize": 259950
+        }
+      }
+    }
+  ]
+}

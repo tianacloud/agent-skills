@@ -69,6 +69,21 @@ class QwenPackagingTest(unittest.TestCase):
                 self.assertEqual(set(manifest['skills']), {'skills/tiana/SKILL.md', 'skills/new-product/SKILL.md'})
                 for name, content in skills.items():
                     self.assertEqual(archive.read(name), content, name)
+                self.assertEqual({name for name in archive.namelist() if name.startswith('skills/')}, set(skills))
+                review = ROOT / 'packaging/qwen/review'
+                review_files = [path for path in review.rglob('*') if path.is_file()]
+                self.assertTrue(review_files)
+                self.assertEqual(
+                    {name for name in archive.namelist() if name.startswith('review/')},
+                    {'review/' + path.relative_to(review).as_posix() for path in review_files})
+                for path in review_files:
+                    expected = path.read_bytes()
+                    if path.suffix == '.md':
+                        expected = expected.replace(b'{{CLI_VERSION}}', b'2.3.4').replace(
+                            b'{{SKILLS_VERSION}}', b'5.6.7')
+                    name = 'review/' + path.relative_to(review).as_posix()
+                    self.assertEqual(archive.read(name), expected, name)
+                    self.assertEqual((archive.getinfo(name).external_attr >> 16) & 0o777, 0o644)
                 for os_name, cpu, directory, binary in platforms:
                     name = f'bin/{directory}/{binary}'
                     self.assertGreater(len(archive.read(name)), 1000)

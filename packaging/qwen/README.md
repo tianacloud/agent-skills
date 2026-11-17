@@ -35,3 +35,10 @@ each target platform. Packaging checks establish archive contents and integrity.
 Source: https://github.com/tianacloud/cli and
 https://github.com/tianacloud/agent-skills.
 See LICENSE and licenses/cli-LICENSE for the Apache-2.0 licenses.
+
+## 审核补充材料
+
+本包将全部 Skills 与各桌面平台的 CLI 入口整合为一个 Tiana Cloud 连接器。
+请从 [review/01-审核补充说明.md](review/01-审核补充说明.md) 阅读产品归属、
+官网备案证据、公开来源和 API 授权链路。`review/` 是独立审核材料目录。
+其中的原厂确认函为待核实、填写及盖章的草稿；公开信息补全文案尚未发布。
