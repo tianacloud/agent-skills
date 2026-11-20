@@ -41,4 +41,4 @@ Web 删除使用 `tiana web delete WEB_ID`，默认需要终端确认。仅在�
 
 `--wait --json` 等待源站清理完成；不加 `--wait` 只表示删除已受理。空应用、上传中和已发布的应用均可删除；本地仍有未完成的 CLI 创建操作时，先按原请求恢复该操作。已接受的删除由 Control 的实例生命周期清理固定 S3 对象，MGR 只跟踪确认状态；公开缓存副本按缓存策略失效。中断不取消服务端删除。响应未知、输出失败或停止等待后，保留 CLI 待完成记录，使用同一命令或已解析的实际 ID 恢复，禁止重新按名称选择别的资源。删除回执不含持久化清理错误码；长时间处于 deleting 时检查服务端清理日志，`--wait` 会继续等待，必要时停止等待后排查，不伪称已经物理清空。
 
-项目 entry 仅在 create 指定，省略后也不能改为 Site；没有 style 参数。`web serve ID --dir DIST` 从 MGR 读取固定入口。可编辑参数使用 `web update ID --expected-revision REV [--name NAME] [--description DESCRIPTION] [--database-instance-id DB_ID] [--git-instance-id GIT_ID] [--source-commit FULL_HASH]`。清空关联使用 --clear-database、--clear-git、--clear-source-commit；清空 Git 时同时清空已有 commit。更新不发布文件，publish 不修改项目参数。
+项目 entry 仅在 create 指定，省略后也不能改为 Site；没有 style 参数。`web serve ID --dir DIST` 从 MGR 读取固定入口。`web update` 与 `source-commit` 已下线；已有 Web 的 SQLite 与 Git 补绑、解绑使用 `tiana web bindings get/bind/unbind`（详见 `tiana-web` 技能的“已有 Web 的 SQLite 与 Git 关联”指引），名称和备注在 Console 编辑；`publish` 不修改项目参数。
