@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+"""Build a Doubao Open Platform Plugin ZIP from the current checkout."""
+import argparse
+import json
+import os
+from pathlib import Path
+import re
+import stat
+import tempfile
+from urllib.parse import urlsplit
+from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
+
+ROOT = Path(__file__).resolve().parent.parent
+PACKAGING = ROOT / 'packaging/doubao'
+ICON = 'com.doubao/assets/icon.png'
+SKILL_ICON = 'assets/icon.png'
+PRIVACY_POLICY_URL = 'https://console.tianacloud.com/docs/terms-of-use'
+MAX_ENTRIES = 1024
+MAX_FILE_BYTES = 2_000_000
+MAX_PACKAGE_BYTES = 16_000_000
+MAX_UNPACKED_BYTES = 8_000_000
+IGNORED_DIRECTORIES = {'__pycache__', '__MACOSX'}
+
+SKILL_DISPLAY = {
+    'tiana': ('Tiana Cloud', '账号登录、CLI 使用及实例管理。'),
+    'tiana-sqlite': ('Tiana SQLite', '管理云端数据库、SQL 与数据库分支。'),
+    'tiana-git': ('Tiana Git', '管理 Git 仓库、同步源码与应用版本。'),
+    'tiana-web': ('Tiana Web', '让 AI 创建、修改和部署 Web 应用。'),
+    'tiana-function': ('Tiana Function', '创建 Go 后端服务、管理源码、参数、用户密钥及编译发布。'),
+}
+SKILL_NAMES = {name: 'tianacloud' + name.removeprefix('tiana') for name in SKILL_DISPLAY}
+CHILD_SKILL_REFERENCE = re.compile(r'(?<![\w./-])tiana-[a-z]+(?![\w/-])', re.ASCII)
+ROOT_SKILL_REFERENCE = re.compile(
+    r'(?<=父技能 `)tiana(?=`)|(?<=`)tiana(?=` (?:技能|的分步登录流程))|(?<=使用 )tiana(?=；)'
+)
+
+
+def rename_skill_references(content):
+    content = CHILD_SKILL_REFERENCE.sub(lambda match: SKILL_NAMES.get(match[0], match[0]), content)
+    return ROOT_SKILL_REFERENCE.sub(SKILL_NAMES['tiana'], content)
+
+
+def add_skill_display(content, skill):
+    label, description = SKILL_DISPLAY[skill]
+    fields = {
+        'display_name': label,
+        'display_description': description,
+        'icon': f'./{SKILL_ICON}',
+    }
+    header, delimiter, body = content.partition('\n---\n')
+    metadata = '\nmetadata:\n'
+    if not header.startswith('---\n') or not delimiter or metadata not in header:
+        raise ValueError(f'{skill}/SKILL.md requires frontmatter with a metadata mapping')
+    header, names_replaced = re.subn(r'^name: .+$', f'name: {SKILL_NAMES[skill]}', header, count=1, flags=re.M)
+    if not names_replaced:
+        raise ValueError(f'{skill}/SKILL.md requires a name in its frontmatter')
+    header = header.replace('\n  parent: tiana\n', f"\n  parent: {SKILL_NAMES['tiana']}\n", 1)
+    display = ''.join(f'  {key}: {json.dumps(value, ensure_ascii=False)}\n' for key, value in fields.items())
+    return header.replace(metadata, metadata + display, 1) + delimiter + body
+
+
+def build(output_dir, privacy_policy_url):
+    url = urlsplit(privacy_policy_url)
+    if url.scheme != 'https' or not url.hostname:
+        raise ValueError('--privacy-policy-url requires an absolute HTTPS URL')
+    manifest = json.loads((ROOT / 'plugin.json').read_text(encoding='utf-8'))
+    manifest.setdefault('extensions', {})['com.doubao'] = {
+        'displayName': {'zh': 'Tiana Cloud'},
+        'displayDescription': {'zh': '一站式开发部署平台，提供代码、数据库、前后端服务、密钥托管等全套能力'},
+        'icon': f'./{ICON}',
+        'chatIcon': f'./{ICON}',
+        'privacyPolicyUrl': privacy_policy_url,
+        'isMinorIncluded': 'true',
+    }
+    icon = (PACKAGING / 'assets/icon.png').read_bytes()
+    entries = {
+        'plugin.json': (json.dumps(manifest, ensure_ascii=False, indent=2) + '\n').encode(),
+        'com.doubao/cli.json': (PACKAGING / 'cli.json').read_bytes(),
+        ICON: icon,
+        'LICENSE': (ROOT / 'LICENSE').read_bytes(),
+    }
+    skills = ROOT / 'skills'
+    skill_dirs = sorted(path for path in skills.iterdir() if path.is_dir() and path.name not in IGNORED_DIRECTORIES)
+    if len(skill_dirs) > 5:
+        raise ValueError('Doubao allows at most 5 top-level Skills per Plugin')
+    if {directory.name for directory in skill_dirs} != SKILL_DISPLAY.keys():
+        raise ValueError('Doubao display metadata must match the skills/ directories')
+    for directory in skill_dirs:
+        archive_dir = f'skills/{SKILL_NAMES[directory.name]}'
+        entrypoint = directory / 'SKILL.md'
+        if not entrypoint.is_file():
+            raise ValueError(f'{directory.name} is missing SKILL.md')
+        for file in [directory, *directory.rglob('*')]:
+            relative = file.relative_to(ROOT)
+            if not IGNORED_DIRECTORIES.isdisjoint(relative.parts):
+                continue
+            if file.name == '.DS_Store' or file.name.startswith('._') or file.suffix in {'.pyc', '.pyo'}:
+                continue
+            if file.is_symlink():
+                raise ValueError(f'Cannot package symlink {relative}')
+            if not file.is_file():
+                continue
+            if file.stat().st_size > MAX_FILE_BYTES:
+                raise ValueError(f'{relative} exceeds the 2 MB file limit')
+            content = file.read_bytes()
+            if file.suffix == '.md':
+                markdown = content.decode()
+                if file == entrypoint:
+                    markdown = add_skill_display(markdown, directory.name)
+                content = rename_skill_references(markdown).encode()
+            entries[f'{archive_dir}/{file.relative_to(directory).as_posix()}'] = content
+        entries[f'{archive_dir}/{SKILL_ICON}'] = icon
+
+    if len(entries) > MAX_ENTRIES or sum(map(len, entries.values())) > MAX_UNPACKED_BYTES:
+        raise ValueError('Plugin exceeds the 1024-entry or 8 MB unpacked limit')
+    for name, content in entries.items():
+        if len(content) > MAX_FILE_BYTES:
+            raise ValueError(f'{name} exceeds the 2 MB file limit')
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output = output_dir / f"tiana-doubao-plugin-{manifest['version']}.zip"
+    with tempfile.TemporaryDirectory(dir=output_dir) as staging:
+        temporary = Path(staging) / output.name
+        with ZipFile(temporary, 'w') as archive:
+            for name, content in sorted(entries.items()):
+                info = ZipInfo(name)
+                info.create_system = 3
+                info.external_attr = (stat.S_IFREG | 0o644) << 16
+                archive.writestr(info, content, compress_type=ZIP_DEFLATED, compresslevel=9)
+        if temporary.stat().st_size > MAX_PACKAGE_BYTES:
+            raise ValueError('Plugin ZIP exceeds the 16 MB upload limit')
+        os.replace(temporary, output)
+    return output
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output', type=Path, default=ROOT / 'dist/doubao',
+                        help='directory for the generated Plugin ZIP (default: dist/doubao)')
+    parser.add_argument('--privacy-policy-url', default=PRIVACY_POLICY_URL,
+                        help='override the published HTTPS privacy policy URL in the plugin manifest')
+    args = parser.parse_args()
+    try:
+        print(build(args.output.resolve(), args.privacy_policy_url))
+    except (OSError, ValueError) as error:
+        parser.exit(1, f'{error}\n')
+
+
+if __name__ == '__main__':
+    main()

@@ -36,12 +36,17 @@ Skills and the WorkBuddy connector configuration unchanged.
 Run the corresponding script directly; no arguments or manual dependency setup are needed:
 
 ```sh
+./scripts/doubao_packaging_v2
 ./scripts/doubao_packaging
 ./scripts/workbuddy_packaging
 ./scripts/qwen_packaging
 ```
 
-Doubao resolves the current published CLI and Skills versions, then downloads
+The [Doubao Open Platform Plugin](packaging/doubao/README.md#开放平台-plugin)
+build uses Python 3 and the current checkout. It saves the Plugin ZIP at
+`dist/doubao/tiana-doubao-plugin-VERSION.zip` and prints its absolute path.
+
+The Doubao manual delivery build resolves published CLI and Skills versions, then downloads
 and packages those exact versions into `dist/doubao/cli-VERSION-skills-VERSION/`.
 The final delivery is `dist/doubao/tiana-doubao-manual-skills-VERSION-cli-VERSION.zip`,
 with a matching `.sha256` file. It contains five native platform ZIPs, the
@@ -67,8 +72,8 @@ CLI commands against the [QwenWork guide](https://alidocs.dingtalk.com/i/p/Qrkoz
 before submission; archive checks do not establish client authentication or
 business acceptance. `npm run test:packaging` verifies both Doubao and Qwen ZIPs.
 
-All three preserve source Skill instructions; Doubao and WorkBuddy also add
-platform display metadata and assets.
+These packages preserve source Skill instructions. Doubao and WorkBuddy also
+add platform display metadata and assets.
 
 ## npm initial setup and Actions release
 

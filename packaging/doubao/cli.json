@@ -1,0 +1,31 @@
+{
+  "connectors": {
+    "tiana": {
+      "install": {
+        "default": ["npm install -g @tianacloud/cli@latest"],
+        "win32": ["npm.cmd install -g @tianacloud/cli@latest"]
+      },
+      "versionCheck": {
+        "default": ["tiana version"],
+        "win32": ["tiana.cmd version"]
+      },
+      "auth": {
+        "default": ["tiana login --from doubao"],
+        "win32": ["tiana.cmd login --from doubao"]
+      },
+      "status": {
+        "default": ["tiana status --auth-only --json"],
+        "win32": ["tiana.cmd status --auth-only --json"]
+      },
+      "unAuth": {
+        "default": ["tiana logout"],
+        "win32": ["tiana.cmd logout"]
+      },
+      "help": {
+        "default": ["tiana help"],
+        "win32": ["tiana.cmd help"]
+      },
+      "statusMatchRegex": "\"logged_in\"\\s*:\\s*true\\b"
+    }
+  }
+}
