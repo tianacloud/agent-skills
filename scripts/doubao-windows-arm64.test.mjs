@@ -86,7 +86,7 @@ for (const channel of ['v1', 'v2']) {
     const result = await run(cli.versionCheck.win32[0] + ' --json');
     const details = JSON.parse(result.stdout).data;
     assert.equal(details.version, version);
-    assert.equal(details.default_acquisition_source, channel === 'v1' ? 'doubao' : '');
+    assert.equal(details.default_acquisition_source, channel === 'v1' ? 'doubao' : 'cli');
     await run(cli.help.win32[0]);
     console.log(JSON.stringify({ channel, platform: process.platform, arch: process.arch, version,
       binary_sha256: createHash('sha256').update(bytes).digest('hex'), default_acquisition_source: details.default_acquisition_source }));
