@@ -5,7 +5,7 @@
 
 ## 接入方式
 
-按当前已在对接的 CLI 专项流程，提交下列问卷字段、五个平台 ZIP 和配套 Skills，由豆包生态团队人工配置与联调。指南第 4.5 节提供人工接入字段与分平台安装包要求；第 4.1 节的 Plugin 配置属于另一种交付方式。本文件为字段填写单及技术手册，平台内部配置由生态团队按实际后台规则生成。
+按当前已在对接的 CLI 专项流程，提交下列问卷字段、六个平台 ZIP 和配套 Skills，由豆包生态团队人工配置与联调。指南第 4.5 节提供人工接入字段与分平台安装包要求；第 4.1 节的 Plugin 配置属于另一种交付方式。本文件为字段填写单及技术手册，平台内部配置由生态团队按实际后台规则生成。
 
 ## 问卷字段填写单
 
@@ -19,7 +19,7 @@
 | 配套 Skills 版本 | {{SKILLS_VERSION}}，共 {{SKILL_COUNT}} 个技能，密钥管理包含在 tiana-function 内 |
 | CLI 可执行文件名 | Linux/macOS：tiana；Windows：tiana.exe。实际文件名与平台槽位的入口一致。 |
 | CLI 安装命令 | 不适用，使用下面的分平台 ZIP。 |
-| CLI 安装包支持平台 | Linux AMD64、Linux ARM64、macOS AMD64、macOS ARM64、Windows AMD64；验收范围见末节。 |
+| CLI 安装包支持平台 | Linux AMD64、Linux ARM64、macOS AMD64、macOS ARM64、Windows AMD64、Windows ARM64；验收范围见末节。 |
 | CLI 是否需要登录 | 需要 |
 | CLI 版本升级方式 | Agent 按 Skills 的会话更新流程检查新正式版。CLI 使用同渠道的新分平台包替换宿主实际入口，核验版本和构建默认来源；Skills 更新到当前加载目录并核验重载结果。 |
 | CLI 手册 / 命令参考 | 本文件与配套 Skills；CLI 实际命令以 tiana help 和各子命令 --help 为准。 |
@@ -59,6 +59,7 @@
 | darwin-amd64 | tiana_darwin_amd64.zip | tiana | 0755 |
 | darwin-arm64 | tiana_darwin_arm64.zip | tiana | 0755 |
 | windows-amd64 | tiana_windows_amd64.zip | tiana.exe | Windows 原生 EXE |
+| windows-arm64 | tiana_windows_arm64.zip | tiana.exe | Windows ARM64 原生 EXE |
 
 文件大小、MD5 和 SHA256 见 `packages.json`。这些字段仅描述实际附件，不含占位资源地址或伪造资源 ID。上传及托管信息由接入团队的平台流程生成。
 

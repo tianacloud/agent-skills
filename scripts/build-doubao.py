@@ -41,7 +41,7 @@ def build(SOURCE, OUT, CLI, SKILLS, cli_source, source_info):
                 info.compress_type = zipfile.ZIP_DEFLATED
                 archive.writestr(info, content, compresslevel=9)
 
-    platforms = ['linux-amd64', 'linux-arm64', 'darwin-amd64', 'darwin-arm64', 'windows-amd64']
+    platforms = ['linux-amd64', 'linux-arm64', 'darwin-amd64', 'darwin-arm64', 'windows-amd64', 'windows-arm64']
     items = []
     for platform in platforms:
         executable = 'tiana.exe' if platform.startswith('windows-') else 'tiana'
@@ -110,7 +110,7 @@ def build(SOURCE, OUT, CLI, SKILLS, cli_source, source_info):
 固定 CLI {CLI} / Skills {SKILLS}。
 
 1. 提交 CLI-接入配置与技术手册.md 中的问卷字段与命令配置。
-2. 分平台提交五个 tiana_<os>_<arch>.zip，根目录仅一个可执行文件；Linux/macOS 为 tiana，Windows 为 tiana.exe。
+2. 分平台提交六个 tiana_<os>_<arch>.zip，根目录仅一个可执行文件；Linux/macOS 为 tiana，Windows 为 tiana.exe。
 3. 提供 {skills_file}，包含 {len(labels)} 个技能、引用资料及各自图标，由豆包接入团队加载。
 4. packages.json 为附件清单。CLI 源码版本与构建来源见 cli-source.json，Skills npm 包完整性见 source-integrities.json；附件摘要见 SHA256SUMS。运行与联调范围见 TEST-RESULTS.md。
 
@@ -125,8 +125,8 @@ def build(SOURCE, OUT, CLI, SKILLS, cli_source, source_info):
 
 CLI {CLI} / Skills {SKILLS}。
 
-- 已校验输入 Skills npm 包 SHA-512 和版本；CLI 从 cli-source.json 记录的源码构建五个平台版本。
-- 已校验五个平台 ZIP 的唯一根目录入口、CRC 和构建二进制 SHA-256；Linux/macOS 执行权限为 0755。
+- 已校验输入 Skills npm 包 SHA-512 和版本；CLI 从 cli-source.json 记录的源码构建六个平台版本。
+- 已校验六个平台 ZIP 的唯一根目录入口、CRC 和构建二进制 SHA-256；Linux/macOS 执行权限为 0755。
 - 已校验五个技能目录、展示字段、版本及本技能内的 Markdown 文件引用。
 - 技能来自指定 npm 正式版，仅补充展示元数据及图标；业务正文、参考资料及脚本保持来源内容。
 - 附件摘要见 SHA256SUMS。
@@ -141,7 +141,7 @@ CLI {CLI} / Skills {SKILLS}。
             if file.is_file():
                 archive.write(file, f'{delivery_name}/{file.relative_to(OUT).as_posix()}')
     Path(str(delivery) + '.sha256').write_text(f'{hashlib.sha256(delivery.read_bytes()).hexdigest()}  {delivery.name}\n')
-    print(f'Verified 5 platform ZIPs and {len(labels)} Skills, CLI {CLI}, Skills {SKILLS}')
+    print(f'Verified 6 platform ZIPs and {len(labels)} Skills, CLI {CLI}, Skills {SKILLS}')
     print(f'\n豆包打包完成，输出目录：{OUT.resolve()}')
     print('生成的包：')
     for filename in [item['file_name'] for item in items] + [skills_file]:

@@ -1,0 +1,85 @@
+name: Doubao Windows ARM64
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/doubao-windows-arm64.yml'
+      - 'scripts/*doubao*'
+      - 'scripts/channel_build.py'
+      - 'packaging/doubao/**'
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      cli: ${{ steps.versions.outputs.cli }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Resolve published inputs
+        id: versions
+        shell: bash
+        run: |
+          echo "cli=$(npm view @tianacloud/cli dist-tags.latest --registry=https://registry.npmjs.org/)" >> "$GITHUB_OUTPUT"
+          echo "skills=$(npm view @tianacloud/agent-skills dist-tags.latest --registry=https://registry.npmjs.org/)" >> "$GITHUB_OUTPUT"
+      - name: Build both delivery formats
+        env:
+          CLI_VERSION: ${{ steps.versions.outputs.cli }}
+          SKILLS_VERSION: ${{ steps.versions.outputs.skills }}
+          GOWORK: 'off'
+        run: |
+          python3 scripts/build-doubao.py --cli-version "$CLI_VERSION" --skills-version "$SKILLS_VERSION" --output dist/doubao/native-packages
+          python3 scripts/doubao_packaging_v2
+      - uses: actions/upload-artifact@v4
+        with:
+          name: doubao-delivery
+          path: dist/doubao/
+          compression-level: 0
+          if-no-files-found: error
+
+  native:
+    needs: package
+    runs-on: windows-11-arm
+    timeout-minutes: 15
+    env:
+      TIANA_TEST_CLI_VERSION: ${{ needs.package.outputs.cli }}
+      TIANA_TEST_DELIVERY: dist/doubao/native-packages
+      TIANA_TEST_PLUGIN: dist/plugin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          architecture: arm64
+      - uses: actions/download-artifact@v4
+        with:
+          name: doubao-delivery
+          path: dist/doubao
+      - name: Extract exact delivery artifacts
+        shell: pwsh
+        run: |
+          Expand-Archive dist/doubao/native-packages/tiana_windows_arm64.zip dist/doubao/native-packages/native
+          $plugin = Get-ChildItem dist/doubao/tiana-doubao-plugin-*.zip
+          Expand-Archive $plugin.FullName dist/plugin
+          node -p 'JSON.stringify({platform:process.platform,arch:process.arch,node:process.version})'
+      - name: Native binary, npm installation and connector authentication
+        shell: pwsh
+        run: |
+          node --test scripts/doubao-windows-arm64.test.mjs 2>&1 | Tee-Object -FilePath windows-arm64-results.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-arm64-results
+          path: windows-arm64-results.log
+          if-no-files-found: error

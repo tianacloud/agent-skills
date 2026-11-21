@@ -38,7 +38,7 @@ class DoubaoPackagingTest(unittest.TestCase):
             platforms = [
                 ('linux', 'x64', 'linux_amd64'), ('linux', 'arm64', 'linux_arm64'),
                 ('darwin', 'x64', 'darwin_amd64'), ('darwin', 'arm64', 'darwin_arm64'),
-                ('win32', 'x64', 'windows_amd64'),
+                ('win32', 'x64', 'windows_amd64'), ('win32', 'arm64', 'windows_arm64'),
             ]
             cli_source = Path(temporary) / 'cli'
             (cli_source / 'cmd/tiana').mkdir(parents=True)
@@ -77,6 +77,11 @@ class DoubaoPackagingTest(unittest.TestCase):
                     binary = 'tiana.exe' if os_name == 'win32' else 'tiana'
                     self.assertEqual(archive.namelist(), [binary])
                     self.assertGreater(len(archive.read(binary)), 1000)
+                    if os_name == 'win32' and cpu == 'arm64':
+                        executable_bytes = archive.read(binary)
+                        pe_offset = int.from_bytes(executable_bytes[0x3c:0x40], 'little')
+                        self.assertEqual(executable_bytes[pe_offset:pe_offset + 4], b'PE\0\0')
+                        self.assertEqual(int.from_bytes(executable_bytes[pe_offset + 4:pe_offset + 6], 'little'), 0xaa64)
                     if os_name == 'linux' and cpu == 'x64':
                         executable = Path(temporary) / 'tiana'
                         executable.write_bytes(archive.read(binary))

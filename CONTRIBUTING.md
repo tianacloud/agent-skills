@@ -49,7 +49,7 @@ build uses Python 3 and the current checkout. It saves the Plugin ZIP at
 The Doubao manual delivery build resolves published CLI and Skills versions, then downloads
 and packages those exact versions into `dist/doubao/cli-VERSION-skills-VERSION/`.
 The final delivery is `dist/doubao/tiana-doubao-manual-skills-VERSION-cli-VERSION.zip`,
-with a matching `.sha256` file. It contains five native platform ZIPs, the
+with a matching `.sha256` file. It contains six native platform ZIPs, the
 five-Skill ZIP, the integration manual, check results and checksums. The script
 prints the complete delivery archive path last.
 
