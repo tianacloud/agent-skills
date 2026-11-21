@@ -3,6 +3,7 @@ import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { promises as fs } from 'node:fs';
 import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
@@ -70,7 +71,8 @@ for (const channel of ['v1', 'v2']) {
       env.npm_config_cache = path.join(directory, 'npm cache');
       env.npm_config_registry = 'https://registry.npmjs.org/';
       for (const command of cli.install.win32) await run(command, false);
-      const packageRoot = path.join(prefix, 'node_modules/@tianacloud/cli-win32-arm64');
+      const installedCLI = path.join(prefix, 'node_modules/@tianacloud/cli/package.json');
+      const packageRoot = path.dirname(createRequire(installedCLI).resolve('@tianacloud/cli-win32-arm64/package.json'));
       const metadata = JSON.parse(await fs.readFile(path.join(packageRoot, 'package.json')));
       assert.equal(metadata.version, version);
       assert.deepEqual(metadata.os, ['win32']);
