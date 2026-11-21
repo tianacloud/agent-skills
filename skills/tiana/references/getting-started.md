@@ -1,6 +1,6 @@
 # 开始使用
 
-在 Agent 实际执行命令的环境检查 `tiana version --json`；构建默认来源非空的渠道专用入口按[宿主说明](connector-updates.md)安装与更新。本技能要求 CLI 1.0.24 或更新正式版，具备分步登录、sqlite、git、web、file、list-template/init-template 和 version check。npm 托管的 CLI 不存在或版本低于基线时，自动执行下面的 npm latest 安装并重新核验；版本无法核实时先排查实际错误，核验通过后再执行资源操作。
+在 Agent 实际执行命令的环境检查 `tiana version --json`；构建默认来源非空且非 `cli` 的渠道专用入口按[宿主说明](connector-updates.md)安装与更新。本技能要求 CLI 1.0.24 或更新正式版，具备分步登录、sqlite、git、web、file、list-template/init-template 和 version check。npm 托管的 CLI 不存在或版本低于基线时，自动执行下面的 npm latest 安装并重新核验；版本无法核实时先排查实际错误，核验通过后再执行资源操作。
 
 连接器环境中，安装或更新前先按[宿主说明](connector-updates.md)定位实际 Node/npm、CLI 安装 prefix 和技能根目录，沿用宿主运行环境。
 
@@ -86,7 +86,7 @@ Console/管理 API、用户 Web 地址、数据库 Endpoint 各有用途：全�
 
 ## 登录来源
 
-宿主提供 `TIANA_FROM` 时，保留并传给每次 CLI 调用。已明确获知渠道、需覆盖环境变量时使用 `tiana login --from CHANNEL`；显式 `--from ""` 清除本次来源。环境变量未设置时使用 CLI 构建默认来源，通用构建默认为空；显式空环境值清除来源。来源只在新建登录事务时选取，恢复已有事务继续原来源。渠道取宿主明确配置，不从模型名或用户身份猜测。后续登录继续沿用实际入口和环境。
+宿主提供 `TIANA_FROM` 时，保留并传给每次 CLI 调用。已明确获知渠道、需覆盖环境变量时使用 `tiana login --from CHANNEL`；显式 `--from ""` 清除本次来源。环境变量未设置时使用 CLI 构建默认来源，通用构建默认为 `cli`（1.0.34 之前版本为空）；显式空环境值清除来源。来源只在新建登录事务时选取，恢复已有事务继续原来源。渠道取宿主明确配置，不从模型名或用户身份猜测。后续登录继续沿用实际入口和环境。
 
 ## 对话中的登录
 
