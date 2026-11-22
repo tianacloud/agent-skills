@@ -1,8 +1,9 @@
 # Contributing
 
 Edit the canonical skill directories under skills/. npm, portable plugins,
-WorkBuddy ZIPs and the Connector use these same instructions. App source and
-its build/persistence/browser tests belong to tianacloud/template-apps.
+WorkBuddy ZIPs and the Connector use these same instructions. Application
+templates are packaged and published from space-owned source Web apps rather
+than maintained as standalone app repositories here.
 
 Every new Tiana skill must participate in the shared first-use update flow in
 [the Tiana entrypoint](skills/tiana/SKILL.md#每个会话一次的更新检查). CLI and

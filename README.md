@@ -32,7 +32,7 @@ Windows PowerShell 使用 `npx.cmd`。目录可以含空格，用引号包住。
 | [tiana-function](skills/tiana-function/SKILL.md) | Go 后端服务源码、构建发布、参数/CORS、数据库后端与用户密钥管理 |
 | [tiana-web](skills/tiana-web/SKILL.md) | 实时模板选择、工程与数据初始化、通用开发、构建发布 |
 
-Web 技能每次任务都实际执行 `tiana web list-template --json`，使用当前 name/description 判断需求。模板 ZIP 原样下载解压到独立项目目录；Agent 按根部 metadata.json 替换变量、先 schema 后 seeds。模板源码和制作规范见 [template-apps](https://github.com/tianacloud/template-apps)，客户安装模板由 CLI 和 MGR 目录完成。
+Web 技能每次任务都实际执行 `tiana web list-template --json`，使用当前 name/description 判断需求。模板 ZIP 原样下载解压到独立项目目录；Agent 按根部 metadata.json 替换变量、先 schema 后 seeds。应用模板由所属空间内的来源 Web 应用打包并发布到在线目录（见 [tiana-web](skills/tiana-web/SKILL.md)），客户安装模板由 CLI 和 MGR 目录完成。
 
 技能安装器只安装技能。Agent 首次执行 Tiana 任务时检查 CLI，缺少时自动执行下面的安装并继续原任务；CLI 要求 1.0.17 或更新正式版，需要 Node.js 20+。
 
