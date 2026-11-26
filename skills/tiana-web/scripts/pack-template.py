@@ -354,7 +354,7 @@ def preflight(snapshot, without_source):
                 if not any(name.startswith(prefix) and "/" not in name[len(prefix):] and name.endswith(".go") for name in snapshot):
                     issue(f"{where}.source_dir", "Function entry Go source missing",
                           "include the function's Go entry source directly in this repository directory.")
-        for field in ("parameters", "cors", "database"):
+        for field in ("parameters", "cors", "database", "third_party_services"):
             if field in fn and type(fn[field]) is not dict:
                 issue(f"{where}.{field}", "requires an object", "use the documented object fields or omit this optional declaration.")
         database = fn.get("database")
@@ -367,6 +367,25 @@ def preflight(snapshot, without_source):
             if metadata.get("database_required") is False:
                 issue(f"{where}.database", "requires database_required=true",
                       "confirm the backend database dependency; do not remove required configuration just to pass.")
+        services = fn.get("third_party_services")
+        if type(services) is dict:
+            service_path = f"{where}.third_party_services"
+            parameter = string(services.get("key_parameter", missing), f"{service_path}.key_parameter")
+            categories = services.get("categories")
+            if type(categories) is not list or not categories:
+                issue(f"{service_path}.categories", "requires a nonempty array",
+                      "list the category slugs used by the function.")
+            else:
+                for index, category in enumerate(categories):
+                    string(category, f"{service_path}.categories[{index}]")
+            if parameter is not None:
+                parameters = fn.get("parameters")
+                if type(parameters) is dict and parameter in parameters:
+                    issue(f"{service_path}.key_parameter", "is supplied by installation",
+                          "remove this entry from parameters so the installer can supply the target space Key.")
+                if type(database) is dict and parameter in (database.get("endpoint_parameter"), database.get("token_parameter")):
+                    issue(f"{service_path}.key_parameter", "must differ from database parameter names",
+                          "use the dedicated parameter that the function reads for third-party services.")
     variables(metadata.get("site_variables", []), "site_variables", None)
 
     names = ["showcase/preview.html", "showcase/cover.webp"]

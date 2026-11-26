@@ -10,7 +10,9 @@
 
 沿用[分享模板](share-template.md)对结构、seed 和公开内容的筛选。后端服务参数只导出明确可公开的业务初值；数据库 Endpoint/Token 在安装时生成。源码、JSON、SQL、前端 bundle、source map 和展示材料均检查凭据和私有数据。
 
-第三方 API Key 等不能作为公开参数初值分发；在模板说明中列出参数名与用途，由安装者按 `tiana-function` 技能的“参数配置与生效”指引填写自己的值并验证。数据库参数映射不代替第三方密钥配置；尚未配置的功能明确标为待配置。
+Function 使用 Tiana 三方服务时，从实际调用确认所需分类，用 `tiana third-party-service category list --json` 查分类标识。为该 Function 声明 `third_party_services`，其中只写分类标识和代码读取的参数名。安装为目标空间尝试开启分类并给 Function 配置新 Key。空间无法开通时模板仍会安装，Function 在未配置 Key 时应能启动，并在用户使用受影响的功能时提示配置。模板的公开材料不包含发布者的 Key。
+
+应用直接调用外部供应商且需自备凭据时，在模板说明中写明参数名与用途，由安装者按 `tiana-function` 的参数配置指引填入自己的值。
 
 ## 组织 metadata.json
 
@@ -41,7 +43,8 @@
     "repository": "app",
     "source_dir": "/services/orders",
     "parameters": {"MESSAGE": "欢迎使用订单服务"},
-    "database": {"endpoint_parameter": "SQLITE_ENDPOINT", "token_parameter": "SQLITE_TOKEN"}
+    "database": {"endpoint_parameter": "SQLITE_ENDPOINT", "token_parameter": "SQLITE_TOKEN"},
+    "third_party_services": {"categories": ["location"], "key_parameter": "THIRD_PARTY_API_KEY"}
   }],
   "site_variables": [{
     "name": "FUNCTION_ID:api",
