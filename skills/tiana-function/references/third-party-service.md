@@ -1,6 +1,6 @@
 # 三方服务调用
 
-沿用本任务的 CLI 环境和已登录空间。运行 `tiana third-party-service --help` 核对命令，运行 `tiana status --json` 确认当前空间。三方服务命令随 CLI 1.0.35 提供。若已安装 CLI 缺少命令，按主技能的配套版本指引更新。服务可用性以目标环境的实际回执为准。
+沿用本任务的 CLI 环境和已登录空间。运行 `tiana third-party-service --help` 核对命令，运行 `tiana status --json` 确认当前空间。三方服务命令随 CLI 1.0.36 提供。若已安装 CLI 缺少命令，按主技能的配套版本指引更新。服务可用性以目标环境的实际回执为准。
 
 ## 查找 API 与使用说明
 
