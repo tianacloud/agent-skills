@@ -1,10 +1,10 @@
 ---
 name: tiana-function
-description: 使用 Tiana 创建和管理 Go 后端服务，读取及保存 Git 源码、编译发布、修改参数与 CORS、开发 WebSocket 实时接口、在函数中访问文件存储；为 Web 应用开发访问 SQLite 的后端服务，或初始化用户密钥库、列出密钥名称与版本、写入和删除密钥时使用。前端页面开发配合 tiana-web。
+description: 使用 Tiana 创建和管理 Go 后端服务，读取及保存 Git 源码、编译发布、修改参数与 CORS、开发 WebSocket 实时接口、在函数中访问文件存储或调用三方服务；为 Web 应用开发访问 SQLite 的后端服务，或初始化用户密钥库、列出密钥名称与版本、写入和删除密钥时使用。前端页面开发配合 tiana-web。
 license: Apache-2.0
 metadata:
   author: Tiana Cloud
-  version: "1.0.30"
+  version: "1.0.31"
   parent: tiana
   source: https://github.com/tianacloud/agent-skills/tree/main/skills/tiana-function
 ---
@@ -42,6 +42,10 @@ App 作者专属的初始化和权限管理接口，按 [App 作者与初始权�
 ## WebSocket
 
 开发实时连接时，按 [WebSocket 实时连接](references/go-backend.md#websocket-实时连接)完成 Go 服务、浏览器原生连接、源码保存和发布验证，再交给 Web skill 绑定与托管验收。
+
+## 三方服务
+
+Function 需要腾讯地图、阿里云文字识别或语音转文本时，按[三方服务调用](references/third-party-service.md)查看目录与完整 API 文档，确认分类资格及开启状态，配置空间 Key 密钥引用，再按文档从 Function 验证 HTTP 或 WebSocket 调用。
 
 ## 用户密钥库
 
